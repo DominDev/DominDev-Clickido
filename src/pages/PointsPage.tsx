@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
+import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
+import { CategoryId } from '@/types';
+import { getCategoryLabel } from '@utils/categories';
 import { formatPoints } from '@utils/formatting';
 import styles from './PointsPage.module.css';
 
@@ -21,6 +24,7 @@ function formatShortDate(dateString: string) {
 
 export default function PointsPage() {
   const { completions, tasks, selectedDate, getPointsForSelectedDate } = useTaskStore();
+  const { display } = useSettingsStore();
   const todayPoints = getPointsForSelectedDate();
 
   const stats = useMemo(() => {
@@ -97,6 +101,9 @@ export default function PointsPage() {
     });
 
     const maxRecentPoints = Math.max(...recentDays.map((day) => day.points), 1);
+    const level = Math.max(1, Math.floor(totalPoints / 100) + 1);
+    const nextLevelTarget = level * 100;
+    const pointsToNextLevel = Math.max(0, nextLevelTarget - totalPoints);
 
     return {
       totalPoints,
@@ -109,69 +116,108 @@ export default function PointsPage() {
       totalCompleted: completions.length,
       recentDays,
       maxRecentPoints,
+      level,
+      nextLevelTarget,
+      pointsToNextLevel,
     };
   }, [completions, selectedDate, tasks]);
 
   return (
-    <section className={styles.page}>
+    <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>Twoje postępy</p>
-          <h1 className={styles.title}>Punkty i statystyki</h1>
+          <p className={styles.eyebrow}>
+            {display.kidsMode ? 'Tablica nagród' : 'Twoje postępy'}
+          </p>
+          <h1 className={styles.title}>
+            {display.kidsMode ? 'Moje punkty' : 'Punkty i statystyki'}
+          </h1>
           <p className={styles.subtitle}>
-            Prosty ekran MVP z najważniejszymi danymi dla całej rodziny.
+            {display.kidsMode
+              ? 'Tutaj widać, ile udało się już zdobyć. Każde zrobione zadanie daje kolejne gwiazdki.'
+              : 'Prosty ekran MVP z najważniejszymi danymi dla całej rodziny.'}
           </p>
         </div>
-        <div className={styles.heroCard}>
-          <span className={styles.heroLabel}>Dzisiaj</span>
+
+        <div className={`${styles.heroCard} ${display.kidsMode ? styles.kidsHeroCard : ''}`}>
+          <span className={styles.heroLabel}>
+            {display.kidsMode ? '⭐ Dzisiejszy wynik' : 'Dzisiaj'}
+          </span>
           <strong className={styles.heroValue}>{formatPoints(todayPoints)}</strong>
+          {display.kidsMode && (
+            <span className={styles.heroHint}>
+              Poziom {stats.level} · do kolejnego brakuje {stats.pointsToNextLevel} pkt
+            </span>
+          )}
         </div>
       </header>
 
+      {display.kidsMode && (
+        <section className={styles.kidsRewards} aria-label="Postęp nagród">
+          <article className={styles.rewardCard}>
+            <span className={styles.rewardEmoji} aria-hidden="true">
+              🏅
+            </span>
+            <strong>Poziom {stats.level}</strong>
+            <span>Łącznie zdobyto {stats.totalPoints} punktów.</span>
+          </article>
+
+          <article className={styles.rewardCard}>
+            <span className={styles.rewardEmoji} aria-hidden="true">
+              🚀
+            </span>
+            <strong>Następny cel</strong>
+            <span>{stats.pointsToNextLevel} punktów do kolejnego poziomu.</span>
+          </article>
+        </section>
+      )}
+
       <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">
         <article className={styles.statCard}>
-          <span className={styles.cardLabel}>Łącznie</span>
+          <span className={styles.cardLabel}>{display.kidsMode ? '🏆 Łącznie' : 'Łącznie'}</span>
           <strong className={styles.cardValue}>{formatPoints(stats.totalPoints)}</strong>
         </article>
         <article className={styles.statCard}>
-          <span className={styles.cardLabel}>Ten tydzień</span>
+          <span className={styles.cardLabel}>{display.kidsMode ? '🚀 Ten tydzień' : 'Ten tydzień'}</span>
           <strong className={styles.cardValue}>{formatPoints(stats.weekPoints)}</strong>
         </article>
         <article className={styles.statCard}>
-          <span className={styles.cardLabel}>Zrobione zadania</span>
+          <span className={styles.cardLabel}>{display.kidsMode ? '✅ Zadania' : 'Zrobione zadania'}</span>
           <strong className={styles.cardValue}>{stats.totalCompleted}</strong>
         </article>
         <article className={styles.statCard}>
-          <span className={styles.cardLabel}>Aktywne dni</span>
+          <span className={styles.cardLabel}>{display.kidsMode ? '🔥 Dni aktywne' : 'Aktywne dni'}</span>
           <strong className={styles.cardValue}>{stats.activeDays}</strong>
         </article>
       </section>
 
       <section className={styles.detailsGrid}>
         <article className={styles.panel}>
-          <h2>Streak i rytm</h2>
+          <h2>{display.kidsMode ? 'Twoje rekordy' : 'Streak i rytm'}</h2>
           <dl className={styles.detailList}>
             <div>
-              <dt>Aktualny streak</dt>
+              <dt>{display.kidsMode ? '🔥 Seria teraz' : 'Aktualny streak'}</dt>
               <dd>{stats.currentStreak} dni</dd>
             </div>
             <div>
-              <dt>Najlepszy streak</dt>
+              <dt>{display.kidsMode ? '🌈 Najlepsza seria' : 'Najlepszy streak'}</dt>
               <dd>{stats.bestStreak} dni</dd>
             </div>
             <div>
-              <dt>Pierwsza aktywność</dt>
+              <dt>{display.kidsMode ? '📅 Start przygody' : 'Pierwsza aktywność'}</dt>
               <dd>{stats.firstDay ? formatShortDate(stats.firstDay) : 'Jeszcze brak danych'}</dd>
             </div>
             <div>
-              <dt>Najczęstsza kategoria</dt>
-              <dd>{stats.favoriteCategory ?? 'Brak danych'}</dd>
+              <dt>{display.kidsMode ? '🎯 Najczęściej' : 'Najczęstsza kategoria'}</dt>
+              <dd>
+                {stats.favoriteCategory ? getCategoryLabel(stats.favoriteCategory as CategoryId) : 'Brak danych'}
+              </dd>
             </div>
           </dl>
         </article>
 
         <article className={styles.panel}>
-          <h2>Ostatnie 7 dni</h2>
+          <h2>{display.kidsMode ? 'Punkty z ostatnich dni' : 'Ostatnie 7 dni'}</h2>
           <div className={styles.chart}>
             {stats.recentDays.map((day) => (
               <div key={day.dateString} className={styles.barItem}>
@@ -181,7 +227,9 @@ export default function PointsPage() {
                     style={{ height: `${(day.points / stats.maxRecentPoints) * 100}%` }}
                   />
                 </div>
-                <span className={styles.barValue}>{day.points}</span>
+                <span className={styles.barValue}>
+                  {display.kidsMode ? `⭐ ${day.points}` : day.points}
+                </span>
                 <span className={styles.barLabel}>{day.label}</span>
               </div>
             ))}

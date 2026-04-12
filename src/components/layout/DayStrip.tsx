@@ -4,29 +4,25 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { startOfWeek, addDays, isSameDay, isToday } from 'date-fns';
+import { addDays, isSameDay, isToday, startOfWeek } from 'date-fns';
 import { useTaskStore } from '@store/taskStore';
+import { isTaskCompleted } from '@services/completionService';
 import { getDayAbbreviation } from '@utils/formatting';
 import { getTasksForDate } from '@utils/recurrence';
-import { isTaskCompleted } from '@services/completionService';
 import styles from './DayStrip.module.css';
 
 export default function DayStrip() {
   const { tasks, selectedDate, setSelectedDate } = useTaskStore();
 
-  // Get week days starting from Monday
   const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Monday
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
   }, [selectedDate]);
 
-  // Get task counts and completion status for each day
   const dayData = useMemo(() => {
     return weekDays.map((date) => {
       const dayTasks = getTasksForDate(tasks, date);
-      const completedTasks = dayTasks.filter((task) =>
-        isTaskCompleted(task.id, date)
-      );
+      const completedTasks = dayTasks.filter((task) => isTaskCompleted(task.id, date));
 
       return {
         date,
@@ -37,7 +33,6 @@ export default function DayStrip() {
     });
   }, [weekDays, tasks]);
 
-  // Get dot count based on task count
   const getDotCount = (taskCount: number): number => {
     if (taskCount === 0) return 0;
     if (taskCount <= 3) return 1;
@@ -45,45 +40,64 @@ export default function DayStrip() {
     return 3;
   };
 
+  const getAriaLabel = (taskCount: number, completedCount: number, isTodayDate: boolean): string => {
+    const taskLabel =
+      taskCount === 0
+        ? 'brak zadań'
+        : taskCount === 1
+          ? '1 zadanie'
+          : `${taskCount} zadań`;
+
+    const completionLabel =
+      completedCount === 0
+        ? 'nic nieukończone'
+        : completedCount === taskCount
+          ? 'wszystko ukończone'
+          : `ukończono ${completedCount} z ${taskCount}`;
+
+    return `${isTodayDate ? 'Dziś, ' : ''}${taskLabel}, ${completionLabel}`;
+  };
+
   return (
     <div className={styles.strip} role="tablist" aria-label="Wybór dnia tygodnia">
-      {dayData.map((day, index) => {
+      {dayData.map((day) => {
         const isSelected = isSameDay(day.date, selectedDate);
         const isTodayDate = isToday(day.date);
         const dotCount = getDotCount(day.taskCount);
 
         return (
           <button
-            key={index}
+            key={day.date.toISOString()}
+            type="button"
             role="tab"
             aria-selected={isSelected}
+            aria-label={getAriaLabel(day.taskCount, day.completedCount, isTodayDate)}
+            title={getAriaLabel(day.taskCount, day.completedCount, isTodayDate)}
             className={`${styles.day} ${isSelected ? styles.selected : ''} ${
               isTodayDate ? styles.today : ''
             } ${day.isAllCompleted ? styles.completed : ''}`}
             onClick={() => setSelectedDate(day.date)}
           >
-            <span className={styles.dayName}>
-              {getDayAbbreviation(day.date.getDay())}
-            </span>
+            <span className={styles.dayName}>{getDayAbbreviation(day.date.getDay())}</span>
 
             <motion.span
               className={styles.dayNumber}
               initial={false}
-              animate={{
-                scale: isSelected ? 1.1 : 1,
-              }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              animate={{ scale: isSelected ? 1.08 : 1 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 24 }}
             >
               {day.date.getDate()}
             </motion.span>
 
+            <span className={styles.meta}>
+              {day.taskCount > 0 ? `${day.completedCount}/${day.taskCount}` : '—'}
+            </span>
+
             <div className={styles.dots} aria-hidden="true">
-              {Array.from({ length: dotCount }, (_, i) => (
+              {Array.from({ length: dotCount }, (_, index) => (
                 <span
-                  key={i}
-                  className={`${styles.dot} ${
-                    day.isAllCompleted ? styles.dotCompleted : ''
-                  }`}
+                  key={index}
+                  className={`${styles.dot} ${day.isAllCompleted ? styles.dotCompleted : ''}`}
                 />
               ))}
             </div>

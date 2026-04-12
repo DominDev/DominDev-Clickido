@@ -6,22 +6,35 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  color: #fff;
+  color: var(--color-text-primary);
+  background: var(--theme-screensaver-bg);
+  border: 0;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--screensaver-dim, 0.3));
 }
 
 .panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
-  width: min(100%, 680px);
+  width: min(100%, 720px);
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: 32px;
+  background: var(--theme-screensaver-panel-bg);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
 }
 
 .label {
   text-transform: uppercase;
   letter-spacing: 0.24em;
   font-size: var(--text-sm);
-  opacity: 0.8;
+  color: var(--color-text-secondary);
 }
 
 .clock {
@@ -30,6 +43,51 @@
   font-weight: var(--font-bold);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+}
+
+.date {
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 3.2vw, 1.75rem);
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(100%, 320px);
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-border) 55%, transparent 45%);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width var(--transition-slow);
+}
+
+.progressMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.progressMeta strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+}
+
+.progressMeta span {
+  color: var(--color-text-secondary);
 }
 
 .stats {
@@ -44,22 +102,44 @@
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-4);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent 22%);
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent 12%);
 }
 
 .statBlock strong {
   font-size: var(--text-3xl);
+  font-family: var(--font-heading);
 }
 
 .statBlock span,
 .hint {
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--color-text-secondary);
+}
+
+.message {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.hint {
+  margin: 0;
+  text-align: center;
 }
 
 @media (max-width: 640px) {
+  .overlay {
+    padding: var(--space-4);
+  }
+
+  .panel {
+    padding: var(--space-6) var(--space-4);
+    border-radius: 28px;
+  }
+
   .stats {
     grid-template-columns: 1fr;
   }

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { CategoryId } from '@/types';
 import { useTaskStore } from '@store/taskStore';
-import { useUIStore, showInfoToast, showSuccessToast } from '@store/uiStore';
+import { useUIStore, showSuccessToast, showUndoToast } from '@store/uiStore';
 import { calculatePoints } from '@services/taskService';
+import { CATEGORIES, TASK_TEMPLATES, getCategoryLabel } from '@utils/categories';
 import { getRecurrenceDescription } from '@utils/recurrence';
-import { TASK_TEMPLATES, getCategoryLabel } from '@utils/categories';
 import styles from './TasksPage.module.css';
 
 const STARTER_TASKS = [
@@ -20,11 +21,35 @@ const QUICK_TEMPLATES = [
 ];
 
 export default function TasksPage() {
-  const { tasks, addTask, deleteTask } = useTaskStore();
+  const { tasks, completions, addTask, deleteTask, restoreTask } = useTaskStore();
   const { openModal, setEditingTask } = useUIStore();
+  const [searchValue, setSearchValue] = useState('');
+  const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
 
   const groupedTasks = useMemo(() => {
-    return [...tasks].sort((a, b) => a.title.localeCompare(b.title, 'pl'));
+    const normalizedQuery = searchValue.trim().toLocaleLowerCase('pl');
+
+    return [...tasks]
+      .filter((task) => {
+        if (activeCategory !== 'all' && task.category !== activeCategory) {
+          return false;
+        }
+
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        const haystack = `${task.title} ${getCategoryLabel(task.category)}`.toLocaleLowerCase('pl');
+        return haystack.includes(normalizedQuery);
+      })
+      .sort((a, b) => a.title.localeCompare(b.title, 'pl'));
+  }, [tasks, searchValue, activeCategory]);
+
+  const categoryCounts = useMemo(() => {
+    return CATEGORIES.reduce<Record<string, number>>((acc, category) => {
+      acc[category.id] = tasks.filter((task) => task.category === category.id).length;
+      return acc;
+    }, {});
   }, [tasks]);
 
   const handleSeedTasks = () => {
@@ -55,7 +80,7 @@ export default function TasksPage() {
   };
 
   const handleEditTask = (taskId: string) => {
-    const task = groupedTasks.find((item) => item.id === taskId);
+    const task = tasks.find((item) => item.id === taskId);
     if (!task) {
       return;
     }
@@ -65,23 +90,29 @@ export default function TasksPage() {
   };
 
   const handleDeleteTask = (taskId: string, title: string) => {
+    const taskToRestore = tasks.find((task) => task.id === taskId);
+    const completionsToRestore = completions.filter((entry) => entry.taskId === taskId);
     const success = deleteTask(taskId);
 
-    if (!success) {
+    if (!success || !taskToRestore) {
       return;
     }
 
-    showInfoToast(`Usunięto zadanie: ${title}`);
+    showUndoToast(`Usunięto zadanie: ${title}`, () => {
+      restoreTask(taskToRestore, completionsToRestore);
+      showSuccessToast(`Przywrócono zadanie: ${title}`);
+    });
   };
 
   return (
     <section className={styles.page}>
       <div className={styles.header}>
         <div>
+          <p className={styles.eyebrow}>Baza obowiązków</p>
           <h1>Zadania</h1>
           <p>
-            Roboczy widok bazy zadań. Tworzenie i edycja korzystają już z tego samego
-            modalowego flow co widok dnia.
+            Tutaj rodzic buduje i porządkuje bazę zadań dla całej rodziny. Widok dnia korzysta
+            później dokładnie z tych pozycji.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -95,6 +126,47 @@ export default function TasksPage() {
           )}
         </div>
       </div>
+
+      <section className={styles.filtersCard}>
+        <div className={styles.filterTopRow}>
+          <label className={styles.searchField}>
+            <span>Szukaj zadania</span>
+            <input
+              type="search"
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Np. naczynia, zakupy, pies"
+            />
+          </label>
+
+          <div className={styles.summaryCard}>
+            <span>Łącznie zadań</span>
+            <strong>{tasks.length}</strong>
+          </div>
+        </div>
+
+        <div className={styles.categoryFilters}>
+          <button
+            type="button"
+            className={`${styles.categoryChip} ${activeCategory === 'all' ? styles.activeChip : ''}`}
+            onClick={() => setActiveCategory('all')}
+          >
+            Wszystkie
+          </button>
+          {CATEGORIES.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              className={`${styles.categoryChip} ${
+                activeCategory === category.id ? styles.activeChip : ''
+              }`}
+              onClick={() => setActiveCategory(category.id)}
+            >
+              {category.emoji} {category.label} ({categoryCounts[category.id] ?? 0})
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className={styles.templatesCard}>
         <div className={styles.sectionHeading}>
@@ -123,10 +195,10 @@ export default function TasksPage() {
 
       {groupedTasks.length === 0 ? (
         <div className={styles.emptyState}>
-          <h2>Brak zapisanych zadań</h2>
+          <h2>Brak wyników</h2>
           <p>
-            Dodaj zestaw startowy albo własne zadanie, aby od razu przetestować widok dnia,
-            punkty i odklikiwanie.
+            Nie znaleziono zadań dla wybranego filtra. Wyczyść wyszukiwanie albo dodaj nową
+            pozycję do bazy.
           </p>
         </div>
       ) : (

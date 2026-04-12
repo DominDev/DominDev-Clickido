@@ -21,6 +21,7 @@ interface TaskState {
 
   // Task CRUD
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Task;
+  restoreTask: (task: Task, completions?: TaskCompletion[]) => Task;
   updateTask: (id: string, data: Partial<Task>) => Task | null;
   deleteTask: (id: string) => boolean;
   duplicateTask: (id: string) => Task | null;
@@ -62,6 +63,28 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const newTask = taskService.createTask(taskData);
     set((state) => ({ tasks: [...state.tasks, newTask] }));
     return newTask;
+  },
+
+  restoreTask: (task, completions = []) => {
+    const restoredTask = taskService.restoreTask(task);
+    completionService.restoreCompletions(completions);
+
+    set((state) => {
+      const tasksWithoutDuplicate = state.tasks.filter((item) => item.id !== task.id);
+      const completionsWithoutDuplicate = state.completions.filter(
+        (entry) =>
+          !completions.some(
+            (restored) => restored.taskId === entry.taskId && restored.date === entry.date
+          )
+      );
+
+      return {
+        tasks: [...tasksWithoutDuplicate, restoredTask],
+        completions: [...completionsWithoutDuplicate, ...completions],
+      };
+    });
+
+    return restoredTask;
   },
 
   updateTask: (id, data) => {

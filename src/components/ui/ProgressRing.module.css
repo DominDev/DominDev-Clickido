@@ -5,14 +5,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 999px;
 }
 
 .svg {
   display: block;
+  filter: drop-shadow(0 6px 10px rgb(17 24 39 / 0.08));
 }
 
 .backgroundCircle {
-  stroke: var(--color-border);
+  stroke: rgb(17 24 39 / 0.1);
 }
 
 .progressCircle {
@@ -26,9 +28,14 @@
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Complete state */
 .container[data-complete="true"] .progressCircle {
   stroke: var(--color-success);
+}
+
+.container[data-complete="true"] .percentage {
+  color: var(--color-success);
 }

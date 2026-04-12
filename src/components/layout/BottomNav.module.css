@@ -2,28 +2,32 @@
 
 .nav {
   position: fixed;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  height: var(--bottomnav-height);
-  padding-bottom: var(--safe-area-bottom);
   display: flex;
   align-items: stretch;
   justify-content: space-around;
+  height: var(--bottomnav-height);
+  padding-bottom: var(--safe-area-bottom);
   background-color: var(--color-surface);
   border-top: 1px solid var(--color-border-light);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 0.05);
   z-index: var(--z-fixed);
+}
+
+.kidsNav {
+  background: var(--theme-bottomnav-kids-bg);
 }
 
 .navItem {
   position: relative;
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  gap: var(--space-1);
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
   padding: var(--space-2);
   color: var(--color-text-muted);
   text-decoration: none;
@@ -44,24 +48,24 @@
   background: var(--color-accent-light);
 }
 
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
 .icon {
   font-size: var(--text-2xl);
   line-height: 1;
 }
 
 .label {
-  font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-}
-
-.kidsMode .icon {
-  font-size: 34px;
-}
-
-.kidsMode .label {
-  font-size: 14px;
-  font-weight: var(--font-bold);
 }
 
 .navItem.active::before {
@@ -69,18 +73,54 @@
   position: absolute;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
   width: 32px;
   height: 3px;
   background-color: var(--color-accent);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  transform: translateX(-50%);
+}
+
+.kidsMode {
+  gap: var(--space-2);
+}
+
+.kidsMode .iconWrap {
+  width: 58px;
+  height: 58px;
+  background: var(--theme-bottomnav-kids-icon-bg);
+  border-radius: 22px;
+  box-shadow: 0 10px 20px rgb(17 24 39 / 0.08);
+}
+
+.kidsMode .icon {
+  font-size: 2rem;
+}
+
+.kidsMode .label {
+  font-size: 0.95rem;
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.kidsMode.active {
+  background: transparent;
+}
+
+.kidsMode.active .iconWrap {
+  background: var(--theme-bottomnav-kids-active-bg);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 16px 26px rgb(240 168 0 / 0.22);
+}
+
+.kidsMode.active::before {
+  display: none;
 }
 
 @media (min-width: 768px) {
   .nav {
-    max-width: 560px;
     left: 50%;
-    transform: translateX(-50%);
+    max-width: 560px;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: translateX(-50%);
   }
 }

@@ -2,17 +2,29 @@
  * TaskForm - Bottom sheet modal for adding/editing tasks
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { RecurrenceType, CategoryId } from '@/types';
+import { CategoryId, RecurrenceType } from '@/types';
 import { useTaskStore } from '@store/taskStore';
-import { useUIStore, showSuccessToast, showErrorToast } from '@store/uiStore';
-import { CATEGORIES, getAllEmojis, getTemplatesForCategory } from '@utils/categories';
+import { useUIStore, showErrorToast, showSuccessToast } from '@store/uiStore';
+import {
+  CATEGORIES,
+  getAllEmojis,
+  getCategoryById,
+  getTemplatesForCategory,
+} from '@utils/categories';
 import { calculatePoints } from '@services/taskService';
 import styles from './TaskForm.module.css';
 
-const TIME_PRESETS = [5, 10, 15, 30, 45, 60];
+const TIME_PRESETS = [5, 10, 15, 20, 30, 45, 60];
+const RECURRENCE_OPTIONS: Array<{ value: RecurrenceType; label: string; hint: string }> = [
+  { value: 'once', label: 'Raz', hint: 'Na konkretny dzień' },
+  { value: 'daily', label: 'Codziennie', hint: 'Pojawia się każdego dnia' },
+  { value: 'weekly', label: 'Tydzień', hint: 'W wybrane dni tygodnia' },
+  { value: 'interval', label: 'Co kilka dni', hint: 'Regularny odstęp dni' },
+  { value: 'monthly', label: 'Miesiąc', hint: 'Stały dzień miesiąca' },
+];
 const DAYS_OF_WEEK = [
   { value: 1, label: 'Pn' },
   { value: 2, label: 'Wt' },
@@ -22,6 +34,7 @@ const DAYS_OF_WEEK = [
   { value: 6, label: 'So' },
   { value: 0, label: 'Nd' },
 ];
+const DEFAULT_EMOJI = '📋';
 
 export default function TaskForm() {
   const { addTask, updateTask, selectedDate } = useTaskStore();
@@ -30,9 +43,8 @@ export default function TaskForm() {
   const isEditing = !!editingTask;
   const isOpen = modal.isOpen && modal.type === 'taskForm';
 
-  // Form state
   const [title, setTitle] = useState('');
-  const [emoji, setEmoji] = useState('📋');
+  const [emoji, setEmoji] = useState(DEFAULT_EMOJI);
   const [category, setCategory] = useState<CategoryId>('other');
   const [estimatedMinutes, setEstimatedMinutes] = useState(15);
   const [recurrence, setRecurrence] = useState<RecurrenceType>('once');
@@ -41,45 +53,79 @@ export default function TaskForm() {
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [date, setDate] = useState(format(selectedDate, 'yyyy-MM-dd'));
 
-  // Calculate points
   const points = useMemo(() => calculatePoints(estimatedMinutes), [estimatedMinutes]);
+  const templates = useMemo(() => getTemplatesForCategory(category), [category]);
+  const allEmojis = useMemo(() => getAllEmojis(), []);
+  const selectedCategory = useMemo(() => getCategoryById(category), [category]);
+  const recurringHint = useMemo(
+    () => RECURRENCE_OPTIONS.find((option) => option.value === recurrence)?.hint ?? '',
+    [recurrence]
+  );
 
-  // Reset form when opening/closing
   useEffect(() => {
-    if (isOpen) {
-      if (editingTask) {
-        // Populate form with existing task data
-        setTitle(editingTask.title);
-        setEmoji(editingTask.emoji);
-        setCategory(editingTask.category);
-        setEstimatedMinutes(editingTask.estimatedMinutes);
-        setRecurrence(editingTask.recurrence);
-        setDaysOfWeek(editingTask.daysOfWeek || []);
-        setIntervalDays(editingTask.intervalDays || 2);
-        setDayOfMonth(editingTask.dayOfMonth || 1);
-        setDate(editingTask.date || format(selectedDate, 'yyyy-MM-dd'));
-      } else {
-        // Reset to defaults
-        setTitle('');
-        setEmoji('📋');
-        setCategory('other');
-        setEstimatedMinutes(15);
-        setRecurrence('once');
-        setDaysOfWeek([]);
-        setIntervalDays(2);
-        setDayOfMonth(1);
-        setDate(format(selectedDate, 'yyyy-MM-dd'));
-      }
-    }
-  }, [isOpen, editingTask, selectedDate]);
+    if (!isOpen) return;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      showErrorToast('Podaj nazwę zadania');
+    if (editingTask) {
+      setTitle(editingTask.title);
+      setEmoji(editingTask.emoji);
+      setCategory(editingTask.category);
+      setEstimatedMinutes(editingTask.estimatedMinutes);
+      setRecurrence(editingTask.recurrence);
+      setDaysOfWeek(editingTask.daysOfWeek || []);
+      setIntervalDays(editingTask.intervalDays || 2);
+      setDayOfMonth(editingTask.dayOfMonth || 1);
+      setDate(editingTask.date || editingTask.intervalStartDate || format(selectedDate, 'yyyy-MM-dd'));
       return;
     }
+
+    setTitle('');
+    setEmoji(DEFAULT_EMOJI);
+    setCategory('other');
+    setEstimatedMinutes(15);
+    setRecurrence('once');
+    setDaysOfWeek([]);
+    setIntervalDays(2);
+    setDayOfMonth(1);
+    setDate(format(selectedDate, 'yyyy-MM-dd'));
+  }, [isOpen, editingTask, selectedDate]);
+
+  const toggleDayOfWeek = (day: number) => {
+    setDaysOfWeek((previous) =>
+      previous.includes(day)
+        ? previous.filter((value) => value !== day)
+        : [...previous, day].sort((a, b) => {
+            const order = [1, 2, 3, 4, 5, 6, 0];
+            return order.indexOf(a) - order.indexOf(b);
+          })
+    );
+  };
+
+  const handleTemplateSelect = (template: {
+    title: string;
+    emoji: string;
+    category: CategoryId;
+    estimatedMinutes: number;
+  }) => {
+    setTitle(template.title);
+    setEmoji(template.emoji);
+    setCategory(template.category);
+    setEstimatedMinutes(template.estimatedMinutes);
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!title.trim()) {
+      showErrorToast('Podaj nazwę zadania.');
+      return;
+    }
+
+    if (recurrence === 'weekly' && daysOfWeek.length === 0) {
+      showErrorToast('Wybierz co najmniej jeden dzień tygodnia.');
+      return;
+    }
+
+    const normalizedDayOfMonth = Math.min(28, Math.max(1, dayOfMonth || 1));
 
     const taskData = {
       title: title.trim(),
@@ -91,42 +137,25 @@ export default function TaskForm() {
       daysOfWeek: recurrence === 'weekly' ? daysOfWeek : undefined,
       intervalDays: recurrence === 'interval' ? intervalDays : undefined,
       intervalStartDate: recurrence === 'interval' ? date : undefined,
-      dayOfMonth: recurrence === 'monthly' ? dayOfMonth : undefined,
+      dayOfMonth: recurrence === 'monthly' ? normalizedDayOfMonth : undefined,
       date: recurrence === 'once' ? date : undefined,
     };
 
     if (isEditing && editingTask) {
       updateTask(editingTask.id, taskData);
-      showSuccessToast('Zadanie zaktualizowane');
+      showSuccessToast('Zadanie zostało zapisane.');
     } else {
       addTask(taskData);
-      showSuccessToast('Zadanie dodane');
+      showSuccessToast('Zadanie zostało dodane.');
     }
 
     closeModal();
   };
 
-  const handleTemplateSelect = (template: { title: string; emoji: string; category: CategoryId; estimatedMinutes: number }) => {
-    setTitle(template.title);
-    setEmoji(template.emoji);
-    setCategory(template.category);
-    setEstimatedMinutes(template.estimatedMinutes);
-  };
-
-  const toggleDayOfWeek = (day: number) => {
-    setDaysOfWeek((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
-  const templates = useMemo(() => getTemplatesForCategory(category), [category]);
-  const allEmojis = useMemo(() => getAllEmojis(), []);
-
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             className={styles.backdrop}
             initial={{ opacity: 0 }}
@@ -135,207 +164,272 @@ export default function TaskForm() {
             onClick={closeModal}
           />
 
-          {/* Bottom Sheet */}
           <motion.div
             className={styles.sheet}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="task-form-title"
           >
             <div className={styles.handle} />
 
             <form onSubmit={handleSubmit} className={styles.form}>
-              <h2 className={styles.title}>
-                {isEditing ? 'Edytuj zadanie' : 'Nowe zadanie'}
-              </h2>
-
-              {/* Title input */}
-              <div className={styles.field}>
-                <label htmlFor="task-title" className={styles.label}>
-                  Nazwa zadania
-                </label>
-                <input
-                  id="task-title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className={styles.input}
-                  placeholder="np. Umyj naczynia"
-                  autoFocus
-                />
-              </div>
-
-              {/* Emoji picker */}
-              <div className={styles.field}>
-                <label className={styles.label}>Ikona</label>
-                <div className={styles.emojiGrid}>
-                  {allEmojis.slice(0, 24).map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      className={`${styles.emojiBtn} ${emoji === e ? styles.selected : ''}`}
-                      onClick={() => setEmoji(e)}
-                    >
-                      {e}
-                    </button>
-                  ))}
+              <div className={styles.header}>
+                <div>
+                  <p className={styles.eyebrow}>{isEditing ? 'Edycja zadania' : 'Nowe zadanie'}</p>
+                  <h2 id="task-form-title" className={styles.title}>
+                    {isEditing ? 'Popraw szczegóły zadania' : 'Dodaj nowe zadanie'}
+                  </h2>
+                  <p className={styles.subtitle}>
+                    Ustaw nazwę, kategorię i sposób powtarzania. Formularz jest zoptymalizowany pod
+                    szybkie dodawanie obowiązków na dziś.
+                  </p>
                 </div>
-              </div>
 
-              {/* Category pills */}
-              <div className={styles.field}>
-                <label className={styles.label}>Kategoria</label>
-                <div className={styles.pills}>
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      className={`${styles.pill} ${category === cat.id ? styles.selected : ''}`}
-                      onClick={() => setCategory(cat.id)}
-                    >
-                      {cat.emoji} {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Templates */}
-              {!isEditing && templates.length > 1 && (
-                <div className={styles.field}>
-                  <label className={styles.label}>Szablony</label>
-                  <div className={styles.pills}>
-                    {templates.slice(0, 5).map((t, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className={styles.pill}
-                        onClick={() => handleTemplateSelect(t)}
-                      >
-                        {t.emoji} {t.title}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Time presets */}
-              <div className={styles.field}>
-                <label className={styles.label}>
-                  Szacowany czas: {estimatedMinutes} min
-                </label>
-                <div className={styles.timePresets}>
-                  {TIME_PRESETS.map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      className={`${styles.timeBtn} ${estimatedMinutes === time ? styles.selected : ''}`}
-                      onClick={() => setEstimatedMinutes(time)}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Points display */}
-              <div className={styles.pointsDisplay}>
-                Punkty: <strong>{points}</strong>
-              </div>
-
-              {/* Recurrence */}
-              <div className={styles.field}>
-                <label className={styles.label}>Powtarzanie</label>
-                <select
-                  value={recurrence}
-                  onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-                  className={styles.select}
-                >
-                  <option value="once">Jednorazowo</option>
-                  <option value="daily">Codziennie</option>
-                  <option value="weekly">Co tydzień</option>
-                  <option value="interval">Co X dni</option>
-                  <option value="monthly">Co miesiąc</option>
-                </select>
-              </div>
-
-              {/* Recurrence options */}
-              {recurrence === 'once' && (
-                <div className={styles.field}>
-                  <label htmlFor="task-date" className={styles.label}>Data</label>
-                  <input
-                    id="task-date"
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className={styles.input}
-                  />
-                </div>
-              )}
-
-              {recurrence === 'weekly' && (
-                <div className={styles.field}>
-                  <label className={styles.label}>Dni tygodnia</label>
-                  <div className={styles.daysOfWeek}>
-                    {DAYS_OF_WEEK.map((day) => (
-                      <button
-                        key={day.value}
-                        type="button"
-                        className={`${styles.dayBtn} ${daysOfWeek.includes(day.value) ? styles.selected : ''}`}
-                        onClick={() => toggleDayOfWeek(day.value)}
-                      >
-                        {day.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {recurrence === 'interval' && (
-                <div className={styles.field}>
-                  <label htmlFor="interval-days" className={styles.label}>
-                    Co ile dni: {intervalDays}
-                  </label>
-                  <input
-                    id="interval-days"
-                    type="range"
-                    min="2"
-                    max="30"
-                    value={intervalDays}
-                    onChange={(e) => setIntervalDays(Number(e.target.value))}
-                    className={styles.slider}
-                  />
-                </div>
-              )}
-
-              {recurrence === 'monthly' && (
-                <div className={styles.field}>
-                  <label htmlFor="day-of-month" className={styles.label}>
-                    Dzień miesiąca (1-28)
-                  </label>
-                  <input
-                    id="day-of-month"
-                    type="number"
-                    min="1"
-                    max="28"
-                    value={dayOfMonth}
-                    onChange={(e) => setDayOfMonth(Number(e.target.value))}
-                    className={styles.input}
-                  />
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className={styles.actions}>
                 <button
                   type="button"
-                  className={styles.cancelBtn}
+                  className={styles.closeButton}
                   onClick={closeModal}
+                  aria-label="Zamknij formularz"
                 >
+                  ×
+                </button>
+              </div>
+
+              <div className={styles.previewCard}>
+                <div className={styles.previewEmoji}>{emoji}</div>
+                <div className={styles.previewContent}>
+                  <strong className={styles.previewTitle}>
+                    {title.trim() || 'Podgląd nowego zadania'}
+                  </strong>
+                  <span className={styles.previewMeta}>
+                    {selectedCategory?.emoji} {selectedCategory?.label} · {estimatedMinutes} min · {points}{' '}
+                    pkt
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.field}>
+                  <label htmlFor="task-title" className={styles.label}>
+                    Nazwa zadania
+                  </label>
+                  <input
+                    id="task-title"
+                    type="text"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    className={styles.input}
+                    placeholder="Na przykład: wynieś śmieci"
+                    autoFocus
+                    maxLength={60}
+                  />
+                  <span className={styles.helpText}>
+                    Krótka, konkretna nazwa działa najlepiej na liście i w trybie dziecięcym.
+                  </span>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Kategoria</label>
+                  <div className={styles.pills}>
+                    {CATEGORIES.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`${styles.pill} ${category === item.id ? styles.selected : ''}`}
+                        onClick={() => setCategory(item.id)}
+                      >
+                        <span>{item.emoji}</span>
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {!isEditing && templates.length > 0 && (
+                  <div className={styles.field}>
+                    <label className={styles.label}>Szybkie szablony</label>
+                    <div className={styles.templateGrid}>
+                      {templates.slice(0, 6).map((template) => (
+                        <button
+                          key={`${template.category}-${template.title}`}
+                          type="button"
+                          className={styles.templateCard}
+                          onClick={() => handleTemplateSelect(template)}
+                        >
+                          <span className={styles.templateEmoji}>{template.emoji}</span>
+                          <span className={styles.templateTitle}>{template.title}</span>
+                          <span className={styles.templateMeta}>{template.estimatedMinutes} min</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>Wygląd zadania</h3>
+                  <span className={styles.sectionHint}>To zobaczą domownicy na liście.</span>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Ikona</label>
+                  <div className={styles.emojiGrid}>
+                    {allEmojis.slice(0, 28).map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        className={`${styles.emojiBtn} ${emoji === item ? styles.selected : ''}`}
+                        onClick={() => setEmoji(item)}
+                        aria-label={`Wybierz ikonę ${item}`}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Szacowany czas</label>
+                  <div className={styles.timePresets}>
+                    {TIME_PRESETS.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        className={`${styles.timeBtn} ${estimatedMinutes === time ? styles.selected : ''}`}
+                        onClick={() => setEstimatedMinutes(time)}
+                      >
+                        {time} min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.pointsDisplay}>
+                  <span className={styles.pointsLabel}>Wartość zadania</span>
+                  <strong className={styles.pointsValue}>{points} pkt</strong>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <h3 className={styles.sectionTitle}>Kiedy zadanie ma się pojawiać</h3>
+                  <span className={styles.sectionHint}>{recurringHint}</span>
+                </div>
+
+                <div className={styles.recurrenceGrid}>
+                  {RECURRENCE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles.recurrenceCard} ${
+                        recurrence === option.value ? styles.selected : ''
+                      }`}
+                      onClick={() => setRecurrence(option.value)}
+                    >
+                      <strong>{option.label}</strong>
+                      <span>{option.hint}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {recurrence === 'once' && (
+                  <div className={styles.field}>
+                    <label htmlFor="task-date" className={styles.label}>
+                      Data wykonania
+                    </label>
+                    <input
+                      id="task-date"
+                      type="date"
+                      value={date}
+                      onChange={(event) => setDate(event.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                )}
+
+                {recurrence === 'weekly' && (
+                  <div className={styles.field}>
+                    <label className={styles.label}>Dni tygodnia</label>
+                    <div className={styles.daysOfWeek}>
+                      {DAYS_OF_WEEK.map((day) => (
+                        <button
+                          key={day.value}
+                          type="button"
+                          className={`${styles.dayBtn} ${
+                            daysOfWeek.includes(day.value) ? styles.selected : ''
+                          }`}
+                          onClick={() => toggleDayOfWeek(day.value)}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {recurrence === 'interval' && (
+                  <>
+                    <div className={styles.field}>
+                      <label htmlFor="interval-days" className={styles.label}>
+                        Odstęp między wykonaniami: co {intervalDays} dni
+                      </label>
+                      <input
+                        id="interval-days"
+                        type="range"
+                        min="2"
+                        max="30"
+                        value={intervalDays}
+                        onChange={(event) => setIntervalDays(Number(event.target.value))}
+                        className={styles.slider}
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <label htmlFor="interval-start-date" className={styles.label}>
+                        Pierwszy dzień cyklu
+                      </label>
+                      <input
+                        id="interval-start-date"
+                        type="date"
+                        value={date}
+                        onChange={(event) => setDate(event.target.value)}
+                        className={styles.input}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {recurrence === 'monthly' && (
+                  <div className={styles.field}>
+                    <label htmlFor="day-of-month" className={styles.label}>
+                      Dzień miesiąca
+                    </label>
+                    <input
+                      id="day-of-month"
+                      type="number"
+                      min="1"
+                      max="28"
+                      value={dayOfMonth}
+                      onChange={(event) => setDayOfMonth(Number(event.target.value))}
+                      className={styles.input}
+                    />
+                    <span className={styles.helpText}>
+                      Zakres 1-28 zapobiega problemom w krótszych miesiącach.
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.actions}>
+                <button type="button" className={styles.cancelBtn} onClick={closeModal}>
                   Anuluj
                 </button>
                 <button type="submit" className={styles.submitBtn}>
-                  {isEditing ? 'Zapisz' : 'Dodaj'}
+                  {isEditing ? 'Zapisz zmiany' : 'Dodaj zadanie'}
                 </button>
               </div>
             </form>

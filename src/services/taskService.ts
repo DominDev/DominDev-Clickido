@@ -50,6 +50,21 @@ export function createTask(
 }
 
 /**
+ * Restore previously existing task with original identifiers
+ */
+export function restoreTask(task: Task): Task {
+  const tasks = getAllTasks();
+  const exists = tasks.some((item) => item.id === task.id);
+
+  if (!exists) {
+    tasks.push(task);
+    setItem(STORAGE_KEYS.TASKS, tasks);
+  }
+
+  return task;
+}
+
+/**
  * Update existing task
  */
 export function updateTask(

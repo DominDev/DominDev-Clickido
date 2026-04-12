@@ -4,6 +4,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Task } from '@/types';
+import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { useUIStore } from '@store/uiStore';
 import TaskCard from './TaskCard';
@@ -30,6 +31,7 @@ export default function TaskList({
   emptySecondaryAction,
 }: TaskListProps) {
   const { isTaskCompleted } = useTaskStore();
+  const { display } = useSettingsStore();
   const { openModal, setEditingTask } = useUIStore();
 
   const handleEditTask = (task: Task) => {
@@ -47,13 +49,13 @@ export default function TaskList({
   if (tasks.length === 0) {
     return (
       <motion.div
-        className={styles.empty}
+        className={`${styles.empty} ${display.kidsMode ? styles.kidsEmpty : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
         <span className={styles.emptyIcon} aria-hidden="true">
-          📋
+          {display.kidsMode ? '🌈' : '📋'}
         </span>
         <h2 className={styles.emptyTitle}>{emptyTitle}</h2>
         <p className={styles.emptyText}>{emptyMessage}</p>

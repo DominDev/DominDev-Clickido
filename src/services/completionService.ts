@@ -158,6 +158,30 @@ export function deleteCompletionsForTask(taskId: string): number {
 }
 
 /**
+ * Restore completions removed with task deletion
+ */
+export function restoreCompletions(entries: TaskCompletion[]): number {
+  if (entries.length === 0) {
+    return 0;
+  }
+
+  const existing = getAllCompletions();
+  const existingKeys = new Set(existing.map((entry) => `${entry.taskId}:${entry.date}`));
+  const merged = [...existing];
+
+  entries.forEach((entry) => {
+    const key = `${entry.taskId}:${entry.date}`;
+    if (!existingKeys.has(key)) {
+      merged.push(entry);
+      existingKeys.add(key);
+    }
+  });
+
+  setItem(STORAGE_KEYS.COMPLETIONS, merged);
+  return merged.length - existing.length;
+}
+
+/**
  * Get completion count for each day in a week
  * Returns array of 7 numbers (Mon-Sun)
  */

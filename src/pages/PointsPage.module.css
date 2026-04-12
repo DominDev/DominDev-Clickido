@@ -6,6 +6,10 @@
   padding-bottom: calc(var(--bottomnav-height) + var(--space-8));
 }
 
+.kidsPage {
+  background: var(--theme-points-page-bg);
+}
+
 .header {
   display: grid;
   gap: var(--space-4);
@@ -37,9 +41,25 @@
   gap: var(--space-2);
   padding: var(--space-5);
   border-radius: var(--radius-2xl);
-  background: linear-gradient(135deg, var(--color-accent), #ff915f);
+  background: var(--theme-hero-accent);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-lg);
+}
+
+.kidsHeroCard {
+  position: relative;
+  overflow: hidden;
+  min-height: 152px;
+  justify-content: flex-end;
+}
+
+.kidsHeroCard::before {
+  content: '🌟';
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  font-size: 38px;
+  opacity: 0.9;
 }
 
 .heroLabel {
@@ -53,6 +73,42 @@
   font-family: var(--font-heading);
   font-size: var(--text-4xl);
   line-height: 1;
+}
+
+.heroHint {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  opacity: 0.92;
+}
+
+.kidsRewards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.rewardCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--theme-reward-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+}
+
+.rewardEmoji {
+  font-size: 2rem;
+}
+
+.rewardCard strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+}
+
+.rewardCard span:last-child {
+  color: var(--color-text-secondary);
 }
 
 .cardsGrid {
@@ -79,6 +135,24 @@
 .cardValue {
   font-family: var(--font-heading);
   font-size: var(--text-2xl);
+}
+
+.kidsPage .statCard,
+.kidsPage .panel {
+  border-width: 2px;
+}
+
+.kidsPage .statCard {
+  background: var(--theme-kids-soft-panel);
+}
+
+.kidsPage .cardLabel {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+}
+
+.kidsPage .cardValue {
+  font-size: 30px;
 }
 
 .detailsGrid {
@@ -150,7 +224,7 @@
   width: 100%;
   min-height: 8px;
   border-radius: var(--radius-full);
-  background: linear-gradient(180deg, #ffb08b, var(--color-accent));
+  background: var(--color-accent);
 }
 
 .barValue {
@@ -161,6 +235,21 @@
 .barLabel {
   color: var(--color-text-secondary);
   text-transform: capitalize;
+}
+
+.kidsPage .barTrack {
+  max-width: 42px;
+  height: 152px;
+  background: var(--color-bg-secondary);
+}
+
+.kidsPage .barFill {
+  background: var(--color-accent);
+}
+
+.kidsPage .barValue {
+  font-size: 12px;
+  text-align: center;
 }
 
 @media (min-width: 768px) {
@@ -183,5 +272,11 @@
 
   .detailsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .kidsRewards {
+    grid-template-columns: 1fr;
   }
 }

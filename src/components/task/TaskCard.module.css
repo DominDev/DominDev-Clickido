@@ -2,10 +2,11 @@
 
 .card {
   display: flex;
-  align-items: center;
   gap: var(--space-3);
+  align-items: center;
   padding: var(--space-3) var(--space-4);
   background-color: var(--color-surface);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   transition: background-color var(--transition-base), transform var(--transition-fast);
@@ -19,93 +20,243 @@
   transform: translateY(0);
 }
 
-/* Completed state */
 .card.completed {
   background-color: var(--category-color, var(--color-success-light));
-  opacity: 0.85;
+  opacity: 0.88;
 }
 
 .card.completed .title {
-  text-decoration: line-through;
   color: var(--color-text-muted);
+  text-decoration: line-through;
 }
 
-/* Checkbox area */
 .checkboxArea {
-  flex: 0 0 auto;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
 }
 
-/* Content button */
 .content {
-  flex: 1;
   display: flex;
-  align-items: center;
+  flex: 1;
   gap: var(--space-3);
+  align-items: center;
   min-width: 0;
   padding: 0;
+  text-align: left;
   background: none;
   border: none;
   cursor: pointer;
-  text-align: left;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Emoji */
-.emoji {
+.emojiWrap {
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-bg-secondary);
+  border-radius: 16px;
+}
+
+.emoji {
   font-size: var(--text-2xl);
   line-height: 1;
 }
 
-/* Text content */
 .textContent {
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .title {
-  font-family: var(--font-body);
+  display: -webkit-box;
+  overflow: hidden;
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
   line-height: var(--leading-snug);
-  display: -webkit-box;
+  color: var(--color-text-primary);
+  transition: color var(--transition-base), text-decoration var(--transition-base);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  transition: color var(--transition-base), text-decoration var(--transition-base);
 }
 
-.time {
-  font-family: var(--font-body);
+.time,
+.kidsHint {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
-/* Points badge */
 .points {
   flex: 0 0 auto;
   padding: var(--space-1) var(--space-2);
-  background-color: var(--color-accent-light);
-  color: var(--color-accent);
   font-family: var(--font-heading);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
+  color: var(--color-accent);
+  background-color: var(--color-accent-light);
   border-radius: var(--radius-full);
 }
 
 .card.completed .points {
-  background-color: var(--color-success-light);
   color: var(--color-success);
+  background-color: var(--color-success-light);
 }
 
-/* Responsive */
+.kidsCard {
+  position: relative;
+  align-items: stretch;
+  min-height: 176px;
+  padding: var(--space-5);
+  overflow: hidden;
+  background: var(--theme-kids-soft-panel);
+  border: 2px solid var(--color-border);
+  border-radius: 26px;
+}
+
+.kidsCard::before {
+  content: '';
+  position: absolute;
+  inset: auto -30px -30px auto;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle, rgb(131 222 255 / 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+.kidsCard .content {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.kidsCard .emojiWrap {
+  width: 96px;
+  height: 96px;
+  background: var(--color-surface);
+  border-radius: 30px;
+  box-shadow: 0 14px 24px rgb(17 24 39 / 0.12);
+}
+
+.kidsCard .emoji {
+  font-size: 56px;
+}
+
+.kidsCard .textContent {
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.kidsCategoryBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.72rem;
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: 999px;
+}
+
+.kidsCard .title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  -webkit-line-clamp: 2;
+}
+
+.kidsFooter {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.kidsHint {
+  font-size: 0.92rem;
+  font-weight: var(--font-bold);
+  color: var(--color-text-secondary);
+}
+
+.kidsPointsBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 0.92rem;
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  border-radius: 999px;
+}
+
+.kidsCard.completed {
+  background: color-mix(in srgb, var(--color-success-light) 72%, var(--color-surface) 28%);
+  border-color: color-mix(in srgb, var(--color-success) 30%, var(--color-border) 70%);
+}
+
+.kidsCard.completed::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px dashed rgb(255 255 255 / 0.8);
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.celebrationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: color-mix(in srgb, var(--color-overlay) 72%, transparent 28%);
+  backdrop-filter: blur(10px);
+}
+
+.celebrationCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: 240px;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.celebrationEmoji {
+  font-size: 80px;
+  line-height: 1;
+}
+
+.celebrationText {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  color: var(--color-accent);
+}
+
+.celebrationSubtext {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
 @media (min-width: 768px) {
   .card {
     padding: var(--space-4) var(--space-5);
@@ -117,5 +268,23 @@
 
   .emoji {
     font-size: var(--text-3xl);
+  }
+
+  .kidsCard {
+    min-height: 210px;
+    padding: var(--space-6);
+  }
+
+  .kidsCard .emojiWrap {
+    width: 112px;
+    height: 112px;
+  }
+
+  .kidsCard .emoji {
+    font-size: 64px;
+  }
+
+  .kidsCard .title {
+    font-size: 1.5rem;
   }
 }

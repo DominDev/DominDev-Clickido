@@ -10,6 +10,7 @@ interface ProgressRingProps {
   size?: number;
   strokeWidth?: number;
   showPercentage?: boolean;
+  label?: string;
 }
 
 export default function ProgressRing({
@@ -17,15 +18,24 @@ export default function ProgressRing({
   size = 52,
   strokeWidth = 4,
   showPercentage = true,
+  label,
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const normalizedPercentage = Math.max(0, Math.min(100, Math.round(percentage)));
+  const isComplete = normalizedPercentage >= 100;
 
   const center = size / 2;
 
   return (
-    <div className={styles.container} style={{ width: size, height: size }}>
+    <div
+      className={styles.container}
+      style={{ width: size, height: size }}
+      data-complete={isComplete}
+      role="img"
+      aria-label={label ?? `Postęp wykonania: ${normalizedPercentage}%`}
+    >
       <svg
         className={styles.svg}
         width={size}
@@ -64,7 +74,7 @@ export default function ProgressRing({
 
       {showPercentage && (
         <span className={styles.percentage}>
-          {percentage}%
+          {normalizedPercentage}%
         </span>
       )}
     </div>

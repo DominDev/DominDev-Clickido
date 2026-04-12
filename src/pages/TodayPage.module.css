@@ -6,10 +6,23 @@
   padding-bottom: calc(var(--bottomnav-height) + var(--space-12));
 }
 
+.kidsPage {
+  background: var(--theme-kids-page-bg);
+}
+
 .content {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.headerCard,
+.progressPanel,
+.motivationCard,
+.kidsGuideCard {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
 }
 
 .headerCard {
@@ -17,11 +30,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4);
-  background: linear-gradient(135deg, var(--color-surface), var(--color-surface-elevated));
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  background: var(--theme-surface-soft);
 }
 
 .titleBlock {
@@ -39,15 +49,20 @@
   letter-spacing: 0.08em;
 }
 
-.title {
+.title,
+.kidsTitle {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
   line-height: var(--leading-tight);
+}
+
+.title {
+  font-size: var(--text-2xl);
   text-transform: capitalize;
 }
 
-.subtitle {
+.subtitle,
+.kidsSubtitle {
   margin: 0;
   color: var(--color-text-secondary);
 }
@@ -56,14 +71,219 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 72px;
-  min-height: 72px;
+  min-width: 76px;
+  min-height: 76px;
   padding: var(--space-3);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-accent-light), #fff1dd);
+  background: var(--theme-hero-warm);
   color: var(--color-accent);
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
+}
+
+.progressPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--theme-panel-soft);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+}
+
+.quickStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.quickStatCard,
+.kidsStatCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
+}
+
+.quickStatCard {
+  background: var(--theme-panel-soft);
+}
+
+.quickStatLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.quickStatValue {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+}
+
+.motivationCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--theme-panel-warm);
+}
+
+.motivationCard span {
+  color: var(--color-text-secondary);
+}
+
+.kidsHero {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.kidsHeroBubble,
+.kidsProgressCard {
+  padding: var(--space-5);
+  border-radius: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.kidsHeroBubble {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  background: var(--theme-kids-hero-bg);
+  border: 2px solid rgb(255 209 92 / 0.34);
+}
+
+.kidsHeroEmoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  height: 92px;
+  font-size: 3rem;
+  background: var(--theme-kids-hero-accent);
+  border-radius: 30px;
+  box-shadow: 0 14px 24px rgb(240 168 0 / 0.22);
+}
+
+.kidsHeroText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kidsTitle {
+  font-size: clamp(1.6rem, 5vw, 2.3rem);
+}
+
+.kidsSubtitle {
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.kidsProgressCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--theme-kids-cool-panel);
+  border: 2px solid rgb(131 222 255 / 0.28);
+}
+
+.kidsProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.kidsProgressLabel {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.kidsProgressValue {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--color-accent);
+}
+
+.kidsStars {
+  display: flex;
+  gap: var(--space-2);
+  font-size: 1.5rem;
+}
+
+.star,
+.starActive {
+  display: inline-flex;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.star {
+  filter: grayscale(1) opacity(0.3);
+}
+
+.starActive {
+  filter: none;
+  transform: translateY(-2px);
+}
+
+.kidsStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.kidsStatCard {
+  align-items: center;
+  text-align: center;
+  background: var(--theme-kids-soft-panel);
+}
+
+.kidsStatEmoji {
+  font-size: 2rem;
+}
+
+.kidsStatValue {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--color-text-primary);
+}
+
+.kidsStatLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-secondary);
+}
+
+.kidsGuideCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--theme-kids-warm-panel);
+}
+
+.kidsGuideCard strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+}
+
+.kidsGuideCard span {
+  color: var(--color-text-secondary);
 }
 
 .secondaryAction {
@@ -72,28 +292,13 @@
   justify-content: center;
   min-height: 48px;
   padding: 0 var(--space-4);
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--color-border);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
   text-decoration: none;
   background: var(--color-surface-elevated);
-  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
-  font-weight: var(--font-semibold);
-}
-
-.motivationCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-}
-
-.motivationCard span {
-  color: var(--color-text-secondary);
 }
 
 .floatingActions {
@@ -101,8 +306,8 @@
   right: var(--space-4);
   bottom: calc(var(--bottomnav-height) + var(--space-4) + var(--safe-area-bottom));
   display: flex;
-  align-items: center;
   gap: var(--space-3);
+  align-items: center;
   z-index: var(--z-fixed);
 }
 
@@ -112,13 +317,13 @@
   justify-content: center;
   width: 68px;
   height: 68px;
-  border: 0;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
-  color: var(--color-text-inverse);
-  box-shadow: var(--shadow-lg);
   font-size: 36px;
   line-height: 1;
+  color: var(--color-text-inverse);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
 }
 
 .fab:active,
@@ -126,13 +331,34 @@
   transform: scale(0.98);
 }
 
+@media (max-width: 640px) {
+  .quickStats,
+  .kidsStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .kidsHeroBubble {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .kidsHeroEmoji {
+    margin: 0 auto;
+  }
+}
+
 @media (min-width: 768px) {
   .page {
-    max-width: 860px;
     width: 100%;
+    max-width: 860px;
     margin: 0 auto;
     padding: var(--space-6);
     padding-bottom: calc(var(--bottomnav-height) + var(--space-16));
+  }
+
+  .kidsHero {
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+    align-items: stretch;
   }
 
   .floatingActions {

@@ -20,8 +20,8 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
 ];
 
 const KIDS_NAV_ITEMS: NavItem[] = [
-  { path: '/today', label: 'Dziś', icon: '📋' },
-  { path: '/points', label: 'Moje punkty', icon: '⭐' },
+  { path: '/today', label: 'Dziś', icon: '🧸' },
+  { path: '/points', label: 'Nagrody', icon: '🏆' },
 ];
 
 export default function BottomNav() {
@@ -29,7 +29,7 @@ export default function BottomNav() {
   const navItems = display.kidsMode ? KIDS_NAV_ITEMS : DEFAULT_NAV_ITEMS;
 
   return (
-    <nav className={styles.nav} aria-label="Główna nawigacja">
+    <nav className={`${styles.nav} ${display.kidsMode ? styles.kidsNav : ''}`} aria-label="Główna nawigacja">
       {navItems.map((item) => (
         <NavLink
           key={item.path}
@@ -40,8 +40,10 @@ export default function BottomNav() {
             }`
           }
         >
-          <span className={styles.icon} aria-hidden="true">
-            {item.icon}
+          <span className={styles.iconWrap}>
+            <span className={styles.icon} aria-hidden="true">
+              {item.icon}
+            </span>
           </span>
           <span className={styles.label}>{item.label}</span>
         </NavLink>
