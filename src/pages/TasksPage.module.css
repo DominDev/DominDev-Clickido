@@ -1,0 +1,239 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.header h1 {
+  font-size: var(--text-3xl);
+}
+
+.header p {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  max-width: 640px;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.primaryAction,
+.secondaryAction,
+.editAction,
+.deleteAction,
+.templateButton {
+  min-height: 44px;
+  border-radius: var(--radius-full);
+}
+
+.primaryAction,
+.secondaryAction,
+.editAction,
+.deleteAction {
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+}
+
+.primaryAction {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-semibold);
+}
+
+.secondaryAction,
+.editAction,
+.deleteAction {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
+.templatesCard,
+.emptyState,
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.templatesCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionHeading h2 {
+  font-size: var(--text-xl);
+}
+
+.inlineBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.templateList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.templateButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  text-align: left;
+}
+
+.templateEmoji {
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.templateText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.templateText strong {
+  font-size: var(--text-base);
+}
+
+.templateText span {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.emptyState {
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.emptyState p {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  padding: var(--space-4);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.emoji {
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.titleBlock h2 {
+  font-size: var(--text-lg);
+}
+
+.titleBlock p {
+  color: var(--color-text-secondary);
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.points {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 34px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-weight: var(--font-semibold);
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.metaGrid dt {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.metaGrid dd {
+  margin-top: var(--space-1);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 768px) {
+  .page {
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--space-6);
+  }
+}

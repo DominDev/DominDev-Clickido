@@ -1,0 +1,86 @@
+/* BottomNav - Bottom navigation styles */
+
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottomnav-height);
+  padding-bottom: var(--safe-area-bottom);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border-light);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  z-index: var(--z-fixed);
+}
+
+.navItem {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navItem:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.navItem:active {
+  background-color: var(--color-bg-tertiary);
+}
+
+.navItem.active {
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.icon {
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.kidsMode .icon {
+  font-size: 34px;
+}
+
+.kidsMode .label {
+  font-size: 14px;
+  font-weight: var(--font-bold);
+}
+
+.navItem.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background-color: var(--color-accent);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+@media (min-width: 768px) {
+  .nav {
+    max-width: 560px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+}

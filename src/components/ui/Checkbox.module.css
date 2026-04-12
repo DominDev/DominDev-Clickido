@@ -1,0 +1,50 @@
+/* Checkbox - Animated checkbox styles */
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.checkbox:hover .inner {
+  border-color: var(--color-accent);
+}
+
+.checkbox:focus-visible .inner {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Checked state */
+.checkbox.checked .inner {
+  border-color: var(--color-success);
+}
+
+.checkmark {
+  width: 60%;
+  height: 60%;
+  color: var(--color-text-inverse);
+}
+
+/* Kids mode - larger checkbox */
+[data-kids-mode="true"] .checkbox {
+  width: var(--taskcard-checkbox-size) !important;
+  height: var(--taskcard-checkbox-size) !important;
+}

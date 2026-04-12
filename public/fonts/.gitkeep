@@ -1,0 +1,12 @@
+# Placeholder for self-hosted fonts (WOFF2)
+# Required files:
+# - Quicksand-Bold.woff2
+# - Quicksand-SemiBold.woff2
+# - Quicksand-Medium.woff2
+# - Nunito-Regular.woff2
+# - Nunito-SemiBold.woff2
+# - Nunito-Bold.woff2
+#
+# Download from Google Fonts and convert to WOFF2:
+# https://fonts.google.com/specimen/Quicksand
+# https://fonts.google.com/specimen/Nunito

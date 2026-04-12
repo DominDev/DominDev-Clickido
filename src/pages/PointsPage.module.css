@@ -1,0 +1,187 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  padding-bottom: calc(var(--bottomnav-height) + var(--space-8));
+}
+
+.header {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-1);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+}
+
+.subtitle {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.heroCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(135deg, var(--color-accent), #ff915f);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-lg);
+}
+
+.heroLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.heroValue {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  line-height: 1;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.statCard,
+.panel {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.cardLabel {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.cardValue {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+}
+
+.detailsGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.panel h2 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-xl);
+}
+
+.detailList {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.detailList div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.detailList div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.detailList dt {
+  color: var(--color-text-secondary);
+}
+
+.detailList dd {
+  margin: 0;
+  font-weight: var(--font-bold);
+  text-align: right;
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--space-2);
+  min-height: 220px;
+}
+
+.barItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.barTrack {
+  display: flex;
+  align-items: end;
+  width: 100%;
+  max-width: 36px;
+  height: 140px;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-secondary);
+}
+
+.barFill {
+  width: 100%;
+  min-height: 8px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, #ffb08b, var(--color-accent));
+}
+
+.barValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.barLabel {
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+@media (min-width: 768px) {
+  .page {
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--space-6);
+    padding-bottom: calc(var(--bottomnav-height) + var(--space-12));
+  }
+
+  .header {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    align-items: stretch;
+  }
+
+  .cardsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .detailsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

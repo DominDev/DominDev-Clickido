@@ -1,0 +1,7 @@
+# Cloudflare Pages Redirects
+
+# SPA fallback for PWA routes
+/app/*  /app/index.html  200
+
+# Redirect bare /app to /app/
+/app    /app/            301
