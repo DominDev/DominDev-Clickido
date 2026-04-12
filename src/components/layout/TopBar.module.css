@@ -37,6 +37,12 @@
   flex: 0 0 auto;
 }
 
+.parentExitWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .kidsBadge {
   display: inline-flex;
   align-items: center;
@@ -131,6 +137,83 @@
   background: var(--color-surface);
 }
 
+.parentPinPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 220px;
+  padding: var(--space-4);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 18px 36px rgb(17 24 39 / 0.14);
+  z-index: 2;
+}
+
+.parentPinLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.parentPinInput {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.2em;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.parentPinInput:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 38%, transparent);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+
+.parentPinActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.parentPinConfirm,
+.parentPinCancel {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.parentPinConfirm {
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  border: 0;
+}
+
+.parentPinCancel {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.parentPinError {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-danger);
+}
+
 .clock {
   font-family: var(--font-heading);
   font-size: clamp(1.25rem, 4vw, 1.75rem);
@@ -189,6 +272,11 @@
     min-height: 34px;
     padding: 0 10px;
     font-size: 0.72rem;
+  }
+
+  .parentPinPanel {
+    right: -6px;
+    min-width: 200px;
   }
 
   .todayButton {

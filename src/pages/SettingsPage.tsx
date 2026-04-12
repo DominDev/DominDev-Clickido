@@ -85,6 +85,9 @@ export default function SettingsPage() {
   const { loadTasks, loadCompletions } = useTaskStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
+  const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
+  const [pinDraft, setPinDraft] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
   const storageInfo = getStorageInfo();
 
   const currentThemeMode: ThemeMode =
@@ -161,23 +164,11 @@ export default function SettingsPage() {
         return;
       }
 
-      if (!display.kidsModePin) {
-        const pin = window.prompt(
-          'Ustaw opcjonalny PIN rodzica do wyjścia z trybu dziecięcego. Wpisz 4 cyfry albo zostaw puste pole.'
-        );
-
-        if (pin) {
-          const saved = setKidsModePin(pin.trim());
-          if (!saved) {
-            showErrorToast('PIN musi mieć dokładnie 4 cyfry.');
-          } else {
-            showSuccessToast('Tryb dziecięcy został włączony i zabezpieczony PIN-em.');
-            return;
-          }
-        }
-      }
-
-      showSuccessToast('Tryb dziecięcy został włączony.');
+      showSuccessToast(
+        display.kidsModePin
+          ? 'Tryb dziecięcy został włączony i pozostaje chroniony PIN-em rodzica.'
+          : 'Tryb dziecięcy został włączony.'
+      );
       return;
     }
 
@@ -195,29 +186,33 @@ export default function SettingsPage() {
     showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
   };
 
-  const handleSetOrChangePin = () => {
-    const pin = window.prompt(
-      display.kidsModePin
-        ? 'Podaj nowy 4-cyfrowy PIN rodzica do trybu dziecięcego.'
-        : 'Ustaw 4-cyfrowy PIN rodzica do wyjścia z trybu dziecięcego.'
-    );
+  const openPinEditor = (mode: 'set' | 'change') => {
+    setPinDraft('');
+    setPinError(null);
+    setPinEditorMode(mode);
+  };
 
-    if (!pin) {
-      return;
-    }
+  const closePinEditor = () => {
+    setPinDraft('');
+    setPinError(null);
+    setPinEditorMode(null);
+  };
 
-    const saved = setKidsModePin(pin.trim());
+  const handleSavePin = () => {
+    const saved = setKidsModePin(pinDraft.trim());
 
     if (!saved) {
-      showErrorToast('PIN musi mieć dokładnie 4 cyfry.');
+      setPinError('PIN musi mieć dokładnie 4 cyfry.');
       return;
     }
 
     showSuccessToast(display.kidsModePin ? 'PIN rodzica został zmieniony.' : 'PIN rodzica został ustawiony.');
+    closePinEditor();
   };
 
   const handleClearPin = () => {
     clearKidsModePin();
+    closePinEditor();
     showSuccessToast('PIN rodzica został usunięty.');
   };
 
@@ -357,7 +352,7 @@ export default function SettingsPage() {
             </span>
           </div>
           <div className={styles.parentToolsActions}>
-            <button type="button" className={styles.utilityButton} onClick={handleSetOrChangePin}>
+            <button type="button" className={styles.utilityButton} onClick={() => openPinEditor(display.kidsModePin ? 'change' : 'set')}>
               {display.kidsModePin ? 'Zmień PIN' : 'Ustaw PIN'}
             </button>
             {display.kidsModePin && (
@@ -367,6 +362,46 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+
+        {pinEditorMode && (
+          <div className={styles.pinEditor} role="group" aria-label="Edycja PIN-u rodzica">
+            <label className={styles.pinField}>
+              <span className={styles.pinLabel}>
+                {pinEditorMode === 'change' ? 'Nowy PIN rodzica' : 'PIN rodzica'}
+              </span>
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+                maxLength={4}
+                className={styles.pinInput}
+                value={pinDraft}
+                onChange={(event) => {
+                  setPinDraft(event.target.value.replace(/\D/g, '').slice(0, 4));
+                  if (pinError) {
+                    setPinError(null);
+                  }
+                }}
+                placeholder="1234"
+              />
+            </label>
+
+            <div className={styles.pinActions}>
+              <button type="button" className={styles.primaryAction} onClick={handleSavePin}>
+                Zapisz PIN
+              </button>
+              <button type="button" className={styles.utilityButton} onClick={closePinEditor}>
+                Anuluj
+              </button>
+            </div>
+
+            <p className={styles.pinHint}>
+              PIN powinien mieć dokładnie 4 cyfry. Służy tylko do wyjścia z trybu dziecięcego.
+            </p>
+            {pinError && <p className={styles.pinError}>{pinError}</p>}
+          </div>
+        )}
 
         <div className={styles.toggleGrid} aria-label="Przełączniki widoku">
           <ToggleCard
