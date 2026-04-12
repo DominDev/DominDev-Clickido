@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { isToday } from 'date-fns';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@store/uiStore';
@@ -12,12 +13,13 @@ import styles from './TopBar.module.css';
 
 export default function TopBar() {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { selectedDate, getProgressForSelectedDate } = useTaskStore();
+  const { selectedDate, getProgressForSelectedDate, setSelectedDate } = useTaskStore();
   const { screensaver, display, toggleKidsMode } = useSettingsStore();
 
   const progress = getProgressForSelectedDate();
   const formattedDate = capitalize(formatDateFull(selectedDate));
   const formattedTime = formatTime(currentTime, screensaver.showSeconds);
+  const selectedDayIsToday = isToday(selectedDate);
 
   useEffect(() => {
     const intervalMs = screensaver.showSeconds ? 1000 : 60000;
@@ -61,18 +63,35 @@ export default function TopBar() {
   return (
     <header className={`${styles.topbar} ${display.kidsMode ? styles.kidsMode : ''}`}>
       <div className={styles.leading}>
-        {display.kidsMode && <span className={styles.kidsBadge}>🧸 Dziś</span>}
+        {display.kidsMode && (
+          <span className={styles.kidsBadge}>{selectedDayIsToday ? '🧸 Dziś' : '🧭 Inny dzień'}</span>
+        )}
         <div className={styles.dateSection}>
           <span className={styles.date}>{formattedDate}</span>
           <span className={styles.dayStatus}>
-            {progress.total === 0
-              ? 'Brak zadań na wybrany dzień'
-              : `${progress.completed}/${progress.total} zadań ukończonych`}
+            {!selectedDayIsToday
+              ? progress.total === 0
+                ? 'Podgląd innego dnia · brak zadań'
+                : `Podgląd innego dnia · ${progress.completed}/${progress.total} zadań ukończonych`
+              : progress.total === 0
+                ? 'Brak zadań na wybrany dzień'
+                : `${progress.completed}/${progress.total} zadań ukończonych`}
           </span>
         </div>
       </div>
 
       <div className={styles.trailing}>
+        {!selectedDayIsToday && (
+          <button
+            type="button"
+            className={styles.todayButton}
+            onClick={() => setSelectedDate(new Date())}
+            aria-label="Wróć do dzisiejszego planu"
+          >
+            Wróć do dziś
+          </button>
+        )}
+
         {display.kidsMode && (
           <button
             type="button"

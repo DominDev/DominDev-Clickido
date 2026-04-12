@@ -20,11 +20,21 @@ const QUICK_TEMPLATES = [
   TASK_TEMPLATES.pets[2],
 ];
 
+type SortMode = 'name' | 'points_desc' | 'minutes_desc' | 'newest';
+
 export default function TasksPage() {
   const { tasks, completions, addTask, deleteTask, restoreTask } = useTaskStore();
   const { openModal, setEditingTask } = useUIStore();
   const [searchValue, setSearchValue] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
+  const [sortMode, setSortMode] = useState<SortMode>('name');
+
+  const completionsByTask = useMemo(() => {
+    return completions.reduce<Record<string, number>>((acc, completion) => {
+      acc[completion.taskId] = (acc[completion.taskId] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [completions]);
 
   const groupedTasks = useMemo(() => {
     const normalizedQuery = searchValue.trim().toLocaleLowerCase('pl');
@@ -42,8 +52,22 @@ export default function TasksPage() {
         const haystack = `${task.title} ${getCategoryLabel(task.category)}`.toLocaleLowerCase('pl');
         return haystack.includes(normalizedQuery);
       })
-      .sort((a, b) => a.title.localeCompare(b.title, 'pl'));
-  }, [tasks, searchValue, activeCategory]);
+      .sort((a, b) => {
+        if (sortMode === 'points_desc') {
+          return b.points - a.points || a.title.localeCompare(b.title, 'pl');
+        }
+
+        if (sortMode === 'minutes_desc') {
+          return b.estimatedMinutes - a.estimatedMinutes || a.title.localeCompare(b.title, 'pl');
+        }
+
+        if (sortMode === 'newest') {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+
+        return a.title.localeCompare(b.title, 'pl');
+      });
+  }, [tasks, searchValue, activeCategory, sortMode]);
 
   const categoryCounts = useMemo(() => {
     return CATEGORIES.reduce<Record<string, number>>((acc, category) => {
@@ -51,6 +75,19 @@ export default function TasksPage() {
       return acc;
     }, {});
   }, [tasks]);
+
+  const libraryStats = useMemo(() => {
+    const totalEstimatedMinutes = tasks.reduce((sum, task) => sum + task.estimatedMinutes, 0);
+    const totalPoints = tasks.reduce((sum, task) => sum + task.points, 0);
+    const mostUsedTask =
+      [...tasks].sort((a, b) => (completionsByTask[b.id] ?? 0) - (completionsByTask[a.id] ?? 0))[0] ?? null;
+
+    return {
+      totalEstimatedMinutes,
+      totalPoints,
+      mostUsedTask,
+    };
+  }, [tasks, completionsByTask]);
 
   const handleSeedTasks = () => {
     STARTER_TASKS.forEach((template) => {
@@ -61,7 +98,7 @@ export default function TasksPage() {
       });
     });
 
-    showSuccessToast('Dodano zestaw startowy');
+    showSuccessToast('Dodano zestaw startowy.');
   };
 
   const handleQuickAdd = (template: (typeof QUICK_TEMPLATES)[number]) => {
@@ -104,6 +141,12 @@ export default function TasksPage() {
     });
   };
 
+  const clearFilters = () => {
+    setSearchValue('');
+    setActiveCategory('all');
+    setSortMode('name');
+  };
+
   return (
     <section className={styles.page}>
       <div className={styles.header}>
@@ -127,6 +170,25 @@ export default function TasksPage() {
         </div>
       </div>
 
+      <section className={styles.overviewGrid} aria-label="Podsumowanie bazy zadań">
+        <article className={styles.overviewCard}>
+          <span>Liczba zadań</span>
+          <strong>{tasks.length}</strong>
+        </article>
+        <article className={styles.overviewCard}>
+          <span>Łączny czas</span>
+          <strong>{libraryStats.totalEstimatedMinutes} min</strong>
+        </article>
+        <article className={styles.overviewCard}>
+          <span>Punkty w bazie</span>
+          <strong>{libraryStats.totalPoints}</strong>
+        </article>
+        <article className={styles.overviewCard}>
+          <span>Najczęściej robione</span>
+          <strong>{libraryStats.mostUsedTask ? libraryStats.mostUsedTask.title : 'Brak danych'}</strong>
+        </article>
+      </section>
+
       <section className={styles.filtersCard}>
         <div className={styles.filterTopRow}>
           <label className={styles.searchField}>
@@ -139,10 +201,15 @@ export default function TasksPage() {
             />
           </label>
 
-          <div className={styles.summaryCard}>
-            <span>Łącznie zadań</span>
-            <strong>{tasks.length}</strong>
-          </div>
+          <label className={styles.sortField}>
+            <span>Sortowanie</span>
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+              <option value="name">Alfabetycznie</option>
+              <option value="newest">Najnowsze</option>
+              <option value="points_desc">Najwięcej punktów</option>
+              <option value="minutes_desc">Najdłuższy czas</option>
+            </select>
+          </label>
         </div>
 
         <div className={styles.categoryFilters}>
@@ -165,6 +232,15 @@ export default function TasksPage() {
               {category.emoji} {category.label} ({categoryCounts[category.id] ?? 0})
             </button>
           ))}
+        </div>
+
+        <div className={styles.filterFooter}>
+          <span>
+            Wyniki: <strong>{groupedTasks.length}</strong>
+          </span>
+          <button type="button" className={styles.inlineAction} onClick={clearFilters}>
+            Wyczyść filtry
+          </button>
         </div>
       </section>
 
@@ -196,10 +272,7 @@ export default function TasksPage() {
       {groupedTasks.length === 0 ? (
         <div className={styles.emptyState}>
           <h2>Brak wyników</h2>
-          <p>
-            Nie znaleziono zadań dla wybranego filtra. Wyczyść wyszukiwanie albo dodaj nową
-            pozycję do bazy.
-          </p>
+          <p>Nie znaleziono zadań dla wybranego filtra. Wyczyść filtry albo dodaj nową pozycję.</p>
         </div>
       ) : (
         <div className={styles.list}>
@@ -243,12 +316,12 @@ export default function TasksPage() {
                   <dd>{getRecurrenceDescription(task)}</dd>
                 </div>
                 <div>
-                  <dt>Utworzono</dt>
-                  <dd>{new Date(task.createdAt).toLocaleDateString('pl-PL')}</dd>
+                  <dt>Ukończono</dt>
+                  <dd>{completionsByTask[task.id] ?? 0} razy</dd>
                 </div>
                 <div>
-                  <dt>ID</dt>
-                  <dd className={styles.mono}>{task.id}</dd>
+                  <dt>Utworzono</dt>
+                  <dd>{new Date(task.createdAt).toLocaleDateString('pl-PL')}</dd>
                 </div>
               </dl>
             </article>

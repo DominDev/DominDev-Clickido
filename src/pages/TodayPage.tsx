@@ -1,15 +1,12 @@
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
 import { TaskList } from '@components/task';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { useUIStore } from '@store/uiStore';
-import {
-  formatPoints,
-  formatTasksCount,
-  getMotivationalMessage,
-} from '@utils/formatting';
+import { formatPoints, formatTasksCount, getMotivationalMessage } from '@utils/formatting';
 import styles from './TodayPage.module.css';
 
 function getKidsMood(progressPercentage: number, pendingTasks: number) {
@@ -50,6 +47,7 @@ export default function TodayPage() {
     getProgressForSelectedDate,
     getTasksForSelectedDate,
     selectedDate,
+    setSelectedDate,
   } = useTaskStore();
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
@@ -59,6 +57,7 @@ export default function TodayPage() {
   const progress = getProgressForSelectedDate();
   const points = getPointsForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
+  const selectedDayIsToday = isToday(selectedDate);
 
   const summaryText = useMemo(
     () => `${progress.completed}/${progress.total} ukończone · ${formatPoints(points)}`,
@@ -78,6 +77,8 @@ export default function TodayPage() {
     [progress.percentage, pendingTasks]
   );
 
+  const returnToToday = () => setSelectedDate(new Date());
+
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       <DayStrip />
@@ -94,6 +95,14 @@ export default function TodayPage() {
                   <p className={styles.eyebrow}>Plan na dziś</p>
                   <h1 className={styles.kidsTitle}>{kidsMood.title}</h1>
                   <p className={styles.kidsSubtitle}>{kidsMood.subtitle}</p>
+                  {!selectedDayIsToday && (
+                    <div className={styles.dayContext}>
+                      <span className={styles.contextBadge}>🧭 Oglądasz inny dzień</span>
+                      <button type="button" className={styles.contextButton} onClick={returnToToday}>
+                        Wróć do dziś
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -107,8 +116,18 @@ export default function TodayPage() {
                 </div>
                 <div className={styles.kidsStars} aria-hidden="true">
                   <span className={progress.completed >= 1 ? styles.starActive : styles.star}>⭐</span>
-                  <span className={progress.completed >= Math.max(1, Math.ceil(progress.total / 2)) ? styles.starActive : styles.star}>⭐</span>
-                  <span className={pendingTasks === 0 && progress.total > 0 ? styles.starActive : styles.star}>⭐</span>
+                  <span
+                    className={
+                      progress.completed >= Math.max(1, Math.ceil(progress.total / 2))
+                        ? styles.starActive
+                        : styles.star
+                    }
+                  >
+                    ⭐
+                  </span>
+                  <span className={pendingTasks === 0 && progress.total > 0 ? styles.starActive : styles.star}>
+                    ⭐
+                  </span>
                 </div>
               </div>
             </div>
@@ -151,6 +170,14 @@ export default function TodayPage() {
                 <p className={styles.eyebrow}>Plan dnia</p>
                 <h1 className={styles.title}>{formattedDate}</h1>
                 <p className={styles.subtitle}>{summaryText}</p>
+                {!selectedDayIsToday && (
+                  <div className={styles.dayContext}>
+                    <span className={styles.contextBadge}>Podgląd innego dnia</span>
+                    <button type="button" className={styles.contextButton} onClick={returnToToday}>
+                      Wróć do dziś
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className={styles.progressBadge}>{progress.percentage}%</div>
@@ -189,9 +216,7 @@ export default function TodayPage() {
         <TaskList
           tasks={tasks}
           emptyTitle={
-            display.kidsMode
-              ? 'Dziś nie ma już zadań'
-              : 'Na dziś nie ma jeszcze żadnych zadań'
+            display.kidsMode ? 'Dziś nie ma już zadań' : 'Na dziś nie ma jeszcze żadnych zadań'
           }
           emptyMessage={
             display.kidsMode

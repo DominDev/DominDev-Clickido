@@ -55,6 +55,12 @@ export default function OnboardingFlow() {
     return selectedCategories.reduce((sum, categoryId) => sum + TASK_TEMPLATES[categoryId].length, 0);
   }, [selectedCategories]);
 
+  const selectedLabels = useMemo(() => {
+    return CATEGORIES.filter((category) => selectedCategories.includes(category.id)).map(
+      (category) => category.label
+    );
+  }, [selectedCategories]);
+
   const toggleCategory = (categoryId: CategoryId) => {
     setSelectedCategories((current) =>
       current.includes(categoryId)
@@ -92,17 +98,63 @@ export default function OnboardingFlow() {
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       <div className={styles.card}>
+        <div className={styles.stepRow}>
+          <span className={styles.stepBadge}>{step === 'welcome' ? 'Krok 1 z 2' : 'Krok 2 z 2'}</span>
+
+          {step === 'templates' ? (
+            <button
+              type="button"
+              className={styles.backButton}
+              onClick={() => setStep('welcome')}
+            >
+              Wróć
+            </button>
+          ) : null}
+        </div>
+
         {step === 'welcome' ? (
           <>
-            <div className={styles.hero}>🏠</div>
+            <div className={styles.hero}>🌟</div>
             <p className={styles.eyebrow}>Witamy w Clickido</p>
             <h2 id="onboarding-title" className={styles.title}>
               Twoja domowa tablica zadań
             </h2>
             <p className={styles.description}>
-              Ustaw szybki start dla całej rodziny. Możesz od razu dodać gotowe zestawy
-              obowiązków albo zacząć od pustej tablicy.
+              Ustaw szybki start dla całej rodziny. Możesz od razu dodać gotowe zestawy obowiązków
+              albo zacząć od pustej tablicy.
             </p>
+
+            <div className={styles.benefits}>
+              <article className={styles.benefitCard}>
+                <span className={styles.benefitEmoji} aria-hidden="true">
+                  ⚡
+                </span>
+                <div>
+                  <strong>Szybki start</strong>
+                  <span>Od razu dostajesz gotowe zestawy zadań do codziennego użycia.</span>
+                </div>
+              </article>
+
+              <article className={styles.benefitCard}>
+                <span className={styles.benefitEmoji} aria-hidden="true">
+                  🧸
+                </span>
+                <div>
+                  <strong>Przyjazne dla dzieci</strong>
+                  <span>Duże kafelki, punkty i prosty widok, który zachęca do działania.</span>
+                </div>
+              </article>
+
+              <article className={styles.benefitCard}>
+                <span className={styles.benefitEmoji} aria-hidden="true">
+                  🔒
+                </span>
+                <div>
+                  <strong>Bez logowania</strong>
+                  <span>Aplikacja działa od razu lokalnie na urządzeniu, bez zakładania kont.</span>
+                </div>
+              </article>
+            </div>
 
             <div className={styles.actions}>
               <button type="button" className={styles.secondaryButton} onClick={closeOnboarding}>
@@ -123,6 +175,21 @@ export default function OnboardingFlow() {
               Wybierz obszary domu. Clickido doda gotowe zestawy zadań, żeby od razu było z czego
               korzystać.
             </p>
+
+            <div className={styles.selectionSummary}>
+              <strong>Wybrane obszary:</strong>
+              <div className={styles.selectionPills}>
+                {selectedLabels.length > 0 ? (
+                  selectedLabels.map((label) => (
+                    <span key={label} className={styles.selectionPill}>
+                      {label}
+                    </span>
+                  ))
+                ) : (
+                  <span className={styles.selectionEmpty}>Wybierz przynajmniej jeden zestaw.</span>
+                )}
+              </div>
+            </div>
 
             <div className={styles.templateGrid}>
               {CATEGORIES.filter((category) => category.id !== 'other').map((category) => {
@@ -159,7 +226,7 @@ export default function OnboardingFlow() {
                 onClick={handleImportTemplates}
                 disabled={selectedCategories.length === 0}
               >
-                Dodaj wybrane
+                Dodaj {selectedTasksCount} zadań
               </button>
             </div>
           </>

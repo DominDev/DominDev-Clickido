@@ -67,6 +67,38 @@
   color: var(--color-text-secondary);
 }
 
+.dayContext {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+}
+
+.contextBadge,
+.contextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.contextBadge {
+  color: var(--color-text-primary);
+  background: var(--color-accent-light);
+  border: 1px solid var(--color-border);
+}
+
+.contextButton {
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+}
+
 .progressBadge {
   display: inline-flex;
   align-items: center;

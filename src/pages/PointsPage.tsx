@@ -6,6 +6,20 @@ import { getCategoryLabel } from '@utils/categories';
 import { formatPoints } from '@utils/formatting';
 import styles from './PointsPage.module.css';
 
+type RewardMilestone = {
+  target: number;
+  emoji: string;
+  title: string;
+  hint: string;
+};
+
+const REWARD_MILESTONES: RewardMilestone[] = [
+  { target: 50, emoji: '🍿', title: 'Mała nagroda', hint: 'Krótka przyjemność po dobrym starcie.' },
+  { target: 100, emoji: '🎨', title: 'Poziom 2', hint: 'Czas na większy wybór i więcej zabawy.' },
+  { target: 180, emoji: '🎮', title: 'Super misja', hint: 'Nagroda za regularne zbieranie punktów.' },
+  { target: 260, emoji: '🍕', title: 'Nagroda rodzinna', hint: 'Cel, który naprawdę czuć i widać.' },
+];
+
 function startOfWeek(date: Date) {
   const nextDate = new Date(date);
   const day = nextDate.getDay();
@@ -103,7 +117,13 @@ export default function PointsPage() {
     const maxRecentPoints = Math.max(...recentDays.map((day) => day.points), 1);
     const level = Math.max(1, Math.floor(totalPoints / 100) + 1);
     const nextLevelTarget = level * 100;
+    const previousLevelTarget = Math.max(0, (level - 1) * 100);
+    const pointsIntoLevel = totalPoints - previousLevelTarget;
+    const levelSpan = Math.max(1, nextLevelTarget - previousLevelTarget);
+    const levelProgress = Math.min(100, Math.round((pointsIntoLevel / levelSpan) * 100));
     const pointsToNextLevel = Math.max(0, nextLevelTarget - totalPoints);
+    const unlockedRewards = REWARD_MILESTONES.filter((reward) => totalPoints >= reward.target).length;
+    const nextReward = REWARD_MILESTONES.find((reward) => totalPoints < reward.target) ?? null;
 
     return {
       totalPoints,
@@ -118,7 +138,11 @@ export default function PointsPage() {
       maxRecentPoints,
       level,
       nextLevelTarget,
+      previousLevelTarget,
+      levelProgress,
       pointsToNextLevel,
+      unlockedRewards,
+      nextReward,
     };
   }, [completions, selectedDate, tasks]);
 
@@ -134,8 +158,8 @@ export default function PointsPage() {
           </h1>
           <p className={styles.subtitle}>
             {display.kidsMode
-              ? 'Tutaj widać, ile udało się już zdobyć. Każde zrobione zadanie daje kolejne gwiazdki.'
-              : 'Prosty ekran MVP z najważniejszymi danymi dla całej rodziny.'}
+              ? 'Tutaj widać, ile udało się już zdobyć. Każde zrobione zadanie daje kolejne gwiazdki i przybliża do następnego celu.'
+              : 'Najważniejsze liczby w jednym miejscu: punkty, aktywność, serie i postęp tygodnia.'}
           </p>
         </div>
 
@@ -144,32 +168,80 @@ export default function PointsPage() {
             {display.kidsMode ? '⭐ Dzisiejszy wynik' : 'Dzisiaj'}
           </span>
           <strong className={styles.heroValue}>{formatPoints(todayPoints)}</strong>
-          {display.kidsMode && (
+          {display.kidsMode ? (
+            <>
+              <span className={styles.heroHint}>
+                Poziom {stats.level} · do kolejnego brakuje {stats.pointsToNextLevel} pkt
+              </span>
+              <div className={styles.levelTrack} aria-hidden="true">
+                <div className={styles.levelFill} style={{ width: `${stats.levelProgress}%` }} />
+              </div>
+            </>
+          ) : (
             <span className={styles.heroHint}>
-              Poziom {stats.level} · do kolejnego brakuje {stats.pointsToNextLevel} pkt
+              Łącznie {formatPoints(stats.totalPoints)} · {stats.currentStreak} dni serii
             </span>
           )}
         </div>
       </header>
 
       {display.kidsMode && (
-        <section className={styles.kidsRewards} aria-label="Postęp nagród">
-          <article className={styles.rewardCard}>
-            <span className={styles.rewardEmoji} aria-hidden="true">
-              🏅
-            </span>
-            <strong>Poziom {stats.level}</strong>
-            <span>Łącznie zdobyto {stats.totalPoints} punktów.</span>
-          </article>
+        <>
+          <section className={styles.kidsRewards} aria-label="Postęp nagród">
+            <article className={styles.rewardCard}>
+              <span className={styles.rewardEmoji} aria-hidden="true">
+                🏅
+              </span>
+              <strong>Poziom {stats.level}</strong>
+              <span>Łącznie zdobyto {stats.totalPoints} punktów.</span>
+            </article>
 
-          <article className={styles.rewardCard}>
-            <span className={styles.rewardEmoji} aria-hidden="true">
-              🚀
-            </span>
-            <strong>Następny cel</strong>
-            <span>{stats.pointsToNextLevel} punktów do kolejnego poziomu.</span>
-          </article>
-        </section>
+            <article className={styles.rewardCard}>
+              <span className={styles.rewardEmoji} aria-hidden="true">
+                🚀
+              </span>
+              <strong>Następny cel</strong>
+              <span>
+                {stats.nextReward
+                  ? `${stats.nextReward.title} za ${stats.nextReward.target} pkt`
+                  : 'Wszystkie obecne cele są już odblokowane.'}
+              </span>
+            </article>
+          </section>
+
+          <section className={styles.milestonesPanel} aria-label="Kamienie milowe">
+            <div className={styles.panelHeader}>
+              <h2>Ścieżka nagród</h2>
+              <span>{stats.unlockedRewards}/{REWARD_MILESTONES.length} odblokowane</span>
+            </div>
+
+            <div className={styles.milestoneGrid}>
+              {REWARD_MILESTONES.map((reward) => {
+                const unlocked = stats.totalPoints >= reward.target;
+                const isNext = !unlocked && stats.nextReward?.target === reward.target;
+
+                return (
+                  <article
+                    key={reward.target}
+                    className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
+                      isNext ? styles.nextMilestone : ''
+                    }`}
+                  >
+                    <span className={styles.milestoneEmoji} aria-hidden="true">
+                      {reward.emoji}
+                    </span>
+                    <strong>{reward.title}</strong>
+                    <span>{reward.hint}</span>
+                    <div className={styles.milestoneFooter}>
+                      <span>{reward.target} pkt</span>
+                      <span>{unlocked ? 'Odblokowane' : isNext ? 'Następne' : 'Przed Tobą'}</span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </>
       )}
 
       <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">
@@ -193,7 +265,11 @@ export default function PointsPage() {
 
       <section className={styles.detailsGrid}>
         <article className={styles.panel}>
-          <h2>{display.kidsMode ? 'Twoje rekordy' : 'Streak i rytm'}</h2>
+          <div className={styles.panelHeader}>
+            <h2>{display.kidsMode ? 'Twoje rekordy' : 'Streak i rytm'}</h2>
+            {!display.kidsMode && <span>Najlepsza regularność i ulubione nawyki</span>}
+          </div>
+
           <dl className={styles.detailList}>
             <div>
               <dt>{display.kidsMode ? '🔥 Seria teraz' : 'Aktualny streak'}</dt>
@@ -217,7 +293,11 @@ export default function PointsPage() {
         </article>
 
         <article className={styles.panel}>
-          <h2>{display.kidsMode ? 'Punkty z ostatnich dni' : 'Ostatnie 7 dni'}</h2>
+          <div className={styles.panelHeader}>
+            <h2>{display.kidsMode ? 'Punkty z ostatnich dni' : 'Ostatnie 7 dni'}</h2>
+            <span>{display.kidsMode ? 'Każdy słupek to dzień pracy' : 'Szybki podgląd tygodnia'}</span>
+          </div>
+
           <div className={styles.chart}>
             {stats.recentDays.map((day) => (
               <div key={day.dateString} className={styles.barItem}>
