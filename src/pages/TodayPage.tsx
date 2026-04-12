@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
 import { TaskList } from '@components/task';
+import { calculatePoints } from '@services/taskService';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { useUIStore } from '@store/uiStore';
+import { showSuccessToast, useUIStore } from '@store/uiStore';
 import { formatPoints, formatTasksCount, getMotivationalMessage } from '@utils/formatting';
+import { TASK_TEMPLATES } from '@utils/categories';
 import styles from './TodayPage.module.css';
 
 function getKidsMood(progressPercentage: number, pendingTasks: number) {
@@ -43,6 +45,7 @@ function getKidsMood(progressPercentage: number, pendingTasks: number) {
 
 export default function TodayPage() {
   const {
+    addTask,
     getPointsForSelectedDate,
     getProgressForSelectedDate,
     getTasksForSelectedDate,
@@ -75,6 +78,81 @@ export default function TodayPage() {
   const kidsMood = useMemo(
     () => getKidsMood(progress.percentage, pendingTasks),
     [progress.percentage, pendingTasks]
+  );
+
+  const emptySuggestions = useMemo(
+    () => [
+      {
+        key: 'morning-routine',
+        emoji: '🌅',
+        title: 'Poranny start',
+        description: 'Śniadanie, pościel i szybkie ogarnięcie pokoju.',
+        onClick: () => {
+          const templates = [
+            TASK_TEMPLATES.kitchen[0],
+            TASK_TEMPLATES.living[2],
+            TASK_TEMPLATES.living[5],
+          ];
+
+          templates.forEach((template) => {
+            addTask({
+              ...template,
+              points: calculatePoints(template.estimatedMinutes),
+              recurrence: 'daily',
+            });
+          });
+
+          showSuccessToast('Dodano poranny zestaw startowy.');
+        },
+      },
+      {
+        key: 'home-refresh',
+        emoji: '✨',
+        title: 'Szybkie odświeżenie domu',
+        description: 'Kurz, naczynia i śmieci do ogarnięcia od ręki.',
+        onClick: () => {
+          const templates = [
+            TASK_TEMPLATES.living[1],
+            TASK_TEMPLATES.kitchen[3],
+            TASK_TEMPLATES.kitchen[4],
+          ];
+
+          templates.forEach((template) => {
+            addTask({
+              ...template,
+              points: calculatePoints(template.estimatedMinutes),
+              recurrence: 'daily',
+            });
+          });
+
+          showSuccessToast('Dodano szybki zestaw domowy.');
+        },
+      },
+      {
+        key: 'evening-routine',
+        emoji: '🌙',
+        title: 'Wieczorne domknięcie',
+        description: 'Kolacja, pies i przygotowanie domu na jutro.',
+        onClick: () => {
+          const templates = [
+            TASK_TEMPLATES.kitchen[2],
+            TASK_TEMPLATES.pets[1],
+            TASK_TEMPLATES.laundry[3],
+          ];
+
+          templates.forEach((template) => {
+            addTask({
+              ...template,
+              points: calculatePoints(template.estimatedMinutes),
+              recurrence: 'daily',
+            });
+          });
+
+          showSuccessToast('Dodano wieczorną rutynę.');
+        },
+      },
+    ],
+    [addTask]
   );
 
   const returnToToday = () => setSelectedDate(new Date());
@@ -160,7 +238,26 @@ export default function TodayPage() {
 
             <div className={styles.kidsGuideCard}>
               <strong>Jak to działa?</strong>
-              <span>Wybierz obrazek zadania i dotknij go, gdy będzie zrobione.</span>
+              <div className={styles.kidsGuideSteps}>
+                <div className={styles.kidsGuideStep}>
+                  <span className={styles.kidsGuideIcon} aria-hidden="true">
+                    👀
+                  </span>
+                  <span>Znajdź obrazek zadania</span>
+                </div>
+                <div className={styles.kidsGuideStep}>
+                  <span className={styles.kidsGuideIcon} aria-hidden="true">
+                    ✋
+                  </span>
+                  <span>Dotknij, gdy zrobione</span>
+                </div>
+                <div className={styles.kidsGuideStep}>
+                  <span className={styles.kidsGuideIcon} aria-hidden="true">
+                    ⭐
+                  </span>
+                  <span>Zbieraj punkty i gwiazdki</span>
+                </div>
+              </div>
             </div>
           </>
         ) : (
@@ -210,6 +307,49 @@ export default function TodayPage() {
                 <span>{formatTasksCount(tasks.length)} zaplanowane na wybrany dzień.</span>
               </div>
             )}
+
+            <div className={styles.nextActionsPanel}>
+              <div className={styles.nextActionsHeader}>
+                <strong>Co chcesz zrobić dalej?</strong>
+                <span>Najczęstsze działania zebrane w jednym miejscu.</span>
+              </div>
+
+              <div className={styles.nextActionsGrid}>
+                <button
+                  type="button"
+                  className={styles.nextActionCard}
+                  onClick={() => openModal('taskForm')}
+                >
+                  <span className={styles.nextActionEmoji} aria-hidden="true">
+                    ➕
+                  </span>
+                  <span className={styles.nextActionText}>
+                    <strong>Dodaj zadanie</strong>
+                    <span>Szybko dopisz nowy obowiązek do dzisiejszej bazy.</span>
+                  </span>
+                </button>
+
+                <Link className={styles.nextActionCard} to="/tasks">
+                  <span className={styles.nextActionEmoji} aria-hidden="true">
+                    🧩
+                  </span>
+                  <span className={styles.nextActionText}>
+                    <strong>Otwórz bazę zadań</strong>
+                    <span>Porządkuj szablony, edytuj zadania i dodawaj pakiety.</span>
+                  </span>
+                </Link>
+
+                <Link className={styles.nextActionCard} to="/points">
+                  <span className={styles.nextActionEmoji} aria-hidden="true">
+                    ⭐
+                  </span>
+                  <span className={styles.nextActionText}>
+                    <strong>Zobacz postępy</strong>
+                    <span>Sprawdź punkty, serie i ostatnie wyniki rodziny.</span>
+                  </span>
+                </Link>
+              </div>
+            </div>
           </>
         )}
 
@@ -223,6 +363,7 @@ export default function TodayPage() {
               ? 'Świetnie. Możesz odpocząć albo poprosić dorosłego o dodanie nowych kafelków.'
               : 'Dodaj pierwsze zadanie albo przejdź do bazy zadań i skorzystaj z gotowych szablonów. Ten ekran ma być prosty także dla dzieci.'
           }
+          emptySuggestions={emptySuggestions}
           emptyPrimaryAction={
             display.kidsMode
               ? undefined
@@ -232,8 +373,8 @@ export default function TodayPage() {
                 }
           }
           emptySecondaryAction={{
-            label: display.kidsMode ? '📦 Pokaż wszystkie zadania' : '📦 Otwórz bazę zadań',
-            onClick: () => navigate('/tasks'),
+            label: display.kidsMode ? '⭐ Zobacz moje punkty' : '📦 Otwórz bazę zadań',
+            onClick: () => navigate(display.kidsMode ? '/points' : '/tasks'),
           }}
         />
       </div>

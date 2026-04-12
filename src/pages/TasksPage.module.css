@@ -204,6 +204,53 @@
   gap: var(--space-3);
 }
 
+.bundleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.bundleCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 110px;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--color-surface) 88%, var(--color-accent-light) 12%), var(--color-surface));
+  text-align: left;
+  box-shadow: var(--shadow-card);
+}
+
+.bundleEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  font-size: 2rem;
+  background: var(--color-accent-light);
+}
+
+.bundleText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bundleText strong {
+  font-size: var(--text-base);
+}
+
+.bundleText span {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
 .templateButton {
   display: flex;
   align-items: center;
@@ -242,6 +289,14 @@
 .emptyState p {
   margin-top: var(--space-2);
   color: var(--color-text-secondary);
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .list {

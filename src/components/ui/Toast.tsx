@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Toast as ToastType } from '@/types';
 import { useUIStore } from '@store/uiStore';
 import styles from './Toast.module.css';
@@ -37,6 +37,7 @@ interface ToastItemProps {
 function ToastItem({ toast, onRemove }: ToastItemProps) {
   const [progress, setProgress] = useState(100);
   const meta = TOAST_META[toast.type];
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (toast.duration <= 0) return undefined;
@@ -58,10 +59,14 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
   return (
     <motion.div
       className={`${styles.toast} ${styles[toast.type]}`}
-      initial={{ opacity: 0, y: 36, scale: 0.96 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 36, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 24, scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+      transition={
+        prefersReducedMotion
+          ? { duration: 0.01 }
+          : { type: 'spring', stiffness: 380, damping: 28 }
+      }
       role={toast.type === 'error' ? 'alert' : 'status'}
     >
       <div className={styles.iconWrap} aria-hidden="true">

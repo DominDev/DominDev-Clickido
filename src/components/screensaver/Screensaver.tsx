@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { useUIStore } from '@store/uiStore';
 import { useTaskStore } from '@store/taskStore';
 import { useSettingsStore } from '@store/settingsStore';
@@ -12,6 +13,7 @@ import styles from './Screensaver.module.css';
 
 export default function Screensaver() {
   const [now, setNow] = useState(new Date());
+  const [drift, setDrift] = useState({ x: 0, y: 0 });
   const { isScreensaverActive, deactivateScreensaver } = useUIStore();
   const {
     getTasksForSelectedDate,
@@ -19,6 +21,7 @@ export default function Screensaver() {
     getPointsForSelectedDate,
   } = useTaskStore();
   const { screensaver, isNightModeActive } = useSettingsStore();
+  const prefersReducedMotion = useReducedMotion();
 
   const progress = getProgressForSelectedDate();
   const points = getPointsForSelectedDate();
@@ -36,6 +39,24 @@ export default function Screensaver() {
 
     return () => clearInterval(interval);
   }, [isScreensaverActive, screensaver.showSeconds]);
+
+  useEffect(() => {
+    if (!isScreensaverActive || prefersReducedMotion) {
+      setDrift({ x: 0, y: 0 });
+      return undefined;
+    }
+
+    const movePanel = () => {
+      const nextX = Math.round((Math.random() - 0.5) * 32);
+      const nextY = Math.round((Math.random() - 0.5) * 24);
+      setDrift({ x: nextX, y: nextY });
+    };
+
+    movePanel();
+    const interval = window.setInterval(movePanel, 60000);
+
+    return () => window.clearInterval(interval);
+  }, [isScreensaverActive, prefersReducedMotion]);
 
   const formattedDate = useMemo(() => formatDateFull(now), [now]);
   const completedText = `${progress.completed} z ${progress.total} zrobione`;
@@ -58,7 +79,13 @@ export default function Screensaver() {
     >
       <div className={styles.backdrop} aria-hidden="true" />
 
-      <div className={styles.panel}>
+      <div
+        className={styles.panel}
+        style={{
+          transform: `translate(${drift.x}px, ${drift.y}px)`,
+          transition: prefersReducedMotion ? 'none' : 'transform 1800ms ease-in-out',
+        }}
+      >
         <span className={styles.label}>Clickido</span>
         <div className={styles.clock}>{formatTime(now, screensaver.showSeconds)}</div>
         <div className={styles.date}>{formattedDate}</div>

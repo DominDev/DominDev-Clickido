@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
+import { showInfoToast } from '@store/uiStore';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { formatPoints } from '@utils/formatting';
@@ -241,7 +243,83 @@ export default function PointsPage() {
               })}
             </div>
           </section>
+
+          <section className={styles.kidsActionPanel} aria-label="Co dalej">
+            <div className={styles.panelHeader}>
+              <h2>Co dalej?</h2>
+              <span>Najlepiej zdobywa się punkty, gdy od razu wracasz do zadań.</span>
+            </div>
+
+            <div className={styles.kidsActionGrid}>
+              <Link className={styles.kidsActionCard} to="/today">
+                <span className={styles.kidsActionEmoji} aria-hidden="true">
+                  🧸
+                </span>
+                <span className={styles.kidsActionText}>
+                  <strong>Wróć do dzisiaj</strong>
+                  <span>Zobacz duże kafelki z zadaniami na teraz.</span>
+                </span>
+              </Link>
+
+              <button
+                type="button"
+                className={styles.kidsActionCard}
+                onClick={() =>
+                  showInfoToast('Nowe zadania może dodać rodzic z trybu dla dorosłych.', 4500)
+                }
+              >
+                <span className={styles.kidsActionEmoji} aria-hidden="true">
+                  🧩
+                </span>
+                <span className={styles.kidsActionText}>
+                  <strong>Poproś o nowe zadania</strong>
+                  <span>Rodzic może dodać kolejne misje i nowe obrazki.</span>
+                </span>
+              </button>
+            </div>
+          </section>
         </>
+      )}
+
+      {!display.kidsMode && (
+        <section className={styles.parentActionPanel} aria-label="Co dalej po statystykach">
+          <div className={styles.panelHeader}>
+            <h2>Co dalej?</h2>
+            <span>Po sprawdzeniu wyników zwykle wykonuje się jedną z tych akcji.</span>
+          </div>
+
+          <div className={styles.parentActionGrid}>
+            <Link className={styles.parentActionCard} to="/today">
+              <span className={styles.parentActionEmoji} aria-hidden="true">
+                📋
+              </span>
+              <span className={styles.parentActionText}>
+                <strong>Wróć do dnia</strong>
+                <span>Sprawdź bieżący plan i odklikane zadania.</span>
+              </span>
+            </Link>
+
+            <Link className={styles.parentActionCard} to="/tasks">
+              <span className={styles.parentActionEmoji} aria-hidden="true">
+                🧩
+              </span>
+              <span className={styles.parentActionText}>
+                <strong>Ułóż bazę zadań</strong>
+                <span>Dodaj nowe obowiązki albo popraw obecną strukturę.</span>
+              </span>
+            </Link>
+
+            <Link className={styles.parentActionCard} to="/settings">
+              <span className={styles.parentActionEmoji} aria-hidden="true">
+                ⚙️
+              </span>
+              <span className={styles.parentActionText}>
+                <strong>Dopasuj ustawienia</strong>
+                <span>Zmień wygląd, kids mode i zachowanie ekranu.</span>
+              </span>
+            </Link>
+          </div>
+        </section>
       )}
 
       <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">

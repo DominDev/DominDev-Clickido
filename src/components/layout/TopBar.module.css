@@ -94,8 +94,8 @@
   font-weight: var(--font-bold);
   color: var(--color-text-primary);
   white-space: nowrap;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-elevated) 82%, var(--color-accent-light) 18%);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border) 78%);
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -159,6 +159,10 @@
 .kidsMode .clockHint {
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
+}
+
+.kidsMode .parentExitButton {
+  box-shadow: 0 8px 18px rgb(17 24 39 / 0.08);
 }
 
 @media (max-width: 640px) {

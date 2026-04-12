@@ -2,7 +2,7 @@
  * TaskList - List of tasks with stagger animation
  */
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Task } from '@/types';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
@@ -15,12 +15,21 @@ interface EmptyAction {
   onClick: () => void;
 }
 
+interface EmptySuggestion {
+  key: string;
+  emoji: string;
+  title: string;
+  description: string;
+  onClick: () => void;
+}
+
 interface TaskListProps {
   tasks: Task[];
   emptyTitle?: string;
   emptyMessage?: string;
   emptyPrimaryAction?: EmptyAction;
   emptySecondaryAction?: EmptyAction;
+  emptySuggestions?: EmptySuggestion[];
 }
 
 export default function TaskList({
@@ -29,10 +38,12 @@ export default function TaskList({
   emptyMessage = 'Nie ma jeszcze żadnych zadań do pokazania.',
   emptyPrimaryAction,
   emptySecondaryAction,
+  emptySuggestions = [],
 }: TaskListProps) {
   const { isTaskCompleted } = useTaskStore();
   const { display } = useSettingsStore();
   const { openModal, setEditingTask } = useUIStore();
+  const prefersReducedMotion = useReducedMotion();
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -50,15 +61,38 @@ export default function TaskList({
     return (
       <motion.div
         className={`${styles.empty} ${display.kidsMode ? styles.kidsEmpty : ''}`}
-        initial={{ opacity: 0 }}
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={prefersReducedMotion ? { duration: 0.01 } : { delay: 0.2 }}
       >
         <span className={styles.emptyIcon} aria-hidden="true">
           {display.kidsMode ? '🌈' : '📋'}
         </span>
         <h2 className={styles.emptyTitle}>{emptyTitle}</h2>
         <p className={styles.emptyText}>{emptyMessage}</p>
+
+        {emptySuggestions.length > 0 && (
+          <div className={styles.suggestionGrid}>
+            {emptySuggestions.map((suggestion) => (
+              <button
+                key={suggestion.key}
+                type="button"
+                className={`${styles.suggestionCard} ${
+                  display.kidsMode ? styles.kidsSuggestionCard : ''
+                }`}
+                onClick={suggestion.onClick}
+              >
+                <span className={styles.suggestionEmoji} aria-hidden="true">
+                  {suggestion.emoji}
+                </span>
+                <span className={styles.suggestionText}>
+                  <strong>{suggestion.title}</strong>
+                  <span>{suggestion.description}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {(emptyPrimaryAction || emptySecondaryAction) && (
           <div className={styles.emptyActions}>
@@ -90,14 +124,14 @@ export default function TaskList({
   return (
     <motion.div
       className={styles.list}
-      initial="hidden"
+      initial={prefersReducedMotion ? false : 'hidden'}
       animate="visible"
       variants={{
         hidden: { opacity: 0 },
         visible: {
           opacity: 1,
           transition: {
-            staggerChildren: 0.05,
+            staggerChildren: prefersReducedMotion ? 0 : 0.05,
           },
         },
       }}

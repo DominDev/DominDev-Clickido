@@ -106,7 +106,7 @@ export default function TopBar() {
         <div className={styles.clockSection}>
           <span className={styles.clock}>{formattedTime}</span>
           <span className={styles.clockHint}>
-            {display.kidsMode ? 'Damy radę!' : `${progress.percentage}% planu gotowe`}
+            {display.kidsMode ? 'Rodzic może wrócić tym przyciskiem obok.' : `${progress.percentage}% planu gotowe`}
           </span>
         </div>
 

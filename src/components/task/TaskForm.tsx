@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { CategoryId, RecurrenceType } from '@/types';
 import { useTaskStore } from '@store/taskStore';
-import { useUIStore, showErrorToast, showSuccessToast } from '@store/uiStore';
+import { useUIStore, showErrorToast, showSuccessToast, showUndoToast } from '@store/uiStore';
 import {
   CATEGORIES,
   getAllEmojis,
@@ -37,7 +37,7 @@ const DAYS_OF_WEEK = [
 const DEFAULT_EMOJI = '📋';
 
 export default function TaskForm() {
-  const { addTask, updateTask, selectedDate } = useTaskStore();
+  const { addTask, updateTask, deleteTask, restoreTask, completions, selectedDate } = useTaskStore();
   const { modal, closeModal, editingTask } = useUIStore();
 
   const isEditing = !!editingTask;
@@ -150,6 +150,27 @@ export default function TaskForm() {
     }
 
     closeModal();
+  };
+
+  const handleDelete = () => {
+    if (!editingTask) {
+      return;
+    }
+
+    const completionsToRestore = completions.filter((entry) => entry.taskId === editingTask.id);
+    const deleted = deleteTask(editingTask.id);
+
+    if (!deleted) {
+      showErrorToast('Nie udało się usunąć zadania.');
+      return;
+    }
+
+    closeModal();
+
+    showUndoToast(`Usunięto zadanie: ${editingTask.title}`, () => {
+      restoreTask(editingTask, completionsToRestore);
+      showSuccessToast(`Przywrócono zadanie: ${editingTask.title}`);
+    });
   };
 
   return (
@@ -428,6 +449,11 @@ export default function TaskForm() {
                 <button type="button" className={styles.cancelBtn} onClick={closeModal}>
                   Anuluj
                 </button>
+                {isEditing && (
+                  <button type="button" className={styles.deleteBtn} onClick={handleDelete}>
+                    Usuń zadanie
+                  </button>
+                )}
                 <button type="submit" className={styles.submitBtn}>
                   {isEditing ? 'Zapisz zmiany' : 'Dodaj zadanie'}
                 </button>

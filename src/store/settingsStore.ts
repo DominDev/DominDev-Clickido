@@ -19,6 +19,7 @@ interface SettingsState extends AppSettings {
   toggleNightMode: () => void;
   toggleKidsMode: (pin?: string) => { success: boolean; kidsMode: boolean };
   setKidsModePin: (pin: string) => boolean;
+  clearKidsModePin: () => void;
   resetSettings: () => void;
 
   // Night mode time checker
@@ -99,6 +100,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
 
     return success;
+  },
+
+  clearKidsModePin: () => {
+    const settings = settingsService.clearKidsModePin();
+    set({ display: settings.display });
   },
 
   resetSettings: () => {

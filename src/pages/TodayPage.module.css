@@ -177,6 +177,80 @@
   color: var(--color-text-secondary);
 }
 
+.nextActionsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.nextActionsHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nextActionsHeader strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+}
+
+.nextActionsHeader span {
+  color: var(--color-text-secondary);
+}
+
+.nextActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.nextActionCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 100px;
+  padding: var(--space-4);
+  color: var(--color-text-primary);
+  text-align: left;
+  text-decoration: none;
+  background: var(--theme-panel-soft);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.nextActionEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  min-width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: var(--color-accent-light);
+  font-size: 1.6rem;
+}
+
+.nextActionText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nextActionText strong {
+  font-size: var(--text-base);
+}
+
+.nextActionText span {
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
 .kidsHero {
   display: grid;
   gap: var(--space-4);
@@ -318,6 +392,34 @@
   color: var(--color-text-secondary);
 }
 
+.kidsGuideSteps {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.kidsGuideStep {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-surface) 78%, var(--theme-kids-soft-panel) 22%);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 16%, var(--color-border-light) 84%);
+}
+
+.kidsGuideIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: var(--color-accent-light);
+  font-size: 1.35rem;
+}
+
 .secondaryAction {
   display: inline-flex;
   align-items: center;
@@ -365,7 +467,8 @@
 
 @media (max-width: 640px) {
   .quickStats,
-  .kidsStatsGrid {
+  .kidsStatsGrid,
+  .nextActionsGrid {
     grid-template-columns: 1fr;
   }
 

@@ -10,6 +10,16 @@ import TasksPage from '@pages/TasksPage';
 import SettingsPage from '@pages/SettingsPage';
 import Screensaver from '@components/screensaver/Screensaver';
 
+function ParentOnlyRoute({ children }: { children: JSX.Element }) {
+  const { display } = useSettingsStore();
+
+  if (display.kidsMode) {
+    return <Navigate to="/today" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   const { screensaverEnabled } = useSettingsStore();
 
@@ -24,8 +34,22 @@ function App() {
           <Route index element={<Navigate to="/today" replace />} />
           <Route path="today" element={<TodayPage />} />
           <Route path="points" element={<PointsPage />} />
-          <Route path="tasks" element={<TasksPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route
+            path="tasks"
+            element={
+              <ParentOnlyRoute>
+                <TasksPage />
+              </ParentOnlyRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <ParentOnlyRoute>
+                <SettingsPage />
+              </ParentOnlyRoute>
+            }
+          />
         </Route>
       </Routes>
       {screensaverEnabled && <Screensaver />}

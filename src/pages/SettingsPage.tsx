@@ -21,7 +21,8 @@ function SelectCard({ icon, title, description, isSelected, onClick }: SelectCar
       type="button"
       className={`${styles.selectCard} ${isSelected ? styles.selectedCard : ''}`}
       onClick={onClick}
-      aria-pressed={isSelected}
+      role="radio"
+      aria-checked={isSelected}
     >
       <span className={styles.cardIcon} aria-hidden="true">
         {icon}
@@ -49,7 +50,8 @@ function ToggleCard({ icon, title, description, enabled, onToggle }: ToggleCardP
       type="button"
       className={`${styles.toggleCard} ${enabled ? styles.toggleEnabled : ''}`}
       onClick={onToggle}
-      aria-pressed={enabled}
+      role="switch"
+      aria-checked={enabled}
     >
       <span className={styles.cardIcon} aria-hidden="true">
         {icon}
@@ -76,6 +78,7 @@ export default function SettingsPage() {
     updateDisplay,
     toggleKidsMode,
     setKidsModePin,
+    clearKidsModePin,
     resetSettings,
     loadSettings,
   } = useSettingsStore();
@@ -192,6 +195,32 @@ export default function SettingsPage() {
     showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
   };
 
+  const handleSetOrChangePin = () => {
+    const pin = window.prompt(
+      display.kidsModePin
+        ? 'Podaj nowy 4-cyfrowy PIN rodzica do trybu dziecięcego.'
+        : 'Ustaw 4-cyfrowy PIN rodzica do wyjścia z trybu dziecięcego.'
+    );
+
+    if (!pin) {
+      return;
+    }
+
+    const saved = setKidsModePin(pin.trim());
+
+    if (!saved) {
+      showErrorToast('PIN musi mieć dokładnie 4 cyfry.');
+      return;
+    }
+
+    showSuccessToast(display.kidsModePin ? 'PIN rodzica został zmieniony.' : 'PIN rodzica został ustawiony.');
+  };
+
+  const handleClearPin = () => {
+    clearKidsModePin();
+    showSuccessToast('PIN rodzica został usunięty.');
+  };
+
   return (
     <section className={styles.page}>
       <header className={styles.header}>
@@ -202,6 +231,50 @@ export default function SettingsPage() {
           rzeczy są schowane niżej.
         </p>
       </header>
+
+      <section className={styles.statusOverview} aria-label="Szybkie podsumowanie ustawień">
+        <article className={styles.statusCard}>
+          <span className={styles.statusLabel}>Wygląd</span>
+          <strong className={styles.statusValue}>
+            {currentThemeMode === 'auto'
+              ? 'Automatyczny'
+              : currentThemeMode === 'night'
+                ? 'Nocny'
+                : 'Jasny'}
+          </strong>
+          <span className={styles.statusHint}>
+            {isNightModeActive ? 'Teraz aplikacja jest ciemniejsza.' : 'Teraz aplikacja jest jasna.'}
+          </span>
+        </article>
+
+        <article className={styles.statusCard}>
+          <span className={styles.statusLabel}>Tryb pracy</span>
+          <strong className={styles.statusValue}>
+            {display.kidsMode ? 'Dziecko' : 'Rodzic'}
+          </strong>
+          <span className={styles.statusHint}>
+            {display.kidsMode
+              ? display.kidsModePin
+                ? 'Wyjście jest chronione PIN-em rodzica.'
+                : 'Wyjście z trybu dziecięcego nie wymaga PIN-u.'
+              : 'Widoczne są wszystkie narzędzia zarządzania.'}
+          </span>
+        </article>
+
+        <article className={styles.statusCard}>
+          <span className={styles.statusLabel}>Wygaszacz</span>
+          <strong className={styles.statusValue}>
+            {screensaver.enabled ? `${screensaver.idleTimeoutMinutes} min` : 'Wyłączony'}
+          </strong>
+          <span className={styles.statusHint}>
+            {screensaver.enabled
+              ? screensaver.showSeconds
+                ? 'Pokazuje sekundy i reaguje po bezczynności.'
+                : 'Spokojny tryb z prostym zegarem i statusem dnia.'
+              : 'Ekran pozostaje stale aktywny.'}
+          </span>
+        </article>
+      </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
@@ -214,7 +287,7 @@ export default function SettingsPage() {
           </span>
         </div>
 
-        <div className={styles.selectGrid}>
+        <div className={styles.selectGrid} role="radiogroup" aria-label="Tryb wyglądu aplikacji">
           <SelectCard
             icon="🕒"
             title="Automatycznie"
@@ -266,7 +339,36 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        <div className={styles.toggleGrid}>
+        <p className={styles.helpText}>
+          {display.kidsMode
+            ? display.kidsModePin
+              ? 'Aktywny PIN rodzica chroni wyjście z trybu dziecięcego także z górnego paska aplikacji.'
+              : 'Tryb dziecięcy jest aktywny, ale nie ma jeszcze ustawionego PIN-u rodzica.'
+            : 'Po włączeniu trybu dziecięcego nawigacja uprości się do najważniejszych ekranów.'}
+        </p>
+
+        <div className={styles.parentTools}>
+          <div className={styles.parentToolsCopy}>
+            <strong>🔐 Zabezpieczenie rodzica</strong>
+            <span>
+              {display.kidsModePin
+                ? 'PIN jest aktywny. Rodzic musi go podać, aby wyjść z trybu dziecięcego.'
+                : 'PIN nie jest ustawiony. Wyjście z trybu dziecięcego nie jest jeszcze chronione.'}
+            </span>
+          </div>
+          <div className={styles.parentToolsActions}>
+            <button type="button" className={styles.utilityButton} onClick={handleSetOrChangePin}>
+              {display.kidsModePin ? 'Zmień PIN' : 'Ustaw PIN'}
+            </button>
+            {display.kidsModePin && (
+              <button type="button" className={styles.utilityButton} onClick={handleClearPin}>
+                Usuń PIN
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.toggleGrid} aria-label="Przełączniki widoku">
           <ToggleCard
             icon="⏱️"
             title="Szacowany czas"
@@ -302,7 +404,7 @@ export default function SettingsPage() {
           </span>
         </div>
 
-        <div className={styles.toggleGrid}>
+        <div className={styles.toggleGrid} aria-label="Przełączniki wygaszacza">
           <ToggleCard
             icon="🖥️"
             title="Wygaszacz"
@@ -321,11 +423,13 @@ export default function SettingsPage() {
 
         <div className={styles.choiceRow}>
           <span className={styles.choiceLabel}>Po ilu minutach ma się włączyć wygaszacz?</span>
-          <div className={styles.choiceButtons}>
+          <div className={styles.choiceButtons} role="radiogroup" aria-label="Czas bezczynności do włączenia wygaszacza">
             {[1, 3, 5, 10, 15].map((minutes) => (
               <button
                 key={minutes}
                 type="button"
+                role="radio"
+                aria-checked={screensaver.idleTimeoutMinutes === minutes}
                 className={`${styles.choiceButton} ${
                   screensaver.idleTimeoutMinutes === minutes ? styles.choiceButtonActive : ''
                 }`}
@@ -338,7 +442,16 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <details className={styles.advancedSection}>
+        <summary className={styles.advancedSummary}>
+          <span>
+            <strong>Dane i backup</strong>
+            <small>Rzadziej używane, techniczne ustawienia</small>
+          </span>
+          <span className={styles.inlineBadge}>zaawansowane</span>
+        </summary>
+
+        <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
             <h2>Dane i backup</h2>
@@ -379,7 +492,8 @@ export default function SettingsPage() {
         />
 
         {importSummary && <p className={styles.helpText}>{importSummary}</p>}
-      </section>
+        </section>
+      </details>
     </section>
   );
 }

@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Task } from '@/types';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
@@ -29,6 +29,7 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
   const { completeTask, uncompleteTask } = useTaskStore();
   const { display } = useSettingsStore();
   const [celebration, setCelebration] = useState<{ emoji: string; text: string } | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!celebration) {
@@ -77,10 +78,10 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
           display.kidsMode ? styles.kidsCard : ''
         }`}
         layout
-        initial={{ opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, x: -100 }}
-        transition={{ duration: 0.2 }}
+        exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: -100 }}
+        transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.2 }}
         style={{ '--category-color': categoryColor } as React.CSSProperties}
       >
         <div className={styles.checkboxArea}>
@@ -141,18 +142,22 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
         {display.kidsMode && celebration && (
           <motion.div
             className={styles.celebrationOverlay}
-            initial={{ opacity: 0, scale: 0.96 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.2 }}
             onClick={() => setCelebration(null)}
           >
             <motion.div
               className={styles.celebrationCard}
-              initial={{ scale: 0.6, rotate: -6 }}
+              initial={prefersReducedMotion ? false : { scale: 0.6, rotate: -6 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.01 }
+                  : { type: 'spring', stiffness: 260, damping: 16 }
+              }
             >
               <span className={styles.celebrationEmoji} aria-hidden="true">
                 {celebration.emoji}

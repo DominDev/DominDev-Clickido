@@ -156,6 +156,16 @@ export function setKidsModePin(pin: string): boolean {
 }
 
 /**
+ * Clear kids mode PIN
+ */
+export function clearKidsModePin(): AppSettings {
+  const settings = getSettings();
+  settings.display.kidsModePin = undefined;
+  saveSettings(settings);
+  return settings;
+}
+
+/**
  * Reset settings to defaults
  */
 export function resetSettings(): AppSettings {

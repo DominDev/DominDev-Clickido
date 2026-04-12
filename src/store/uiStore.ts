@@ -65,9 +65,17 @@ export const useUIStore = create<UIState>((set, get) => ({
   },
 
   removeToast: (id) => {
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id),
-    }));
+    set((state) => {
+      const removedToast = state.toasts.find((toast) => toast.id === id);
+      const nextToasts = state.toasts.filter((toast) => toast.id !== id);
+
+      return {
+        toasts: nextToasts,
+        undoBuffer: removedToast?.type === 'undo' && nextToasts.every((toast) => toast.type !== 'undo')
+          ? null
+          : state.undoBuffer,
+      };
+    });
   },
 
   clearToasts: () => {
@@ -160,9 +168,19 @@ export const useUIStore = create<UIState>((set, get) => ({
 export function showUndoToast(
   message: string,
   onUndo: () => void,
-  duration: number = 5000
+  duration: number = 7000
 ): string {
-  const { addToast, setUndoBuffer } = useUIStore.getState();
+  const { addToast, setUndoBuffer, toasts, removeToast } = useUIStore.getState();
+
+  toasts
+    .filter((toast) => toast.type === 'undo')
+    .forEach((toast) => removeToast(toast.id));
+
+  setUndoBuffer({
+    type: 'delete_task',
+    data: { message },
+    timestamp: Date.now(),
+  });
 
   return addToast({
     message,

@@ -20,6 +20,30 @@ const QUICK_TEMPLATES = [
   TASK_TEMPLATES.pets[2],
 ];
 
+const QUICK_BUNDLES = [
+  {
+    key: 'morning',
+    emoji: '🌅',
+    title: 'Poranny pakiet',
+    description: 'Śniadanie, pościel i szybki start dnia.',
+    templates: [TASK_TEMPLATES.kitchen[0], TASK_TEMPLATES.living[2], TASK_TEMPLATES.living[5]],
+  },
+  {
+    key: 'home',
+    emoji: '✨',
+    title: 'Dom w 15 minut',
+    description: 'Kurz, naczynia i śmieci do zrobienia od ręki.',
+    templates: [TASK_TEMPLATES.living[1], TASK_TEMPLATES.kitchen[3], TASK_TEMPLATES.kitchen[4]],
+  },
+  {
+    key: 'family',
+    emoji: '🐾',
+    title: 'Rodzinny miks',
+    description: 'Pies, zakupy i jedno zadanie domowe na dziś.',
+    templates: [TASK_TEMPLATES.pets[2], TASK_TEMPLATES.shopping[0], TASK_TEMPLATES.laundry[3]],
+  },
+];
+
 type SortMode = 'name' | 'points_desc' | 'minutes_desc' | 'newest';
 
 export default function TasksPage() {
@@ -109,6 +133,18 @@ export default function TasksPage() {
     });
 
     showSuccessToast(`Dodano: ${template.title}`);
+  };
+
+  const handleQuickBundle = (bundle: (typeof QUICK_BUNDLES)[number]) => {
+    bundle.templates.forEach((template) => {
+      addTask({
+        ...template,
+        points: calculatePoints(template.estimatedMinutes),
+        recurrence: 'daily',
+      });
+    });
+
+    showSuccessToast(`Dodano pakiet: ${bundle.title}`);
   };
 
   const handleCreateTask = () => {
@@ -249,6 +285,26 @@ export default function TasksPage() {
           <h2>Szybkie dodawanie</h2>
           <span className={styles.inlineBadge}>szablony</span>
         </div>
+
+        <div className={styles.bundleGrid}>
+          {QUICK_BUNDLES.map((bundle) => (
+            <button
+              key={bundle.key}
+              type="button"
+              className={styles.bundleCard}
+              onClick={() => handleQuickBundle(bundle)}
+            >
+              <span className={styles.bundleEmoji} aria-hidden="true">
+                {bundle.emoji}
+              </span>
+              <span className={styles.bundleText}>
+                <strong>{bundle.title}</strong>
+                <span>{bundle.description}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+
         <div className={styles.templateList}>
           {QUICK_TEMPLATES.map((template) => (
             <button
@@ -273,6 +329,14 @@ export default function TasksPage() {
         <div className={styles.emptyState}>
           <h2>Brak wyników</h2>
           <p>Nie znaleziono zadań dla wybranego filtra. Wyczyść filtry albo dodaj nową pozycję.</p>
+          <div className={styles.emptyActions}>
+            <button type="button" className={styles.primaryAction} onClick={handleCreateTask}>
+              Dodaj ręcznie
+            </button>
+            <button type="button" className={styles.secondaryAction} onClick={handleSeedTasks}>
+              Dodaj zestaw startowy
+            </button>
+          </div>
         </div>
       ) : (
         <div className={styles.list}>
