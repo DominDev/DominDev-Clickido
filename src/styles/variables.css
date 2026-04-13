@@ -203,6 +203,7 @@
 
   /* TopBar */
   --topbar-height: 64px;
+  --topbar-offset: calc(var(--topbar-height) + var(--safe-area-top) + var(--space-6) + var(--space-2));
 
   /* BottomNav */
   --bottomnav-height: 72px;
