@@ -122,6 +122,57 @@
   display: none;
 }
 
+@media (max-width: 420px) {
+  .nav {
+    right: var(--space-2);
+    bottom: calc(var(--safe-area-bottom) + var(--space-2));
+    left: var(--space-2);
+    min-height: 68px;
+    padding: 6px;
+    border-radius: 22px;
+  }
+
+  .navItem {
+    gap: 2px;
+    padding: 8px 4px;
+    border-radius: 16px;
+  }
+
+  .iconWrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+  }
+
+  .icon {
+    font-size: 1.45rem;
+  }
+
+  .label {
+    font-size: 0.72rem;
+  }
+
+  .kidsMode {
+    gap: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .kidsMode .iconWrap {
+    width: 46px;
+    height: 46px;
+    border-radius: 18px;
+  }
+
+  .kidsMode .icon {
+    font-size: 1.75rem;
+  }
+
+  .kidsMode .label {
+    font-size: 0.8rem;
+  }
+}
+
 @media (min-width: 768px) {
   .nav {
     left: 50%;

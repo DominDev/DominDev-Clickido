@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   VERSION: `${STORAGE_PREFIX}version`,
   UNDO_BUFFER: `${STORAGE_PREFIX}undo`,
   ONBOARDING_COMPLETE: `${STORAGE_PREFIX}onboarding_complete`,
+  INSTALL_BANNER_DISMISSED: `${STORAGE_PREFIX}install_banner_dismissed`,
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];

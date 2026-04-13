@@ -215,3 +215,72 @@
     min-height: 100%;
   }
 }
+
+@media (max-width: 420px) {
+  .list {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  [data-kids-mode="true"] .list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .empty {
+    gap: var(--space-3);
+    padding: var(--space-7) var(--space-3);
+    border-radius: 24px;
+  }
+
+  .emptyIcon {
+    font-size: 52px;
+  }
+
+  .emptyTitle {
+    font-size: 1.35rem;
+  }
+
+  .emptyText {
+    font-size: 0.96rem;
+  }
+
+  .emptyActions {
+    width: 100%;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    font-size: 0.92rem;
+  }
+
+  .suggestionGrid {
+    gap: 0.7rem;
+  }
+
+  .suggestionCard,
+  .kidsSuggestionCard {
+    gap: 0.8rem;
+    padding: 0.95rem;
+    border-radius: 1rem;
+  }
+
+  .suggestionEmoji,
+  .kidsSuggestionCard .suggestionEmoji {
+    width: 2.8rem;
+    min-width: 2.8rem;
+    height: 2.8rem;
+    font-size: 1.45rem;
+  }
+
+  .suggestionText strong,
+  .kidsSuggestionCard .suggestionText strong {
+    font-size: 0.96rem;
+  }
+
+  .suggestionText span {
+    font-size: 0.84rem;
+  }
+}

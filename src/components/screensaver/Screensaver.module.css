@@ -144,3 +144,54 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 420px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .panel {
+    gap: var(--space-3);
+    padding: 18px 14px;
+    border-radius: 24px;
+  }
+
+  .label {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+  }
+
+  .clock {
+    font-size: clamp(2.7rem, 18vw, 4.1rem);
+  }
+
+  .date {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .progressSection {
+    width: 100%;
+  }
+
+  .progressMeta strong {
+    font-size: 1.5rem;
+  }
+
+  .statBlock {
+    padding: var(--space-3);
+    border-radius: 18px;
+  }
+
+  .statBlock strong {
+    font-size: 1.5rem;
+  }
+
+  .message {
+    font-size: 0.98rem;
+  }
+
+  .hint {
+    font-size: 0.82rem;
+  }
+}

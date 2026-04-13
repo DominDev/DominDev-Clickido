@@ -3,395 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Clickido - darmowa aplikacja PWA do zarządzania obowiązkami domowymi dla całej rodziny. Organizuj zadania, zdobywaj punkty, baw się razem!">
-  <meta name="keywords" content="obowiązki domowe, zadania domowe, organizacja, rodzina, dzieci, PWA, aplikacja, darmowa">
+  <meta name="description" content="Clickido pomaga rodzinie ogarniać domowe zadania na wspólnym tablecie. Otwórz, dodaj do ekranu głównego i korzystaj jak z aplikacji.">
+  <meta name="keywords" content="Clickido, obowiązki domowe, zadania dla dzieci, tablet rodzinny, organizacja domu">
   <meta name="author" content="DominDev">
   <meta name="robots" content="index, follow">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Clickido - Organizator Domowych Obowiązków">
-  <meta property="og:description" content="Darmowa aplikacja PWA do zarządzania obowiązkami domowymi dla całej rodziny. Idealna na tablet w kuchni!">
+  <meta property="og:title" content="Clickido - domowe zadania na wspólnym tablecie">
+  <meta property="og:description" content="Prosty start: otwórz Clickido, dodaj ikonę do ekranu głównego i korzystaj jak z aplikacji.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://clickido.app">
   <meta property="og:image" content="https://clickido.app/og-image.png">
   <meta property="og:locale" content="pl_PL">
-
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Clickido - Organizator Domowych Obowiązków">
-  <meta name="twitter:description" content="Darmowa aplikacja PWA do zarządzania obowiązkami domowymi dla całej rodziny.">
+  <meta name="twitter:title" content="Clickido - domowe zadania na wspólnym tablecie">
+  <meta name="twitter:description" content="Otwórz, dodaj ikonę do ekranu głównego i korzystaj jak z aplikacji.">
   <meta name="twitter:image" content="https://clickido.app/og-image.png">
-
-  <!-- Theme -->
-  <meta name="theme-color" content="#FF6B35">
-  <meta name="msapplication-TileColor" content="#FF6B35">
-
-  <!-- Favicon -->
+  <meta name="theme-color" content="#f47c48">
+  <meta name="msapplication-TileColor" content="#f47c48">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <title>Clickido - Organizator Domowych Obowiązków dla Rodzin</title>
-
-  <style>
-    :root {
-      --color-bg: #FFF8F0;
-      --color-surface: #FFFFFF;
-      --color-accent: #FF6B35;
-      --color-accent-hover: #E85A28;
-      --color-text: #2D2926;
-      --color-text-muted: #5C5552;
-      --color-border: #E8E0D8;
-      --font-heading: 'Quicksand', sans-serif;
-      --font-body: 'Nunito', sans-serif;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: var(--font-body);
-      background-color: var(--color-bg);
-      color: var(--color-text);
-      line-height: 1.6;
-    }
-
-    /* Header */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      padding: 1rem 2rem;
-      background: rgba(255, 248, 240, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--color-border);
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--color-accent);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-family: var(--font-body);
-      font-weight: 600;
-      color: var(--color-text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--color-accent);
-    }
-
-    /* Hero */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6rem 2rem 4rem;
-      text-align: center;
-    }
-
-    .hero-content {
-      max-width: 800px;
-    }
-
-    .hero h1 {
-      font-family: var(--font-heading);
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      line-height: 1.2;
-    }
-
-    .hero h1 span {
-      color: var(--color-accent);
-    }
-
-    .hero p {
-      font-size: 1.25rem;
-      color: var(--color-text-muted);
-      margin-bottom: 2rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .cta-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem 2.5rem;
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: white;
-      background-color: var(--color-accent);
-      border: none;
-      border-radius: 50px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-    }
-
-    .cta-button:hover {
-      background-color: var(--color-accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
-    }
-
-    /* Features */
-    .features {
-      padding: 6rem 2rem;
-      background: var(--color-surface);
-    }
-
-    .features h2 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .feature-card {
-      padding: 2rem;
-      background: var(--color-bg);
-      border-radius: 16px;
-      text-align: center;
-    }
-
-    .feature-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .feature-card h3 {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-    }
-
-    .feature-card p {
-      color: var(--color-text-muted);
-    }
-
-    /* How it works */
-    .how-it-works {
-      padding: 6rem 2rem;
-    }
-
-    .how-it-works h2 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .steps {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .step {
-      flex: 1;
-      min-width: 250px;
-      max-width: 300px;
-      text-align: center;
-    }
-
-    .step-number {
-      width: 48px;
-      height: 48px;
-      background: var(--color-accent);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0 auto 1rem;
-    }
-
-    .step h3 {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .step p {
-      color: var(--color-text-muted);
-    }
-
-    /* FAQ */
-    .faq {
-      padding: 6rem 2rem;
-      background: var(--color-surface);
-    }
-
-    .faq h2 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .faq-list {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .faq-item {
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
-      background: var(--color-bg);
-      border-radius: 12px;
-    }
-
-    .faq-item h3 {
-      font-family: var(--font-heading);
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-    }
-
-    .faq-item p {
-      color: var(--color-text-muted);
-    }
-
-    /* CTA Section */
-    .cta-section {
-      padding: 6rem 2rem;
-      text-align: center;
-      background: linear-gradient(135deg, var(--color-accent) 0%, #FF8F6B 100%);
-      color: white;
-    }
-
-    .cta-section h2 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .cta-section p {
-      font-size: 1.25rem;
-      margin-bottom: 2rem;
-      opacity: 0.9;
-    }
-
-    .cta-section .cta-button {
-      background: white;
-      color: var(--color-accent);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .cta-section .cta-button:hover {
-      background: var(--color-bg);
-      transform: translateY(-2px);
-    }
-
-    /* Footer */
-    .footer {
-      padding: 3rem 2rem;
-      background: var(--color-text);
-      color: white;
-      text-align: center;
-    }
-
-    .footer p {
-      opacity: 0.7;
-      margin-bottom: 0.5rem;
-    }
-
-    .footer a {
-      color: var(--color-accent);
-      text-decoration: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .header {
-        padding: 1rem;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      .hero {
-        padding: 5rem 1.5rem 3rem;
-      }
-
-      .features,
-      .how-it-works,
-      .faq,
-      .cta-section {
-        padding: 4rem 1.5rem;
-      }
-    }
-  </style>
-
-  <!-- Schema.org -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Clickido - zacznij korzystać jak z aplikacji</title>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Clickido",
-    "description": "Darmowa aplikacja PWA do zarządzania obowiązkami domowymi dla całej rodziny",
+    "description": "Aplikacja do organizacji domowych zadań na wspólnym tablecie rodzinnym",
     "url": "https://clickido.app",
     "applicationCategory": "LifestyleApplication",
-    "operatingSystem": "Any",
+    "operatingSystem": "Android, iOS, Windows",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -401,131 +45,187 @@
   </script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <a href="/" class="logo">
-      <span>📋</span> Clickido
-    </a>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="#features">Funkcje</a></li>
-        <li><a href="#how-it-works">Jak to działa</a></li>
-        <li><a href="#faq">FAQ</a></li>
-        <li><a href="/app/" class="cta-small">Otwórz aplikację</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Domowe obowiązki?<br><span>Zrób to z Clickido!</span></h1>
-      <p>Darmowa aplikacja do zarządzania zadaniami domowymi dla całej rodziny. Idealna na tablet w kuchni - zawsze pod ręką, zawsze aktualna.</p>
-      <a href="/app/" class="cta-button">
-        Otwórz aplikację →
+  <main class="page">
+    <header class="topbar">
+      <a href="/" class="brand" aria-label="Clickido">
+        <span class="brand-mark">✓</span>
+        <span>Clickido</span>
       </a>
-    </div>
-  </section>
+      <div class="topbar-actions">
+        <a href="/app/" class="chip-link">Otwórz aplikację</a>
+        <a href="#jak-zaczac" class="chip-link">Jak zacząć</a>
+      </div>
+    </header>
 
-  <!-- Features -->
-  <section id="features" class="features">
-    <h2>Dlaczego Clickido?</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">📱</div>
-        <h3>Działa offline</h3>
-        <p>Zainstaluj jako aplikację na tablecie. Działa bez internetu, dane zapisywane lokalnie.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌙</div>
-        <h3>Tryb nocny</h3>
-        <p>Automatyczny ciemny motyw wieczorem. Wygaszacz ekranu chroni przed wypaleniem.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🏆</div>
-        <h3>System punktów</h3>
-        <p>Zdobywaj punkty za wykonane zadania. Motywuj dzieci do pomocy w domu!</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔄</div>
-        <h3>Powtarzające się zadania</h3>
-        <p>Ustaw codzienne, tygodniowe lub miesięczne zadania. Raz i spokój!</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">👨‍👩‍👧‍👦</div>
-        <h3>Dla całej rodziny</h3>
-        <p>Prosty interfejs, duże przyciski - obsłużą i dzieci, i dziadkowie.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>Prywatność</h3>
-        <p>Dane zostają na Twoim urządzeniu. Zero śledzenia, zero reklam.</p>
-      </div>
-    </div>
-  </section>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Wspólny tablet. Jeden prosty rytm dnia.</span>
+        <h1>Clickido pomaga rodzinie <span>ogarnąć zadania</span> bez chaosu.</h1>
+        <p class="lead">
+          Wchodzisz na stronę, dodajesz ikonę do ekranu głównego i od tej pory uruchamiasz Clickido
+          jak zwykłą aplikację. Bez konta, bez skomplikowanej konfiguracji, bez gubienia się w ustawieniach.
+        </p>
 
-  <!-- How it works -->
-  <section id="how-it-works" class="how-it-works">
-    <h2>Jak to działa?</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <h3>Otwórz aplikację</h3>
-        <p>Wejdź na clickido.app/app/ i zainstaluj jako aplikację na tablecie.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">2</div>
-        <h3>Dodaj zadania</h3>
-        <p>Wybierz z szablonów lub stwórz własne. Ustaw powtarzalność.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">3</div>
-        <h3>Odhaczaj i ciesz się!</h3>
-        <p>Klikaj ukończone zadania, zbieraj punkty i ciesz się porządkiem!</p>
-      </div>
-    </div>
-  </section>
+        <div class="hero-points">
+          <article class="hero-point">
+            <div class="hero-point-icon">📲</div>
+            <div>
+              <strong>Najwygodniej działa z ikony na ekranie głównym</strong>
+              <p>Po dodaniu ikony Clickido wygląda bardziej jak osobna aplikacja niż zwykła karta w przeglądarce.</p>
+            </div>
+          </article>
+          <article class="hero-point">
+            <div class="hero-point-icon">🏡</div>
+            <div>
+              <strong>Ma służyć całej rodzinie</strong>
+              <p>Rodzic układa zadania, dziecko klika duże kafelki i widzi punkty. Wszystko ma być szybkie i oczywiste.</p>
+            </div>
+          </article>
+          <article class="hero-point">
+            <div class="hero-point-icon">💾</div>
+            <div>
+              <strong>Dane zostają na urządzeniu</strong>
+              <p>Jeśli wyczyścisz dane przeglądarki lub zresetujesz tablet, znikną także dane Clickido. Dlatego w aplikacji jest backup.</p>
+            </div>
+          </article>
+        </div>
 
-  <!-- FAQ -->
-  <section id="faq" class="faq">
-    <h2>Najczęściej zadawane pytania</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <h3>Czy Clickido jest darmowe?</h3>
-        <p>Tak! Clickido jest całkowicie darmowe i nie wymaga rejestracji. Wystarczy otworzyć stronę i zacząć korzystać.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/app/">Wejdź do Clickido</a>
+          <a class="button button-secondary" href="#jak-zaczac">Pokaż mi krok po kroku</a>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Czy moje dane są bezpieczne?</h3>
-        <p>Wszystkie dane przechowywane są lokalnie na Twoim urządzeniu. Nie wysyłamy żadnych danych na serwery zewnętrzne.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Jak zainstalować aplikację?</h3>
-        <p>Otwórz clickido.app/app/ w przeglądarce Chrome lub Safari. Pojawi się opcja "Dodaj do ekranu głównego" lub "Zainstaluj".</p>
-      </div>
-      <div class="faq-item">
-        <h3>Czy działa na telefonie?</h3>
-        <p>Tak, ale Clickido zostało zaprojektowane głównie z myślą o tabletach - większy ekran oznacza wygodniejsze korzystanie.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Czy mogę synchronizować dane między urządzeniami?</h3>
-        <p>Obecnie dane przechowywane są lokalnie. Możesz jednak wyeksportować dane do pliku JSON i zaimportować na innym urządzeniu.</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- CTA Section -->
-  <section class="cta-section">
-    <h2>Gotowy na porządek w domu?</h2>
-    <p>Dołącz do rodzin, które już korzystają z Clickido!</p>
-    <a href="/app/" class="cta-button">
-      Rozpocznij teraz - za darmo! →
-    </a>
-  </section>
+      <aside class="hero-panel" aria-labelledby="install-title">
+        <div class="panel-header">
+          <h2 id="install-title">Jak wejść w tryb „jak aplikacja”</h2>
+          <p>Najpierw otwórz Clickido. Potem dodaj ikonę do ekranu głównego. Od tego momentu uruchamiasz je już z ikony, nie z paska adresu.</p>
+        </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© 2024 <a href="https://domindev.pl" target="_blank" rel="noopener">DominDev</a>. Wszelkie prawa zastrzeżone.</p>
-    <p>Clickido - Organizator Domowych Obowiązków</p>
-  </footer>
+        <section class="status-box" aria-live="polite">
+          <span class="status-label">Stan na tym urządzeniu</span>
+          <p class="status-text" id="install-status">Sprawdzam sposób uruchomienia…</p>
+          <p class="status-help" id="install-help">Za chwilę pokażę najlepszą drogę dla tego urządzenia.</p>
+        </section>
+
+        <div class="install-actions">
+          <button type="button" id="install-button" class="button button-primary" hidden>Zainstaluj Clickido</button>
+          <a id="open-button" class="button button-secondary" href="/app/">Otwórz Clickido</a>
+          <button type="button" id="copy-link-button" class="button button-ghost">Skopiuj link do aplikacji</button>
+        </div>
+
+        <p class="install-hint" id="install-hint">
+          Jeśli nie pojawi się przycisk instalacji, otwórz Clickido i użyj w menu przeglądarki opcji
+          „Dodaj do ekranu głównego” albo „Zainstaluj aplikację”.
+        </p>
+
+        <div class="mini-steps" id="jak-zaczac">
+          <article class="mini-step">
+            <div class="mini-step-number">1</div>
+            <div>
+              <strong>Otwórz aplikację</strong>
+              <p>Kliknij „Wejdź do Clickido” i sprawdź, czy układ pasuje do Twojego tabletu.</p>
+            </div>
+          </article>
+          <article class="mini-step">
+            <div class="mini-step-number">2</div>
+            <div>
+              <strong>Dodaj ikonę do ekranu głównego</strong>
+              <p>Zrób to przyciskiem instalacji albo przez menu przeglądarki.</p>
+            </div>
+          </article>
+          <article class="mini-step">
+            <div class="mini-step-number">3</div>
+            <div>
+              <strong>Uruchamiaj Clickido z ikony</strong>
+              <p>Wtedy znika wrażenie korzystania z przeglądarki i całość jest wygodniejsza w codziennym użyciu.</p>
+            </div>
+          </article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-grid" aria-label="Najważniejsze informacje">
+      <article class="section-card">
+        <h3>Co zobaczy użytkownik</h3>
+        <p>
+          Po wejściu do Clickido zobaczy ekran dnia z zadaniami, punktami i prostą nawigacją. Jeśli doda ikonę do ekranu głównego,
+          aplikacja otworzy się bardziej „na czysto”, bez wrażenia ciągłego siedzenia w przeglądarce.
+        </p>
+        <ul class="audience-list">
+          <li><span>•</span><span><strong>Rodzic:</strong> dodaje zadania, układa bazę, zmienia ustawienia.</span></li>
+          <li><span>•</span><span><strong>Dziecko:</strong> klika duże kafelki zadań i sprawdza punkty.</span></li>
+          <li><span>•</span><span><strong>Wspólny tablet:</strong> najlepiej trzymać Clickido przypięte jako osobną ikonę.</span></li>
+        </ul>
+      </article>
+
+      <article class="section-card">
+        <h3>Co stanie się z danymi</h3>
+        <p>
+          Zadania i ustawienia zapisują się na tym konkretnym urządzeniu. Jeśli zamkniesz aplikację albo przeglądarkę, dane zostają.
+          Jeśli jednak wyczyścisz dane przeglądarki, zrobisz reset urządzenia albo zmienisz tablet, dane nie przeniosą się same.
+        </p>
+        <ul class="audience-list">
+          <li><span>•</span><span><strong>Zwykłe zamknięcie:</strong> dane zostają.</span></li>
+          <li><span>•</span><span><strong>Restart tabletu:</strong> dane zostają.</span></li>
+          <li><span>•</span><span><strong>Czyszczenie danych przeglądarki:</strong> dane mogą zniknąć.</span></li>
+        </ul>
+      </article>
+
+      <article class="section-card">
+        <h3>Jak testować na komputerze</h3>
+        <p>
+          Komputer nie zastąpi w pełni tabletu, ale pozwala dobrze sprawdzić układ, klikanie i pierwszy ekran startowy.
+          Najlepiej testować w wąskim oknie przeglądarki lub w narzędziach deweloperskich z widokiem tabletu.
+        </p>
+        <ul class="test-list">
+          <li><span>•</span><span><strong>Desktop:</strong> zawężaj okno do szerokości tabletu.</span></li>
+          <li><span>•</span><span><strong>Tryb urządzenia:</strong> włącz podgląd mobile i sprawdź dotykowe odstępy.</span></li>
+          <li><span>•</span><span><strong>Prawdziwy tablet:</strong> na końcu i tak trzeba kliknąć całość ręcznie na urządzeniu.</span></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="section-card" aria-labelledby="flow-title">
+      <h3 id="flow-title">Jak to będzie wyglądało w praktyce</h3>
+      <div class="timeline">
+        <article class="timeline-item">
+          <div class="timeline-icon">1</div>
+          <div>
+            <strong>Użytkownik wpisuje adres aplikacji</strong>
+            <p>Najpierw widzi prosty ekran startowy, który tłumaczy co kliknąć dalej i jak dodać ikonę do ekranu głównego.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-icon">2</div>
+          <div>
+            <strong>Otwiera Clickido</strong>
+            <p>Po kliknięciu przechodzi do właściwej aplikacji i może od razu zacząć dodawać zadania lub sprawdzać gotowy widok dnia.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-icon">3</div>
+          <div>
+            <strong>Dodaje ikonę</strong>
+            <p>Jeśli urządzenie to wspiera, pojawi się wygodny przycisk instalacji. W innym przypadku użytkownik skorzysta z opcji w menu przeglądarki.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-icon">4</div>
+          <div>
+            <strong>Korzysta już z ikony</strong>
+            <p>To jest docelowy sposób użycia. Wtedy aplikacja bardziej przypomina osobny program niż otwartą stronę internetową.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Clickido jest rozwijane przez <a href="https://domindev.pl" target="_blank" rel="noopener">DominDev</a>.
+      Ten ekran ma prowadzić użytkownika do prostego startu, a nie zasypywać go marketingiem.
+    </p>
+  </main>
+
+  <script src="./script.js"></script>
 </body>
 </html>

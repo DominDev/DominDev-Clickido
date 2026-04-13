@@ -154,6 +154,46 @@
   }
 }
 
+@media (max-width: 420px) {
+  .strip {
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .day {
+    gap: 4px;
+    min-height: 78px;
+    padding: 8px 3px;
+    border-radius: 16px;
+  }
+
+  .dayName {
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+  }
+
+  .dayNumber {
+    width: 34px;
+    height: 34px;
+    font-size: 0.98rem;
+  }
+
+  .meta {
+    min-height: 0.9em;
+    font-size: 0.56rem;
+  }
+
+  .dots {
+    gap: 3px;
+    min-height: 6px;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+  }
+}
+
 @media (min-width: 768px) {
   .strip {
     padding: var(--space-4) var(--space-6);

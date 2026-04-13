@@ -544,3 +544,82 @@
     width: 100%;
   }
 }
+
+@media (max-width: 420px) {
+  .page {
+    padding: var(--space-3);
+    padding-bottom: calc(var(--bottomnav-height) + var(--space-10));
+    gap: var(--space-4);
+  }
+
+  .heroCard,
+  .rewardCard,
+  .statCard,
+  .panel,
+  .milestoneCard,
+  .focusCard,
+  .kidsActionCard,
+  .parentActionCard {
+    padding: var(--space-3);
+    border-radius: 20px;
+  }
+
+  .heroValue {
+    font-size: clamp(2.1rem, 10vw, 2.7rem);
+  }
+
+  .kidsHeroCard {
+    min-height: 136px;
+  }
+
+  .kidsHeroCard::before {
+    top: 12px;
+    right: 14px;
+    font-size: 32px;
+  }
+
+  .rewardCard,
+  .kidsActionCard,
+  .parentActionCard {
+    gap: var(--space-2);
+  }
+
+  .kidsActionCard,
+  .parentActionCard {
+    align-items: flex-start;
+  }
+
+  .kidsActionEmoji,
+  .parentActionEmoji,
+  .focusEmoji {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    font-size: 1.5rem;
+  }
+
+  .chart {
+    gap: 6px;
+    min-height: 180px;
+  }
+
+  .barTrack {
+    max-width: 30px;
+    height: 112px;
+  }
+
+  .barValue,
+  .barLabel {
+    font-size: 0.72rem;
+  }
+
+  .detailList div {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .detailList dd {
+    text-align: left;
+  }
+}

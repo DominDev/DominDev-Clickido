@@ -39,3 +39,13 @@
 .container[data-complete="true"] .percentage {
   color: var(--color-success);
 }
+
+@media (max-width: 420px) {
+  .svg {
+    filter: drop-shadow(0 4px 8px rgb(17 24 39 / 0.07));
+  }
+
+  .percentage {
+    font-size: 0.62rem;
+  }
+}
