@@ -216,6 +216,7 @@
   --bottomnav-fab-right-desktop: -86px;
   --bottomnav-quickmenu-width-desktop: 280px;
   --bottomnav-quickmenu-gap-desktop: 14px;
+  --bottomnav-toast-gap-desktop: 16px;
   --bottomnav-desktop-outer-height: calc(
     var(--bottomnav-height) +
     (var(--bottomnav-desktop-padding) * 2) +
