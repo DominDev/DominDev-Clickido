@@ -207,6 +207,20 @@
 
   /* BottomNav */
   --bottomnav-height: 72px;
+  --bottomnav-desktop-padding: 8px;
+  --bottomnav-desktop-border-width: 1px;
+  --bottomnav-desktop-bottom: calc(var(--safe-area-bottom) + var(--space-4));
+  --bottomnav-desktop-width: min(560px, calc(100vw - 48px));
+  --bottomnav-fab-size-desktop: 68px;
+  --bottomnav-fab-optical-offset-desktop: 0px;
+  --bottomnav-fab-right-desktop: -86px;
+  --bottomnav-quickmenu-width-desktop: 280px;
+  --bottomnav-quickmenu-gap-desktop: 14px;
+  --bottomnav-desktop-outer-height: calc(
+    var(--bottomnav-height) +
+    (var(--bottomnav-desktop-padding) * 2) +
+    (var(--bottomnav-desktop-border-width) * 2)
+  );
 
   /* TaskCard */
   --taskcard-checkbox-size: 32px;
