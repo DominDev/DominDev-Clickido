@@ -813,7 +813,7 @@
 @media (min-width: 768px) {
   .page {
     width: 100%;
-    max-width: 860px;
+    max-width: var(--content-max-width);
     margin: 0 auto;
     padding: var(--space-6);
     padding-bottom: calc(var(--bottomnav-height) + var(--space-16));
@@ -829,7 +829,7 @@
     right: auto;
     bottom: var(--bottomnav-desktop-bottom);
     width: var(--bottomnav-desktop-width);
-    max-width: 560px;
+    max-width: var(--bottomnav-desktop-max-width);
     height: var(--bottomnav-desktop-outer-height);
     align-items: initial;
     transform: translateX(-50%);

@@ -179,7 +179,7 @@
     right: auto;
     bottom: var(--bottomnav-desktop-bottom);
     width: var(--bottomnav-desktop-width);
-    max-width: 560px;
+    max-width: var(--bottomnav-desktop-max-width);
     padding: var(--bottomnav-desktop-padding);
     border-width: var(--bottomnav-desktop-border-width);
     border-radius: 28px;

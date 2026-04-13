@@ -3,8 +3,9 @@
  */
 
 import { TaskCompletion } from '@/types';
+import { getLocalDateKey } from '@/utils/date';
 import { getItem, setItem, STORAGE_KEYS } from './storageService';
-import { format, parseISO, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
+import { parseISO, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 
 /**
  * Get all completions
@@ -18,7 +19,7 @@ export function getAllCompletions(): TaskCompletion[] {
  */
 export function isTaskCompleted(taskId: string, date: Date): boolean {
   const completions = getAllCompletions();
-  const dateStr = format(date, 'yyyy-MM-dd');
+  const dateStr = getLocalDateKey(date);
 
   return completions.some(
     (c) => c.taskId === taskId && c.date === dateStr
@@ -30,7 +31,7 @@ export function isTaskCompleted(taskId: string, date: Date): boolean {
  */
 export function completeTask(taskId: string, points: number, date: Date = new Date()): TaskCompletion {
   const completions = getAllCompletions();
-  const dateStr = format(date, 'yyyy-MM-dd');
+  const dateStr = getLocalDateKey(date);
 
   // Check if already completed
   const existingIndex = completions.findIndex(
@@ -60,7 +61,7 @@ export function completeTask(taskId: string, points: number, date: Date = new Da
  */
 export function uncompleteTask(taskId: string, date: Date = new Date()): boolean {
   const completions = getAllCompletions();
-  const dateStr = format(date, 'yyyy-MM-dd');
+  const dateStr = getLocalDateKey(date);
 
   const filteredCompletions = completions.filter(
     (c) => !(c.taskId === taskId && c.date === dateStr)
@@ -79,7 +80,7 @@ export function uncompleteTask(taskId: string, date: Date = new Date()): boolean
  */
 export function getCompletionsForDate(date: Date): TaskCompletion[] {
   const completions = getAllCompletions();
-  const dateStr = format(date, 'yyyy-MM-dd');
+  const dateStr = getLocalDateKey(date);
 
   return completions.filter((c) => c.date === dateStr);
 }

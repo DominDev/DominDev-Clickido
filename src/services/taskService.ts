@@ -5,6 +5,22 @@
 import { Task, CategoryId, RecurrenceType } from '@/types';
 import { getItem, setItem, STORAGE_KEYS } from './storageService';
 
+function toTaskCreateData(task: Task): Omit<Task, 'id' | 'createdAt' | 'updatedAt'> {
+  return {
+    title: task.title,
+    emoji: task.emoji,
+    category: task.category,
+    estimatedMinutes: task.estimatedMinutes,
+    points: task.points,
+    recurrence: task.recurrence,
+    ...(task.date ? { date: task.date } : {}),
+    ...(task.daysOfWeek ? { daysOfWeek: task.daysOfWeek } : {}),
+    ...(task.intervalDays ? { intervalDays: task.intervalDays } : {}),
+    ...(task.intervalStartDate ? { intervalStartDate: task.intervalStartDate } : {}),
+    ...(task.dayOfMonth ? { dayOfMonth: task.dayOfMonth } : {}),
+  };
+}
+
 /**
  * Generate unique ID
  */
@@ -151,9 +167,8 @@ export function duplicateTask(id: string): Task | null {
     return null;
   }
 
-  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...taskData } = task;
   return createTask({
-    ...taskData,
+    ...toTaskCreateData(task),
     title: `${task.title} (kopia)`,
   });
 }

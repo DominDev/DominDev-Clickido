@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { Task, TaskCompletion } from '@/types';
 import * as taskService from '@/services/taskService';
 import * as completionService from '@/services/completionService';
+import { getLocalDateKey } from '@/utils/date';
 import { getTasksForDate } from '@/utils/recurrence';
 
 interface TaskState {
@@ -128,9 +129,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const { selectedDate } = get();
     const success = completionService.uncompleteTask(taskId, selectedDate);
     if (success) {
+      const selectedDateKey = getLocalDateKey(selectedDate);
       set((state) => ({
         completions: state.completions.filter(
-          (c) => !(c.taskId === taskId && c.date === selectedDate.toISOString().split('T')[0])
+          (c) => !(c.taskId === taskId && c.date === selectedDateKey)
         ),
       }));
     }
@@ -149,7 +151,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   getCompletedTasksForSelectedDate: () => {
     const { selectedDate, completions } = get();
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = getLocalDateKey(selectedDate);
     const completedIds = new Set(
       completions.filter((c) => c.date === dateStr).map((c) => c.taskId)
     );
@@ -158,7 +160,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   getPendingTasksForSelectedDate: () => {
     const { selectedDate, completions } = get();
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const dateStr = getLocalDateKey(selectedDate);
     const completedIds = new Set(
       completions.filter((c) => c.date === dateStr).map((c) => c.taskId)
     );

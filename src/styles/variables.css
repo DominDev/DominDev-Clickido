@@ -204,13 +204,15 @@
   /* TopBar */
   --topbar-height: 64px;
   --topbar-offset: calc(var(--topbar-height) + var(--safe-area-top) + var(--space-6) + var(--space-2));
+  --content-max-width: 860px;
 
   /* BottomNav */
   --bottomnav-height: 72px;
   --bottomnav-desktop-padding: 8px;
   --bottomnav-desktop-border-width: 1px;
   --bottomnav-desktop-bottom: calc(var(--safe-area-bottom) + var(--space-4));
-  --bottomnav-desktop-width: min(560px, calc(100vw - 48px));
+  --bottomnav-desktop-max-width: 560px;
+  --bottomnav-desktop-width: min(var(--bottomnav-desktop-max-width), calc(100vw - 48px));
   --bottomnav-fab-size-desktop: 68px;
   --bottomnav-fab-optical-offset-desktop: 0px;
   --bottomnav-fab-right-desktop: -86px;

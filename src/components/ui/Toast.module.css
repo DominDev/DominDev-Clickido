@@ -178,7 +178,7 @@
 
 @media (min-width: 768px) {
   .container {
-    right: max(var(--space-6), calc((100vw - 860px) / 2));
+    right: max(var(--space-6), calc((100vw - var(--content-max-width)) / 2));
     bottom: calc(
       var(--bottomnav-desktop-bottom) +
       var(--bottomnav-desktop-outer-height) +
