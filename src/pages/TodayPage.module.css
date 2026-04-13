@@ -600,7 +600,7 @@
   flex-direction: column;
   gap: var(--space-3);
   align-items: flex-end;
-  z-index: var(--z-fixed);
+  z-index: 320;
 }
 
 .quickMenu {
@@ -705,7 +705,9 @@
   }
 
   .floatingActions {
+    left: auto;
     right: var(--space-3);
+    transform: none;
     bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-6));
   }
 
@@ -757,8 +759,10 @@
   }
 
   .floatingActions {
+    left: auto;
     right: 12px;
-    bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + 26px);
+    transform: none;
+    bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + 34px);
   }
 
   .headerCard,
@@ -821,6 +825,45 @@
   }
 
   .floatingActions {
-    right: max(var(--space-6), calc((100vw - 860px) / 2));
+    left: 50%;
+    right: auto;
+    bottom: var(--bottomnav-desktop-bottom);
+    width: var(--bottomnav-desktop-width);
+    max-width: 560px;
+    height: var(--bottomnav-desktop-outer-height);
+    align-items: initial;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .quickMenu {
+    position: absolute;
+    right: var(--bottomnav-fab-right-desktop);
+    bottom: calc(100% + var(--bottomnav-quickmenu-gap-desktop));
+    width: var(--bottomnav-quickmenu-width-desktop);
+    pointer-events: auto;
+  }
+
+  .fab {
+    position: absolute;
+    top: var(--bottomnav-fab-optical-offset-desktop);
+    margin-block: auto;
+    right: var(--bottomnav-fab-right-desktop);
+    width: var(--bottomnav-fab-size-desktop);
+    height: var(--bottomnav-fab-size-desktop);
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .fabOpen {
+    transform: rotate(90deg);
+  }
+
+  .fab:active {
+    transform: scale(0.98);
+  }
+
+  .fabOpen:active {
+    transform: rotate(90deg) scale(0.98);
   }
 }

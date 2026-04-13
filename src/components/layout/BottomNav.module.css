@@ -177,9 +177,11 @@
   .nav {
     left: 50%;
     right: auto;
-    bottom: calc(var(--safe-area-bottom) + var(--space-4));
-    width: min(560px, calc(100vw - 48px));
+    bottom: var(--bottomnav-desktop-bottom);
+    width: var(--bottomnav-desktop-width);
     max-width: 560px;
+    padding: var(--bottomnav-desktop-padding);
+    border-width: var(--bottomnav-desktop-border-width);
     border-radius: 28px;
     transform: translateX(-50%);
   }
