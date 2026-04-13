@@ -846,24 +846,25 @@
 
   .fab {
     position: absolute;
-    top: var(--bottomnav-fab-optical-offset-desktop);
+    top: 0;
+    bottom: 0;
     margin-block: auto;
     right: var(--bottomnav-fab-right-desktop);
     width: var(--bottomnav-fab-size-desktop);
     height: var(--bottomnav-fab-size-desktop);
-    transform: none;
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop));
     pointer-events: auto;
   }
 
   .fabOpen {
-    transform: rotate(90deg);
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg);
   }
 
   .fab:active {
-    transform: scale(0.98);
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) scale(0.98);
   }
 
   .fabOpen:active {
-    transform: rotate(90deg) scale(0.98);
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg) scale(0.98);
   }
 }
