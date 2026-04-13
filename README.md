@@ -106,12 +106,12 @@ Na obecnym etapie działają lub są rozpoczęte:
 - task flow oparty o wspólny modal `TaskForm`
 - zapis danych lokalnie i backup JSON
 
-Brakuje jeszcze między innymi:
+Nadal otwarte są między innymi:
 
-- finalnego UX i pełnej spójności flow zadań
-- docelowego `PointsPage`
-- pełnego zestawu assetów marketingowych i social
-- finalnego README produktowego / launchowego dla publikacji
+- finalne domknięcie UX i spójności całego flow dziennego
+- dalsza stabilizacja responsywności i geometrii dolnej strefy UI
+- pełny zestaw assetów marketingowych i social
+- finalne materiały launchowe i produkcyjne wdrożenie
 
 ## Ważne operacyjnie
 

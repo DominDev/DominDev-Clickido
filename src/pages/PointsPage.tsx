@@ -5,6 +5,7 @@ import { useTaskStore } from '@store/taskStore';
 import { showInfoToast } from '@store/uiStore';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
+import { getLocalDateKey } from '@utils/date';
 import { formatPoints } from '@utils/formatting';
 import styles from './PointsPage.module.css';
 
@@ -69,12 +70,12 @@ export default function PointsPage() {
       previousDate = currentDate;
     });
 
-    const todayDateString = selectedDate.toISOString().split('T')[0];
+    const todayDateString = getLocalDateKey(selectedDate);
     const completedDates = new Set(uniqueDates);
     let currentStreak = 0;
     const probeDate = new Date(`${todayDateString}T00:00:00`);
 
-    while (completedDates.has(probeDate.toISOString().split('T')[0])) {
+    while (completedDates.has(getLocalDateKey(probeDate))) {
       currentStreak += 1;
       probeDate.setDate(probeDate.getDate() - 1);
     }
@@ -104,7 +105,7 @@ export default function PointsPage() {
     const recentDays = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(selectedDate);
       date.setDate(selectedDate.getDate() - (6 - index));
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = getLocalDateKey(date);
       const points = completions
         .filter((completion) => completion.date === dateString)
         .reduce((sum, completion) => sum + completion.points, 0);
