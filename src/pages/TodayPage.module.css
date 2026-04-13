@@ -19,7 +19,8 @@
 .headerCard,
 .progressPanel,
 .motivationCard,
-.kidsGuideCard {
+.kidsGuideCard,
+.focusCard {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
@@ -175,6 +176,61 @@
 
 .motivationCard span {
   color: var(--color-text-secondary);
+}
+
+.focusCard {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-4);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-surface) 88%, var(--color-accent-light) 12%),
+    var(--color-surface)
+  );
+}
+
+.focusEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  min-width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  background: var(--color-accent-light);
+  font-size: 1.9rem;
+}
+
+.focusContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.focusContent strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+}
+
+.focusContent span {
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.focusButton {
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  border: 0;
+  border-radius: var(--radius-full);
+  box-shadow: 0 14px 24px rgb(240 168 0 / 0.18);
+  cursor: pointer;
 }
 
 .nextActionsPanel {
@@ -383,6 +439,16 @@
   background: var(--theme-kids-warm-panel);
 }
 
+.kidsPage .focusCard {
+  background: var(--theme-kids-soft-panel);
+  border-width: 2px;
+}
+
+.kidsPage .focusButton {
+  min-height: 54px;
+  padding: 0 var(--space-5);
+}
+
 .kidsGuideCard strong {
   font-family: var(--font-heading);
   font-size: var(--text-lg);
@@ -420,29 +486,66 @@
   font-size: 1.35rem;
 }
 
-.secondaryAction {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 var(--space-4);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  text-decoration: none;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-}
-
 .floatingActions {
   position: fixed;
   right: var(--space-4);
   bottom: calc(var(--bottomnav-height) + var(--space-4) + var(--safe-area-bottom));
   display: flex;
+  flex-direction: column;
   gap: var(--space-3);
-  align-items: center;
+  align-items: flex-end;
   z-index: var(--z-fixed);
+}
+
+.quickMenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(280px, calc(100vw - 32px));
+}
+
+.quickMenuAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 68px;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-surface-elevated) 94%, var(--color-bg-primary) 6%);
+  border: 1px solid var(--color-border-light);
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.quickMenuEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: var(--color-accent-light);
+  font-size: 1.4rem;
+}
+
+.quickMenuText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quickMenuText strong {
+  font-size: var(--text-base);
+}
+
+.quickMenuText span {
+  color: var(--color-text-secondary);
+  line-height: 1.4;
 }
 
 .fab {
@@ -458,10 +561,17 @@
   border: 0;
   border-radius: 50%;
   box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.fabOpen {
+  transform: rotate(90deg);
+  background: var(--color-accent-hover);
 }
 
 .fab:active,
-.secondaryAction:active {
+.quickMenuAction:active {
   transform: scale(0.98);
 }
 
@@ -470,6 +580,22 @@
   .kidsStatsGrid,
   .nextActionsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .focusCard {
+    grid-template-columns: 1fr;
+  }
+
+  .focusEmoji {
+    margin: 0 auto;
+  }
+
+  .focusContent {
+    text-align: center;
+  }
+
+  .focusButton {
+    width: 100%;
   }
 
   .kidsHeroBubble {

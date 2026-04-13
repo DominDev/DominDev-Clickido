@@ -148,6 +148,46 @@ export default function PointsPage() {
     };
   }, [completions, selectedDate, tasks]);
 
+  const primaryNextStep = useMemo(() => {
+    if (display.kidsMode) {
+      if (stats.nextReward) {
+        return {
+          emoji: '🚀',
+          title: 'Najlepiej teraz wrócić do zadań',
+          description: `Do celu "${stats.nextReward.title}" brakuje jeszcze ${stats.nextReward.target - stats.totalPoints} punktów.`,
+          actionLabel: 'Wróć do dzisiaj',
+          to: '/today',
+        };
+      }
+
+      return {
+        emoji: '🌟',
+        title: 'Wszystkie obecne nagrody są odblokowane',
+        description: 'Możesz dalej zbierać punkty albo poczekać, aż rodzic doda nowe zadania.',
+        actionLabel: 'Wróć do dzisiaj',
+        to: '/today',
+      };
+    }
+
+    if (stats.totalCompleted === 0) {
+      return {
+        emoji: '➕',
+        title: 'Najpierw przygotuj pierwsze zadania',
+        description: 'Bez zadań statystyki nie będą jeszcze nic mówiły. Najlepszy kolejny krok to zbudować bazę dnia.',
+        actionLabel: 'Otwórz bazę zadań',
+        to: '/tasks',
+      };
+    }
+
+    return {
+      emoji: '📋',
+      title: 'Po statystykach najlepiej wrócić do planu dnia',
+      description: 'Wyniki mają sens wtedy, gdy od razu przekładają się na kolejne wykonane zadania.',
+      actionLabel: 'Wróć do dnia',
+      to: '/today',
+    };
+  }, [display.kidsMode, stats.nextReward, stats.totalCompleted, stats.totalPoints]);
+
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       <header className={styles.header}>
@@ -186,6 +226,19 @@ export default function PointsPage() {
           )}
         </div>
       </header>
+
+      <section className={styles.focusCard} aria-label="Najważniejszy następny krok">
+        <span className={styles.focusEmoji} aria-hidden="true">
+          {primaryNextStep.emoji}
+        </span>
+        <div className={styles.focusContent}>
+          <strong>{primaryNextStep.title}</strong>
+          <span>{primaryNextStep.description}</span>
+        </div>
+        <Link className={styles.focusLink} to={primaryNextStep.to}>
+          {primaryNextStep.actionLabel}
+        </Link>
+      </section>
 
       {display.kidsMode && (
         <>

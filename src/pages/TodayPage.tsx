@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
@@ -55,6 +55,8 @@ export default function TodayPage() {
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
   const navigate = useNavigate();
+  const taskListAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
   const tasks = getTasksForSelectedDate();
   const progress = getProgressForSelectedDate();
@@ -79,6 +81,66 @@ export default function TodayPage() {
     () => getKidsMood(progress.percentage, pendingTasks),
     [progress.percentage, pendingTasks]
   );
+
+  const primaryNextStep = useMemo(() => {
+    if (display.kidsMode) {
+      if (tasks.length === 0) {
+        return {
+          emoji: '🧸',
+          title: 'Poproś o nowe zadania',
+          description: 'Gdy pojawią się nowe kafelki, stuknij ten, który chcesz zrobić jako pierwszy.',
+          actionLabel: '⭐ Zobacz punkty',
+          onAction: () => navigate('/points'),
+        };
+      }
+
+      if (pendingTasks > 0) {
+        return {
+          emoji: '👇',
+          title: 'Wybierz pierwszy kafelek',
+          description: 'Najłatwiej zacząć od jednego zadania niżej. Dotknij, gdy będzie gotowe.',
+          actionLabel: 'Przejdź do zadań',
+          onAction: () => taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        };
+      }
+
+      return {
+        emoji: '🌟',
+        title: 'Plan na dziś jest gotowy',
+        description: 'Możesz sprawdzić swoje punkty albo poczekać na kolejne zadania od rodzica.',
+        actionLabel: '⭐ Zobacz punkty',
+        onAction: () => navigate('/points'),
+      };
+    }
+
+    if (tasks.length === 0) {
+      return {
+        emoji: '➕',
+        title: 'Najpierw dodaj pierwszy zestaw zadań',
+        description: 'Pusty dzień nie powinien kończyć się decyzją „co teraz?”. Zacznij od jednej akcji.',
+        actionLabel: 'Dodaj zadanie',
+        onAction: () => openModal('taskForm'),
+      };
+    }
+
+    if (pendingTasks > 0) {
+      return {
+        emoji: '📋',
+        title: 'Najważniejsze teraz: dokończyć plan dnia',
+        description: `Zostało jeszcze ${pendingTasks} zadań. Najszybciej pomoże przejście prosto do listy poniżej.`,
+        actionLabel: 'Przejdź do listy',
+        onAction: () => taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      };
+    }
+
+    return {
+      emoji: '⭐',
+      title: 'Dzisiejszy plan jest domknięty',
+      description: 'To dobry moment, żeby sprawdzić punkty albo przygotować kolejne zadania.',
+      actionLabel: 'Zobacz punkty',
+      onAction: () => navigate('/points'),
+    };
+  }, [display.kidsMode, navigate, openModal, pendingTasks, tasks.length]);
 
   const emptySuggestions = useMemo(
     () => [
@@ -156,6 +218,16 @@ export default function TodayPage() {
   );
 
   const returnToToday = () => setSelectedDate(new Date());
+
+  const handleOpenQuickTask = () => {
+    setQuickMenuOpen(false);
+    openModal('taskForm');
+  };
+
+  const handleOpenTaskBase = () => {
+    setQuickMenuOpen(false);
+    navigate('/tasks');
+  };
 
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
@@ -259,6 +331,19 @@ export default function TodayPage() {
                 </div>
               </div>
             </div>
+
+            <div className={styles.focusCard}>
+              <span className={styles.focusEmoji} aria-hidden="true">
+                {primaryNextStep.emoji}
+              </span>
+              <div className={styles.focusContent}>
+                <strong>{primaryNextStep.title}</strong>
+                <span>{primaryNextStep.description}</span>
+              </div>
+              <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
+                {primaryNextStep.actionLabel}
+              </button>
+            </div>
           </>
         ) : (
           <>
@@ -308,6 +393,19 @@ export default function TodayPage() {
               </div>
             )}
 
+            <div className={styles.focusCard}>
+              <span className={styles.focusEmoji} aria-hidden="true">
+                {primaryNextStep.emoji}
+              </span>
+              <div className={styles.focusContent}>
+                <strong>{primaryNextStep.title}</strong>
+                <span>{primaryNextStep.description}</span>
+              </div>
+              <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
+                {primaryNextStep.actionLabel}
+              </button>
+            </div>
+
             <div className={styles.nextActionsPanel}>
               <div className={styles.nextActionsHeader}>
                 <strong>Co chcesz zrobić dalej?</strong>
@@ -353,44 +451,78 @@ export default function TodayPage() {
           </>
         )}
 
-        <TaskList
-          tasks={tasks}
-          emptyTitle={
-            display.kidsMode ? 'Dziś nie ma już zadań' : 'Na dziś nie ma jeszcze żadnych zadań'
-          }
-          emptyMessage={
-            display.kidsMode
-              ? 'Świetnie. Możesz odpocząć albo poprosić dorosłego o dodanie nowych kafelków.'
-              : 'Dodaj pierwsze zadanie albo przejdź do bazy zadań i skorzystaj z gotowych szablonów. Ten ekran ma być prosty także dla dzieci.'
-          }
-          emptySuggestions={emptySuggestions}
-          emptyPrimaryAction={
-            display.kidsMode
-              ? undefined
-              : {
-                  label: '➕ Dodaj zadanie',
-                  onClick: () => openModal('taskForm'),
-                }
-          }
-          emptySecondaryAction={{
-            label: display.kidsMode ? '⭐ Zobacz moje punkty' : '📦 Otwórz bazę zadań',
-            onClick: () => navigate(display.kidsMode ? '/points' : '/tasks'),
-          }}
-        />
+        <div ref={taskListAnchorRef}>
+          <TaskList
+            tasks={tasks}
+            emptyTitle={
+              display.kidsMode ? 'Dziś nie ma już zadań' : 'Na dziś nie ma jeszcze żadnych zadań'
+            }
+            emptyMessage={
+              display.kidsMode
+                ? 'Świetnie. Możesz odpocząć albo poprosić dorosłego o dodanie nowych kafelków.'
+                : 'Dodaj pierwsze zadanie albo przejdź do bazy zadań i skorzystaj z gotowych szablonów. Ten ekran ma być prosty także dla dzieci.'
+            }
+            emptySuggestions={emptySuggestions}
+            emptyPrimaryAction={
+              display.kidsMode
+                ? undefined
+                : {
+                    label: '➕ Dodaj zadanie',
+                    onClick: () => openModal('taskForm'),
+                  }
+            }
+            emptySecondaryAction={{
+              label: display.kidsMode ? '⭐ Zobacz moje punkty' : '📦 Otwórz bazę zadań',
+              onClick: () => navigate(display.kidsMode ? '/points' : '/tasks'),
+            }}
+          />
+        </div>
       </div>
 
       {!display.kidsMode && (
         <div className={styles.floatingActions}>
-          <Link className={styles.secondaryAction} to="/tasks">
-            Baza zadań
-          </Link>
+          {quickMenuOpen && (
+            <div className={styles.quickMenu} role="menu" aria-label="Szybkie akcje">
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={handleOpenQuickTask}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  ⚡
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Szybkie zadanie</strong>
+                  <span>Dodaj nowe zadanie od razu.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={handleOpenTaskBase}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  🧩
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Baza zadań</strong>
+                  <span>Otwórz listę, szablony i edycję.</span>
+                </span>
+              </button>
+            </div>
+          )}
+
           <button
             type="button"
-            className={styles.fab}
-            onClick={() => openModal('taskForm')}
-            aria-label="Dodaj nowe zadanie"
+            className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
+            onClick={() => setQuickMenuOpen((current) => !current)}
+            aria-label="Otwórz szybkie akcje"
+            aria-expanded={quickMenuOpen}
           >
-            <span aria-hidden="true">＋</span>
+            <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
           </button>
         </div>
       )}
