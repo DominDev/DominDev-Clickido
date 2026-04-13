@@ -497,6 +497,69 @@
     padding-bottom: calc(var(--bottomnav-height) + var(--space-12));
   }
 }
+
+@media (max-width: 420px) {
+  .page {
+    padding: var(--space-3);
+    padding-bottom: calc(var(--bottomnav-height) + var(--space-10));
+  }
+
+  .section,
+  .advancedSummary,
+  .statusCard {
+    padding: var(--space-3);
+    border-radius: 20px;
+  }
+
+  .sectionHeading {
+    gap: var(--space-2);
+  }
+
+  .selectCard,
+  .toggleCard {
+    grid-template-columns: auto 1fr;
+    padding: var(--space-3);
+    border-radius: 18px;
+  }
+
+  .cardIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    font-size: 1.3rem;
+  }
+
+  .kidsSpotlight,
+  .parentTools,
+  .pinEditor {
+    padding: var(--space-3);
+    border-radius: 18px;
+  }
+
+  .parentTools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .parentToolsActions,
+  .pinActions,
+  .choiceButtons {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pinInput {
+    width: 100%;
+    max-width: none;
+    letter-spacing: 0.14em;
+  }
+
+  .utilityButton,
+  .choiceButton,
+  .primaryAction {
+    width: 100%;
+  }
+}
 .statusOverview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));

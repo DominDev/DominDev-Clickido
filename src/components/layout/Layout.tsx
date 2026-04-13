@@ -8,7 +8,7 @@ import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { Toast } from '@components/ui';
 import { TaskForm } from '@components/task';
-import { OnboardingFlow } from '@components/onboarding';
+import { InstallBanner, OnboardingFlow } from '@components/onboarding';
 import { useTaskStore } from '@store/taskStore';
 import { useSettingsStore } from '@store/settingsStore';
 import { runMigrations } from '@services/storageService';
@@ -29,6 +29,7 @@ export default function Layout() {
   return (
     <div className={styles.layout}>
       <TopBar />
+      <InstallBanner />
       <main className={styles.main}>
         <Outlet />
       </main>

@@ -8,15 +8,19 @@
   background: rgba(18, 19, 24, 0.55);
   backdrop-filter: blur(12px);
   z-index: var(--z-modal);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .card {
   width: min(100%, 720px);
+  max-height: min(920px, calc(100dvh - (var(--space-8) + var(--safe-area-top) + var(--safe-area-bottom))));
   padding: var(--space-6);
   background: linear-gradient(180deg, var(--color-surface), var(--color-bg-secondary));
   border: 1px solid var(--color-border-light);
   border-radius: 28px;
   box-shadow: var(--shadow-lg);
+  overflow-y: auto;
 }
 
 .stepRow {
@@ -112,6 +116,68 @@
 .benefitEmoji {
   font-size: 1.75rem;
   line-height: 1;
+}
+
+.installPanel {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.installCard {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  background: var(--theme-panel-soft);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+}
+
+.installCard strong {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+}
+
+.installCard span {
+  color: var(--color-text-secondary);
+}
+
+.installEmoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.installChecklist {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.installChecklistItem {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+}
+
+.installChecklistNumber {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
 }
 
 .selectionSummary {
@@ -249,7 +315,7 @@
   }
 
   .benefits {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .actions {
@@ -260,5 +326,144 @@
   .primaryButton,
   .secondaryButton {
     min-width: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    align-items: flex-start;
+    padding:
+      calc(var(--safe-area-top) + var(--space-3))
+      var(--space-3)
+      calc(var(--safe-area-bottom) + var(--space-3));
+  }
+
+  .card {
+    max-height: none;
+    min-height: calc(100dvh - (var(--safe-area-top) + var(--safe-area-bottom) + var(--space-6)));
+    padding: var(--space-4);
+    border-radius: 24px;
+  }
+
+  .stepRow {
+    align-items: flex-start;
+  }
+
+  .hero {
+    font-size: 52px;
+    margin-bottom: var(--space-3);
+  }
+
+  .title {
+    font-size: clamp(1.6rem, 8vw, 2.1rem);
+  }
+
+  .description {
+    font-size: var(--text-base);
+  }
+
+  .benefits,
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .templateCard {
+    min-height: 104px;
+  }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: var(--space-3);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0%), var(--color-surface) 32%);
+  }
+}
+
+@media (max-width: 420px) {
+  .overlay {
+    padding:
+      calc(var(--safe-area-top) + 10px)
+      10px
+      calc(var(--safe-area-bottom) + 10px);
+  }
+
+  .card {
+    min-height: calc(100dvh - (var(--safe-area-top) + var(--safe-area-bottom) + 20px));
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .stepRow {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .stepBadge,
+  .backButton {
+    min-height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .hero {
+    font-size: 42px;
+  }
+
+  .title {
+    font-size: clamp(1.45rem, 9vw, 1.9rem);
+  }
+
+  .description {
+    margin-top: var(--space-2);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .benefitCard,
+  .installCard,
+  .installChecklistItem,
+  .templateCard {
+    border-radius: 18px;
+  }
+
+  .benefitCard,
+  .installCard {
+    padding: var(--space-3);
+  }
+
+  .installChecklistItem {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .installChecklistNumber {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+  }
+
+  .templateCard {
+    min-height: 96px;
+    padding: var(--space-3);
+  }
+
+  .templateEmoji {
+    font-size: 28px;
+  }
+
+  .templateName {
+    font-size: 1.05rem;
+  }
+
+  .templateMeta,
+  .counter {
+    font-size: 0.84rem;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    min-height: 50px;
+    font-size: 0.94rem;
   }
 }

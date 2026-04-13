@@ -406,6 +406,44 @@ export default function TodayPage() {
               </button>
             </div>
 
+            {tasks.length === 0 && selectedDayIsToday && (
+              <div className={styles.firstStartCard}>
+                <div className={styles.firstStartHeader}>
+                  <span className={styles.firstStartEmoji} aria-hidden="true">
+                    🌱
+                  </span>
+                  <div className={styles.firstStartText}>
+                    <strong>Najprostszy start na dziś</strong>
+                    <span>Nie kombinuj. Zrób trzy małe kroki i aplikacja od razu zacznie mieć sens.</span>
+                  </div>
+                </div>
+
+                <div className={styles.firstStartSteps}>
+                  <div className={styles.firstStartStep}>
+                    <span className={styles.firstStartNumber}>1</span>
+                    <span>Dodaj jedno szybkie zadanie albo skorzystaj z gotowego zestawu niżej.</span>
+                  </div>
+                  <div className={styles.firstStartStep}>
+                    <span className={styles.firstStartNumber}>2</span>
+                    <span>Przejdź do bazy zadań, jeśli chcesz ułożyć stałe obowiązki dla domu.</span>
+                  </div>
+                  <div className={styles.firstStartStep}>
+                    <span className={styles.firstStartNumber}>3</span>
+                    <span>Gdy dzieci zaczną klikać zadania, punkty i postęp zaczną działać automatycznie.</span>
+                  </div>
+                </div>
+
+                <div className={styles.firstStartActions}>
+                  <button type="button" className={styles.firstStartSecondary} onClick={() => navigate('/tasks')}>
+                    Otwórz bazę zadań
+                  </button>
+                  <button type="button" className={styles.firstStartPrimary} onClick={() => openModal('taskForm')}>
+                    Dodaj pierwsze zadanie
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className={styles.nextActionsPanel}>
               <div className={styles.nextActionsHeader}>
                 <strong>Co chcesz zrobić dalej?</strong>

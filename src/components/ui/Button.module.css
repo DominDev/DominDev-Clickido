@@ -81,3 +81,27 @@
 .fullWidth {
   width: 100%;
 }
+
+@media (max-width: 420px) {
+  .button {
+    border-radius: 16px;
+  }
+
+  .sm {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+  }
+
+  .md {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 0.92rem;
+  }
+
+  .lg {
+    min-height: 50px;
+    padding: 12px 18px;
+    font-size: 1rem;
+  }
+}
