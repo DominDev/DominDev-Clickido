@@ -118,7 +118,7 @@ export default function OnboardingFlow() {
           description:
             'Na tym urządzeniu wszystko jest ustawione tak, jak trzeba. Najwygodniej otwieraj Clickido z ikony na ekranie głównym.',
           helper:
-            'Nie musisz robić nic więcej. Możesz od razu przejść do dodania pierwszych zadań.',
+            'Nie musisz robić nic więcej. Za chwilę dodasz pierwsze zadania i od razu zobaczysz gotowy ekran dnia.',
           actionLabel: 'Dalej do zadań',
           emoji: '✅',
         };
@@ -248,8 +248,8 @@ export default function OnboardingFlow() {
               Ustawmy Clickido na dobry start
             </h2>
             <p className={styles.description}>
-              Ten krótki start pokaże Ci, jak najlepiej używać aplikacji na tablecie i pozwoli od razu
-              dodać pierwsze gotowe zadania dla domu.
+              To zajmie chwilę. Najpierw pokażę najlepszy sposób uruchamiania aplikacji, a potem od razu
+              dodamy pierwsze gotowe zadania dla domu.
             </p>
 
             <div className={styles.benefits}>
@@ -283,15 +283,6 @@ export default function OnboardingFlow() {
                 </div>
               </article>
 
-              <article className={styles.benefitCard}>
-                <span className={styles.benefitEmoji} aria-hidden="true">
-                  💾
-                </span>
-                <div>
-                  <strong>Dane zostają na urządzeniu</strong>
-                  <span>Aplikacja działa lokalnie, więc później warto pamiętać o backupie w ustawieniach.</span>
-                </div>
-              </article>
             </div>
 
             <div className={styles.actions}>
@@ -299,7 +290,7 @@ export default function OnboardingFlow() {
                 Pomiń na razie
               </button>
               <button type="button" className={styles.primaryButton} onClick={() => setStep('install')}>
-                Dalej
+                Pokaż szybki start
               </button>
             </div>
           </>
@@ -330,10 +321,6 @@ export default function OnboardingFlow() {
                 <div className={styles.installChecklistItem}>
                   <span className={styles.installChecklistNumber}>2</span>
                   <span>Jeśli zostajesz w przeglądarce, aplikacja nadal działa, ale mniej przypomina osobny program.</span>
-                </div>
-                <div className={styles.installChecklistItem}>
-                  <span className={styles.installChecklistNumber}>3</span>
-                  <span>Później i tak możesz wrócić do ustawień oraz backupu, więc ten krok nie blokuje dalszej pracy.</span>
                 </div>
               </div>
             </div>
