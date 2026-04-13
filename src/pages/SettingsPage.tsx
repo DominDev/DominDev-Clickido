@@ -88,6 +88,9 @@ export default function SettingsPage() {
   const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
   const [pinDraft, setPinDraft] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+  const [exitPinOpen, setExitPinOpen] = useState(false);
+  const [exitPinDraft, setExitPinDraft] = useState('');
+  const [exitPinError, setExitPinError] = useState<string | null>(null);
   const storageInfo = getStorageInfo();
 
   const currentThemeMode: ThemeMode =
@@ -157,6 +160,9 @@ export default function SettingsPage() {
 
   const handleToggleKidsMode = () => {
     if (!display.kidsMode) {
+      setExitPinOpen(false);
+      setExitPinDraft('');
+      setExitPinError(null);
       const result = toggleKidsMode();
 
       if (!result.success) {
@@ -172,14 +178,17 @@ export default function SettingsPage() {
       return;
     }
 
-    const pin = display.kidsModePin
-      ? window.prompt('Podaj 4-cyfrowy PIN rodzica, aby wyłączyć tryb dziecięcy.')
-      : undefined;
+    if (display.kidsModePin) {
+      setExitPinOpen(true);
+      setExitPinDraft('');
+      setExitPinError(null);
+      return;
+    }
 
-    const result = toggleKidsMode(pin ?? undefined);
+    const result = toggleKidsMode();
 
     if (!result.success) {
-      showErrorToast('Nieprawidłowy PIN rodzica.');
+      showErrorToast('Nie udało się wyłączyć trybu dziecięcego.');
       return;
     }
 
@@ -187,6 +196,9 @@ export default function SettingsPage() {
   };
 
   const openPinEditor = (mode: 'set' | 'change') => {
+    setExitPinOpen(false);
+    setExitPinDraft('');
+    setExitPinError(null);
     setPinDraft('');
     setPinError(null);
     setPinEditorMode(mode);
@@ -196,6 +208,25 @@ export default function SettingsPage() {
     setPinDraft('');
     setPinError(null);
     setPinEditorMode(null);
+  };
+
+  const closeExitPinPanel = () => {
+    setExitPinOpen(false);
+    setExitPinDraft('');
+    setExitPinError(null);
+  };
+
+  const handleConfirmExitKidsMode = () => {
+    const result = toggleKidsMode(exitPinDraft.trim());
+
+    if (!result.success) {
+      setExitPinError('Nieprawidłowy PIN rodzica.');
+      showErrorToast('Nieprawidłowy PIN rodzica.');
+      return;
+    }
+
+    closeExitPinPanel();
+    showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
   };
 
   const handleSavePin = () => {
@@ -337,10 +368,48 @@ export default function SettingsPage() {
         <p className={styles.helpText}>
           {display.kidsMode
             ? display.kidsModePin
-              ? 'Aktywny PIN rodzica chroni wyjście z trybu dziecięcego także z górnego paska aplikacji.'
+              ? 'Aktywny PIN rodzica chroni wyjście z trybu dziecięcego także z górnego paska aplikacji i z tego ekranu.'
               : 'Tryb dziecięcy jest aktywny, ale nie ma jeszcze ustawionego PIN-u rodzica.'
             : 'Po włączeniu trybu dziecięcego nawigacja uprości się do najważniejszych ekranów.'}
         </p>
+
+        {exitPinOpen && (
+          <div className={styles.pinEditor} role="group" aria-label="Wyjście z trybu dziecięcego">
+            <label className={styles.pinField}>
+              <span className={styles.pinLabel}>PIN rodzica</span>
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+                maxLength={4}
+                className={styles.pinInput}
+                value={exitPinDraft}
+                onChange={(event) => {
+                  setExitPinDraft(event.target.value.replace(/\D/g, '').slice(0, 4));
+                  if (exitPinError) {
+                    setExitPinError(null);
+                  }
+                }}
+                placeholder="1234"
+              />
+            </label>
+
+            <div className={styles.pinActions}>
+              <button type="button" className={styles.primaryAction} onClick={handleConfirmExitKidsMode}>
+                Wyjdź z trybu dziecięcego
+              </button>
+              <button type="button" className={styles.utilityButton} onClick={closeExitPinPanel}>
+                Anuluj
+              </button>
+            </div>
+
+            <p className={styles.pinHint}>
+              Podaj PIN rodzica, aby wrócić do pełnego widoku zarządzania aplikacją.
+            </p>
+            {exitPinError && <p className={styles.pinError}>{exitPinError}</p>}
+          </div>
+        )}
 
         <div className={styles.parentTools}>
           <div className={styles.parentToolsCopy}>

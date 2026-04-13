@@ -63,6 +63,8 @@ export default function TodayPage() {
   const points = getPointsForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
   const selectedDayIsToday = isToday(selectedDate);
+  const showAdultFocusCard = display.kidsMode || tasks.length > 0;
+  const showAdultShortcuts = !display.kidsMode && tasks.length > 0;
 
   const summaryText = useMemo(
     () => `${progress.completed}/${progress.total} ukończone · ${formatPoints(points)}`,
@@ -89,7 +91,7 @@ export default function TodayPage() {
           emoji: '🧸',
           title: 'Poproś o nowe zadania',
           description: 'Gdy pojawią się nowe kafelki, stuknij ten, który chcesz zrobić jako pierwszy.',
-          actionLabel: '⭐ Zobacz punkty',
+          actionLabel: '🏆 Zobacz nagrody',
           onAction: () => navigate('/points'),
         };
       }
@@ -108,9 +110,9 @@ export default function TodayPage() {
         emoji: '🌟',
         title: 'Plan na dziś jest gotowy',
         description: 'Możesz sprawdzić swoje punkty albo poczekać na kolejne zadania od rodzica.',
-        actionLabel: '⭐ Zobacz punkty',
-        onAction: () => navigate('/points'),
-      };
+          actionLabel: '🏆 Zobacz nagrody',
+          onAction: () => navigate('/points'),
+        };
     }
 
     if (tasks.length === 0) {
@@ -332,18 +334,20 @@ export default function TodayPage() {
               </div>
             </div>
 
-            <div className={styles.focusCard}>
-              <span className={styles.focusEmoji} aria-hidden="true">
-                {primaryNextStep.emoji}
-              </span>
-              <div className={styles.focusContent}>
-                <strong>{primaryNextStep.title}</strong>
-                <span>{primaryNextStep.description}</span>
+            {showAdultFocusCard && (
+              <div className={styles.focusCard}>
+                <span className={styles.focusEmoji} aria-hidden="true">
+                  {primaryNextStep.emoji}
+                </span>
+                <div className={styles.focusContent}>
+                  <strong>{primaryNextStep.title}</strong>
+                  <span>{primaryNextStep.description}</span>
+                </div>
+                <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
+                  {primaryNextStep.actionLabel}
+                </button>
               </div>
-              <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
-                {primaryNextStep.actionLabel}
-              </button>
-            </div>
+            )}
           </>
         ) : (
           <>
@@ -438,54 +442,42 @@ export default function TodayPage() {
                     Otwórz bazę zadań
                   </button>
                   <button type="button" className={styles.firstStartPrimary} onClick={() => openModal('taskForm')}>
-                    Dodaj pierwsze zadanie
+                    Zacznij od jednego zadania
                   </button>
                 </div>
               </div>
             )}
 
-            <div className={styles.nextActionsPanel}>
-              <div className={styles.nextActionsHeader}>
-                <strong>Co chcesz zrobić dalej?</strong>
-                <span>Najczęstsze działania zebrane w jednym miejscu.</span>
+            {showAdultShortcuts && (
+              <div className={styles.nextActionsPanel}>
+                <div className={styles.nextActionsHeader}>
+                  <strong>Przydatne skróty</strong>
+                  <span>Dodatkowe miejsca, gdy chcesz zarządzać planem lub sprawdzić wyniki.</span>
+                </div>
+
+                <div className={styles.nextActionsGrid}>
+                  <Link className={styles.nextActionCard} to="/tasks">
+                    <span className={styles.nextActionEmoji} aria-hidden="true">
+                      🧩
+                    </span>
+                    <span className={styles.nextActionText}>
+                      <strong>Baza zadań</strong>
+                      <span>Porządkuj szablony, edytuj zadania i układaj stały plan domu.</span>
+                    </span>
+                  </Link>
+
+                  <Link className={styles.nextActionCard} to="/points">
+                    <span className={styles.nextActionEmoji} aria-hidden="true">
+                      ⭐
+                    </span>
+                    <span className={styles.nextActionText}>
+                      <strong>Punkty i postępy</strong>
+                      <span>Sprawdź serię, aktywność i wyniki rodziny bez szukania po ekranach.</span>
+                    </span>
+                  </Link>
+                </div>
               </div>
-
-              <div className={styles.nextActionsGrid}>
-                <button
-                  type="button"
-                  className={styles.nextActionCard}
-                  onClick={() => openModal('taskForm')}
-                >
-                  <span className={styles.nextActionEmoji} aria-hidden="true">
-                    ➕
-                  </span>
-                  <span className={styles.nextActionText}>
-                    <strong>Dodaj zadanie</strong>
-                    <span>Szybko dopisz nowy obowiązek do dzisiejszej bazy.</span>
-                  </span>
-                </button>
-
-                <Link className={styles.nextActionCard} to="/tasks">
-                  <span className={styles.nextActionEmoji} aria-hidden="true">
-                    🧩
-                  </span>
-                  <span className={styles.nextActionText}>
-                    <strong>Otwórz bazę zadań</strong>
-                    <span>Porządkuj szablony, edytuj zadania i dodawaj pakiety.</span>
-                  </span>
-                </Link>
-
-                <Link className={styles.nextActionCard} to="/points">
-                  <span className={styles.nextActionEmoji} aria-hidden="true">
-                    ⭐
-                  </span>
-                  <span className={styles.nextActionText}>
-                    <strong>Zobacz postępy</strong>
-                    <span>Sprawdź punkty, serie i ostatnie wyniki rodziny.</span>
-                  </span>
-                </Link>
-              </div>
-            </div>
+            )}
           </>
         )}
 
@@ -510,7 +502,7 @@ export default function TodayPage() {
                   }
             }
             emptySecondaryAction={{
-              label: display.kidsMode ? '⭐ Zobacz moje punkty' : '📦 Otwórz bazę zadań',
+              label: display.kidsMode ? '🏆 Zobacz nagrody' : '📦 Otwórz bazę zadań',
               onClick: () => navigate(display.kidsMode ? '/points' : '/tasks'),
             }}
           />
