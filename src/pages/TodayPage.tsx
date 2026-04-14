@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
@@ -11,35 +11,41 @@ import { formatPoints, formatTasksCount, getMotivationalMessage } from '@utils/f
 import { TASK_TEMPLATES } from '@utils/categories';
 import styles from './TodayPage.module.css';
 
-function getKidsMood(progressPercentage: number, pendingTasks: number) {
+type KidsMood = {
+  mood: 'start' | 'happy' | 'excited' | 'done';
+  title: string;
+  subtitle: string;
+};
+
+function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood {
   if (pendingTasks === 0) {
     return {
-      emoji: '🌟',
-      title: 'Wszystko gotowe!',
-      subtitle: 'Dziś nie ma już nic do zrobienia. Super robota.',
+      mood: 'done',
+      title: 'Brawo!',
+      subtitle: 'Na dziś wszystko gotowe.',
     };
   }
 
   if (progressPercentage >= 80) {
     return {
-      emoji: '🚀',
-      title: 'Już prawie koniec!',
-      subtitle: 'Jeszcze chwila i cały plan dnia będzie gotowy.',
+      mood: 'excited',
+      title: 'Już prawie!',
+      subtitle: 'Zostało tylko trochę.',
     };
   }
 
   if (progressPercentage >= 40) {
     return {
-      emoji: '💪',
-      title: 'Świetnie Ci idzie',
-      subtitle: 'Masz już część zadań za sobą. Lecimy dalej.',
+      mood: 'happy',
+      title: 'Idzie świetnie',
+      subtitle: 'Jeszcze kilka kafelków.',
     };
   }
 
   return {
-    emoji: '🧸',
-    title: 'Zaczynamy przygodę',
-    subtitle: 'Wybierz duży kafelek i stuknij, gdy zadanie będzie zrobione.',
+    mood: 'start',
+    title: 'Zaczynamy',
+    subtitle: 'Dotknij duży kafelek.',
   };
 }
 
@@ -63,7 +69,6 @@ export default function TodayPage() {
   const points = getPointsForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
   const selectedDayIsToday = isToday(selectedDate);
-  const showAdultFocusCard = display.kidsMode || tasks.length > 0;
   const showAdultShortcuts = !display.kidsMode && tasks.length > 0;
 
   const summaryText = useMemo(
@@ -79,47 +84,24 @@ export default function TodayPage() {
     }).format(selectedDate);
   }, [selectedDate]);
 
+  useEffect(() => {
+    if (display.kidsMode && !selectedDayIsToday) {
+      setSelectedDate(new Date());
+    }
+  }, [display.kidsMode, selectedDayIsToday, setSelectedDate]);
+
   const kidsMood = useMemo(
     () => getKidsMood(progress.percentage, pendingTasks),
     [progress.percentage, pendingTasks]
   );
 
   const primaryNextStep = useMemo(() => {
-    if (display.kidsMode) {
-      if (tasks.length === 0) {
-        return {
-          emoji: '🧸',
-          title: 'Poproś o nowe zadania',
-          description: 'Gdy pojawią się nowe kafelki, stuknij ten, który chcesz zrobić jako pierwszy.',
-          actionLabel: '🏆 Zobacz nagrody',
-          onAction: () => navigate('/points'),
-        };
-      }
-
-      if (pendingTasks > 0) {
-        return {
-          emoji: '👇',
-          title: 'Wybierz pierwszy kafelek',
-          description: 'Najłatwiej zacząć od jednego zadania niżej. Dotknij, gdy będzie gotowe.',
-          actionLabel: 'Przejdź do zadań',
-          onAction: () => taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-        };
-      }
-
-      return {
-        emoji: '🌟',
-        title: 'Plan na dziś jest gotowy',
-        description: 'Możesz sprawdzić swoje punkty albo poczekać na kolejne zadania od rodzica.',
-          actionLabel: '🏆 Zobacz nagrody',
-          onAction: () => navigate('/points'),
-        };
-    }
-
     if (tasks.length === 0) {
       return {
         emoji: '➕',
         title: 'Najpierw dodaj pierwszy zestaw zadań',
-        description: 'Pusty dzień nie powinien kończyć się decyzją „co teraz?”. Zacznij od jednej akcji.',
+        description:
+          'Pusty dzień nie powinien kończyć się decyzją „co teraz?”. Zacznij od jednej akcji.',
         actionLabel: 'Dodaj zadanie',
         onAction: () => openModal('taskForm'),
       };
@@ -131,7 +113,8 @@ export default function TodayPage() {
         title: 'Najważniejsze teraz: dokończyć plan dnia',
         description: `Zostało jeszcze ${pendingTasks} zadań. Najszybciej pomoże przejście prosto do listy poniżej.`,
         actionLabel: 'Przejdź do listy',
-        onAction: () => taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        onAction: () =>
+          taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
       };
     }
 
@@ -139,10 +122,10 @@ export default function TodayPage() {
       emoji: '⭐',
       title: 'Dzisiejszy plan jest domknięty',
       description: 'To dobry moment, żeby sprawdzić punkty albo przygotować kolejne zadania.',
-      actionLabel: 'Zobacz punkty',
+      actionLabel: 'Sprawdź punkty',
       onAction: () => navigate('/points'),
     };
-  }, [display.kidsMode, navigate, openModal, pendingTasks, tasks.length]);
+  }, [navigate, openModal, pendingTasks, tasks.length]);
 
   const emptySuggestions = useMemo(
     () => [
@@ -233,121 +216,49 @@ export default function TodayPage() {
 
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
-      <DayStrip />
+      {!display.kidsMode && <DayStrip />}
 
       <div className={styles.content}>
         {display.kidsMode ? (
           <>
-            <div className={styles.kidsHero}>
-              <div className={styles.kidsHeroBubble}>
-                <span className={styles.kidsHeroEmoji} aria-hidden="true">
-                  {kidsMood.emoji}
-                </span>
-                <div className={styles.kidsHeroText}>
+            <div className={styles.kidsTopRow}>
+              <div className={styles.headerCard}>
+                <div className={styles.titleBlock}>
                   <p className={styles.eyebrow}>Plan na dziś</p>
                   <h1 className={styles.kidsTitle}>{kidsMood.title}</h1>
-                  <p className={styles.kidsSubtitle}>{kidsMood.subtitle}</p>
-                  {!selectedDayIsToday && (
-                    <div className={styles.dayContext}>
-                      <span className={styles.contextBadge}>🧭 Oglądasz inny dzień</span>
-                      <button type="button" className={styles.contextButton} onClick={returnToToday}>
-                        Wróć do dziś
-                      </button>
-                    </div>
+                  <p className={styles.kidsSubtitle}>
+                    {pendingTasks > 0 ? 'Wybierz zadanie.' : 'Zobacz swoje nagrody.'}
+                  </p>
+                </div>
+
+                <div
+                  className={`${styles.kidsCompanion} ${styles[`kidsCompanion${kidsMood.mood[0].toUpperCase()}${kidsMood.mood.slice(1)}`]}`}
+                  aria-hidden="true"
+                >
+                  <span className={styles.kidsCompanionFace}>
+                    <span className={styles.kidsCompanionEyes}>
+                      <span />
+                      <span />
+                    </span>
+                    <span className={styles.kidsCompanionMouth} />
+                  </span>
+                </div>
+              </div>
+
+              <div className={`${styles.progressPanel} ${styles.kidsPointsCard}`}>
+                <p className={styles.eyebrow}>Punkty dziś</p>
+                <div className={styles.kidsPointsValue}>
+                  {display.showPoints && (
+                    <span className={styles.kidsPointsIcon} aria-hidden="true">
+                      ⭐
+                    </span>
                   )}
+                  <strong>{display.showPoints ? points : progress.completed}</strong>
                 </div>
-              </div>
-
-              <div className={styles.kidsProgressCard}>
-                <div className={styles.kidsProgressHeader}>
-                  <span className={styles.kidsProgressLabel}>Postęp dnia</span>
-                  <strong className={styles.kidsProgressValue}>{progress.percentage}%</strong>
-                </div>
-                <div className={styles.progressTrack} aria-hidden="true">
-                  <div className={styles.progressFill} style={{ width: `${progress.percentage}%` }} />
-                </div>
-                <div className={styles.kidsStars} aria-hidden="true">
-                  <span className={progress.completed >= 1 ? styles.starActive : styles.star}>⭐</span>
-                  <span
-                    className={
-                      progress.completed >= Math.max(1, Math.ceil(progress.total / 2))
-                        ? styles.starActive
-                        : styles.star
-                    }
-                  >
-                    ⭐
-                  </span>
-                  <span className={pendingTasks === 0 && progress.total > 0 ? styles.starActive : styles.star}>
-                    ⭐
-                  </span>
-                </div>
+                {!display.showPoints && <p className={styles.kidsPointsLabel}>zadania</p>}
               </div>
             </div>
 
-            <div className={styles.kidsStatsGrid}>
-              <article className={styles.kidsStatCard}>
-                <span className={styles.kidsStatEmoji} aria-hidden="true">
-                  ✅
-                </span>
-                <strong className={styles.kidsStatValue}>{progress.completed}</strong>
-                <span className={styles.kidsStatLabel}>Zrobione</span>
-              </article>
-
-              <article className={styles.kidsStatCard}>
-                <span className={styles.kidsStatEmoji} aria-hidden="true">
-                  🎯
-                </span>
-                <strong className={styles.kidsStatValue}>{pendingTasks}</strong>
-                <span className={styles.kidsStatLabel}>Jeszcze dziś</span>
-              </article>
-
-              <article className={styles.kidsStatCard}>
-                <span className={styles.kidsStatEmoji} aria-hidden="true">
-                  ⭐
-                </span>
-                <strong className={styles.kidsStatValue}>{points}</strong>
-                <span className={styles.kidsStatLabel}>Punkty</span>
-              </article>
-            </div>
-
-            <div className={styles.kidsGuideCard}>
-              <strong>Jak to działa?</strong>
-              <div className={styles.kidsGuideSteps}>
-                <div className={styles.kidsGuideStep}>
-                  <span className={styles.kidsGuideIcon} aria-hidden="true">
-                    👀
-                  </span>
-                  <span>Znajdź obrazek zadania</span>
-                </div>
-                <div className={styles.kidsGuideStep}>
-                  <span className={styles.kidsGuideIcon} aria-hidden="true">
-                    ✋
-                  </span>
-                  <span>Dotknij, gdy zrobione</span>
-                </div>
-                <div className={styles.kidsGuideStep}>
-                  <span className={styles.kidsGuideIcon} aria-hidden="true">
-                    ⭐
-                  </span>
-                  <span>Zbieraj punkty i gwiazdki</span>
-                </div>
-              </div>
-            </div>
-
-            {showAdultFocusCard && (
-              <div className={styles.focusCard}>
-                <span className={styles.focusEmoji} aria-hidden="true">
-                  {primaryNextStep.emoji}
-                </span>
-                <div className={styles.focusContent}>
-                  <strong>{primaryNextStep.title}</strong>
-                  <span>{primaryNextStep.description}</span>
-                </div>
-                <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
-                  {primaryNextStep.actionLabel}
-                </button>
-              </div>
-            )}
           </>
         ) : (
           <>

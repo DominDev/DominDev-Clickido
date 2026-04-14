@@ -123,7 +123,7 @@ export default function TaskList({
 
   return (
     <motion.div
-      className={styles.list}
+      className={`${styles.list} ${display.kidsMode ? styles.kidsList : ''}`}
       initial={prefersReducedMotion ? false : 'hidden'}
       animate="visible"
       variants={{
