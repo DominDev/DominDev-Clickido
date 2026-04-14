@@ -58,6 +58,7 @@ export default function TodayPage() {
     getTasksForSelectedDate,
     selectedDate,
     setSelectedDate,
+    completions,
   } = useTaskStore();
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
@@ -71,6 +72,9 @@ export default function TodayPage() {
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
   const selectedDayIsToday = isToday(selectedDate);
   const showAdultShortcuts = !display.kidsMode && tasks.length > 0;
+
+  const totalPoints = useMemo(() => completions.reduce((sum, c) => sum + c.points, 0), [completions]);
+  const totalCompleted = completions.length;
 
   const summaryText = useMemo(
     () => `${progress.completed}/${progress.total} ukończone · ${formatPoints(points)}`,
@@ -263,7 +267,10 @@ export default function TodayPage() {
               </div>
 
               <PointsTile
-                totalPoints={display.showPoints ? points : progress.completed}
+                label="Punkty dziś"
+                value={display.showPoints ? points : progress.completed}
+                subLabel="Zebrane łącznie"
+                subValue={display.showPoints ? totalPoints : totalCompleted}
                 onClickAction={handleOpenPoints}
               />
             </div>
