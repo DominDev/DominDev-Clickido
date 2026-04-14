@@ -117,14 +117,9 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
                 isCompleted ? styles.kidsStatusDone : styles.kidsStatusTodo
               }`}
             >
-              {isCompleted ? (
-                '✓ Gotowe 😊'
-              ) : (
-                <>
-                  <KidsStarIcon className={styles.kidsStatusStar} />
-                  <span>{task.points}</span>
-                </>
-              )}
+              <KidsStarIcon className={styles.kidsStatusStar} />
+              <span>{task.points}</span>
+              {isCompleted && <span>· Gotowe!</span>}
             </span>
           )}
 
