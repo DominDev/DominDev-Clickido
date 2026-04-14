@@ -9,6 +9,8 @@
 
 .kidsList {
   gap: var(--space-4);
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .empty {
@@ -90,6 +92,11 @@
   .list {
     padding: var(--space-6);
     gap: var(--space-4);
+  }
+
+  .kidsList {
+    padding-right: 0;
+    padding-left: 0;
   }
 }
 
@@ -212,6 +219,11 @@
   .list {
     gap: 12px;
     padding: 12px;
+  }
+
+  .kidsList {
+    padding-right: 0;
+    padding-left: 0;
   }
 
   .empty {
