@@ -759,6 +759,10 @@
     padding: var(--space-4);
   }
 
+  .kidsMiniProgressLabel {
+    font-size: 0.8rem;
+  }
+
   .heroValue {
     font-size: clamp(2.1rem, 10vw, 2.7rem);
   }
