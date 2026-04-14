@@ -242,9 +242,9 @@ export default function PointsPage() {
         <div className={styles.kidsTopRow}>
           <div className={styles.headerCard}>
             <div className={styles.titleBlock}>
-              <p className={styles.eyebrow}>Sklepik</p>
-              <h1 className={styles.kidsTitle}>Moje skarby</h1>
-              <p className={styles.kidsSubtitle}>Wybierz nagrodę za swoje gwiazdki!</p>
+              <p className={styles.eyebrow}>Sklep</p>
+              <h1 className={styles.kidsTitle}>Nagrody</h1>
+              <p className={styles.kidsSubtitle}>Wybierz coś dla siebie.</p>
             </div>
             <div
               className={`${styles.kidsCompanion} ${styles[`kidsCompanion${kidsMood.mood[0].toUpperCase()}${kidsMood.mood.slice(1)}`]}`}
