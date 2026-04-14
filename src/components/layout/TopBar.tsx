@@ -23,6 +23,11 @@ export default function TopBar() {
   const formattedDate = capitalize(formatDateFull(selectedDate));
   const formattedTime = formatTime(currentTime, screensaver.showSeconds);
   const selectedDayIsToday = isToday(selectedDate);
+  const kidsDayTitle = capitalize(
+    new Intl.DateTimeFormat('pl-PL', {
+      weekday: 'long',
+    }).format(selectedDate)
+  );
 
   useEffect(() => {
     const intervalMs = screensaver.showSeconds ? 1000 : 60000;
@@ -72,10 +77,7 @@ export default function TopBar() {
       <div className={styles.leading}>
         <div className={styles.dateSection}>
           {display.kidsMode ? (
-            <>
-              <span className={styles.kidsTitle}>🧸 Dziś</span>
-              <span className={styles.kidsSubline}>Twoje zadania na teraz</span>
-            </>
+            <span className={styles.kidsTitle}>{`🧸 ${kidsDayTitle}`}</span>
           ) : (
             <>
               <span className={styles.date}>{formattedDate}</span>

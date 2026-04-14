@@ -73,7 +73,11 @@
     0 0 0 1px rgb(251 146 60 / 0.08);
   --theme-feature-card-title: var(--color-accent);
   --theme-feature-card-value: #ea580c;
-  --theme-feature-card-icon: #facc15;
+  --theme-kids-star-color: #f5b301;
+  --theme-kids-star-shadow-soft: drop-shadow(0 2px 4px rgb(245 179 1 / 0.24));
+  --theme-kids-star-shadow: drop-shadow(0 4px 8px rgb(245 179 1 / 0.26));
+  --theme-kids-star-shadow-strong: drop-shadow(0 6px 10px rgb(251 191 36 / 0.28));
+  --theme-feature-card-icon: var(--theme-kids-star-color);
   --theme-feature-card-arrow: #fdba74;
   --theme-reward-card-bg: var(--color-surface);
   --theme-taskform-sheet-bg:
@@ -297,7 +301,11 @@
     0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
   --theme-feature-card-title: color-mix(in srgb, var(--color-accent) 84%, white 16%);
   --theme-feature-card-value: color-mix(in srgb, var(--color-accent) 88%, white 12%);
-  --theme-feature-card-icon: #ffca28;
+  --theme-kids-star-color: #ffca28;
+  --theme-kids-star-shadow-soft: drop-shadow(0 2px 4px rgb(255 202 40 / 0.22));
+  --theme-kids-star-shadow: drop-shadow(0 4px 8px rgb(255 202 40 / 0.24));
+  --theme-kids-star-shadow-strong: drop-shadow(0 6px 10px rgb(255 202 40 / 0.26));
+  --theme-feature-card-icon: var(--theme-kids-star-color);
   --theme-feature-card-arrow: color-mix(in srgb, var(--color-accent) 70%, white 30%);
   --theme-reward-card-bg: var(--color-surface);
   --theme-taskform-sheet-bg: var(--color-surface);

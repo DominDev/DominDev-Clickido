@@ -92,7 +92,7 @@
   width: 32px;
   height: 32px;
   color: var(--theme-feature-card-icon);
-  filter: drop-shadow(0 6px 10px rgb(251 191 36 / 0.28));
+  filter: var(--theme-kids-star-shadow-strong);
   transform-origin: center;
 }
 
