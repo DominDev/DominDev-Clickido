@@ -65,6 +65,16 @@
   --theme-kids-soft-panel: var(--color-surface);
   --theme-points-page-bg: var(--color-bg-primary);
   --theme-hero-accent: linear-gradient(135deg, var(--color-accent), #ff915f);
+  --theme-feature-card-bg: var(--theme-surface-soft);
+  --theme-feature-card-border: rgb(253 186 116 / 50%);
+  --theme-feature-card-shadow: var(--shadow-card);
+  --theme-feature-card-hover-shadow:
+    0 10px 18px rgb(45 41 38 / 0.1),
+    0 0 0 1px rgb(251 146 60 / 0.08);
+  --theme-feature-card-title: var(--color-accent);
+  --theme-feature-card-value: #ea580c;
+  --theme-feature-card-icon: #facc15;
+  --theme-feature-card-arrow: #fdba74;
   --theme-reward-card-bg: var(--color-surface);
   --theme-taskform-sheet-bg:
     radial-gradient(circle at top right, rgb(255 199 94 / 0.14), transparent 22%),
@@ -279,6 +289,16 @@
   --theme-kids-soft-panel: var(--color-surface);
   --theme-points-page-bg: transparent;
   --theme-hero-accent: var(--color-surface-elevated);
+  --theme-feature-card-bg: var(--color-surface);
+  --theme-feature-card-border: color-mix(in srgb, var(--color-accent) 28%, var(--color-border) 72%);
+  --theme-feature-card-shadow: var(--shadow-card);
+  --theme-feature-card-hover-shadow:
+    0 10px 18px rgb(0 0 0 / 0.24),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  --theme-feature-card-title: color-mix(in srgb, var(--color-accent) 84%, white 16%);
+  --theme-feature-card-value: color-mix(in srgb, var(--color-accent) 88%, white 12%);
+  --theme-feature-card-icon: #ffca28;
+  --theme-feature-card-arrow: color-mix(in srgb, var(--color-accent) 70%, white 30%);
   --theme-reward-card-bg: var(--color-surface);
   --theme-taskform-sheet-bg: var(--color-surface);
   --theme-taskform-card-bg: var(--color-surface-elevated);
