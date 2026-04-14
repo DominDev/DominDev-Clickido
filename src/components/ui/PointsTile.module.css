@@ -1,0 +1,161 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100%;
+  padding: 20px;
+  text-align: left;
+  background: var(--theme-surface-soft);
+  border: 2px solid rgb(253 186 116 / 50%);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.tile:hover {
+  border-color: #fb923c;
+  box-shadow:
+    0 10px 18px rgb(45 41 38 / 0.1),
+    0 0 0 1px rgb(251 146 60 / 0.08);
+}
+
+.tile:active {
+  transform: scale(0.95);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    color 300ms ease,
+    transform 300ms ease;
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: #fdba74;
+  transition: transform 300ms ease;
+}
+
+.tile:hover .arrow {
+  transform: translateX(4px);
+}
+
+.tile:hover .title {
+  color: var(--color-accent-hover);
+  transform: translateX(2px);
+}
+
+.arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 300ms ease;
+}
+
+.tile:hover .body {
+  transform: scale(1.05);
+}
+
+.star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #facc15;
+  filter: drop-shadow(0 6px 10px rgb(251 191 36 / 0.28));
+  transform-origin: center;
+}
+
+.star svg {
+  width: 100%;
+  height: 100%;
+}
+
+.starPulse {
+  animation: pointsStarPulse 3s ease-in-out infinite;
+}
+
+.starSpin {
+  animation: pointsStarSpin 500ms ease-in-out forwards;
+}
+
+.value {
+  padding-top: 2px;
+  color: #ea580c;
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4.6vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+@keyframes pointsStarPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes pointsStarSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .tile {
+    min-width: 140px;
+    padding: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .tile {
+    min-width: 0;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .value {
+    font-size: 2.35rem;
+  }
+}

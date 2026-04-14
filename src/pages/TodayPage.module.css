@@ -16,6 +16,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(180px, 0.55fr);
   gap: var(--space-4);
+  width: 100%;
 }
 
 .headerCard,
@@ -556,52 +557,6 @@
   font-size: 0.88rem;
   font-weight: var(--font-bold);
   color: var(--color-text-secondary);
-}
-
-.kidsPointsCard {
-  align-items: flex-start;
-  justify-content: center;
-  min-height: 100%;
-  background: var(--theme-hero-accent);
-  border-color: transparent;
-  box-shadow: var(--shadow-lg);
-  color: var(--color-text-inverse);
-}
-
-.kidsPointsCard .eyebrow {
-  color: rgb(255 255 255 / 0.88);
-}
-
-.kidsPointsValue {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: clamp(2.2rem, 5vw, 3rem);
-  line-height: 1;
-  color: var(--color-text-inverse);
-}
-
-.kidsPointsValue strong {
-  font: inherit;
-  line-height: inherit;
-}
-
-.kidsPointsIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9em;
-  line-height: 1;
-  color: var(--color-text-inverse);
-}
-
-.kidsPointsLabel {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  color: rgb(255 255 255 / 0.88);
 }
 
 .floatingActions {
