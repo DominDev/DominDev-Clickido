@@ -121,7 +121,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   completeTask: (taskId, points) => {
     const { selectedDate } = get();
     const completion = completionService.completeTask(taskId, points, selectedDate);
-    set((state) => ({ completions: [...state.completions, completion] }));
+    get().loadCompletions();
     return completion;
   },
 
@@ -129,12 +129,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     const { selectedDate } = get();
     const success = completionService.uncompleteTask(taskId, selectedDate);
     if (success) {
-      const selectedDateKey = getLocalDateKey(selectedDate);
-      set((state) => ({
-        completions: state.completions.filter(
-          (c) => !(c.taskId === taskId && c.date === selectedDateKey)
-        ),
-      }));
+      get().loadCompletions();
     }
     return success;
   },
