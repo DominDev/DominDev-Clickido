@@ -164,12 +164,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   min-height: 34px;
   padding: 0 12px;
   font-size: 0.82rem;
   font-weight: var(--font-bold);
   border-radius: 999px;
   box-shadow: none;
+}
+
+.kidsStatusStar {
+  width: 16px;
+  height: 16px;
+  color: #f5b301;
+  filter: drop-shadow(0 2px 4px rgb(245 179 1 / 0.24));
+  flex: 0 0 auto;
 }
 
 .kidsStatusTodo {

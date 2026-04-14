@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
+import { KidsStarIcon } from '@components/ui';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
@@ -253,7 +254,7 @@ export default function PointsPage() {
           <section className={styles.kidsRewards} aria-label="Postęp nagród">
             <article className={styles.rewardCard}>
               <span className={styles.rewardEmoji} aria-hidden="true">
-                ⭐
+                <KidsStarIcon className={styles.rewardStarIcon} />
               </span>
               <strong>Twoje skarby: {stats.totalPoints} gwiazdek</strong>
             </article>
