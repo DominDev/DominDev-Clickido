@@ -9,7 +9,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  transition: background-color var(--transition-base), transform var(--transition-fast);
+  transition: background-color var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .card:hover {
@@ -200,13 +200,21 @@
   border-radius: 999px;
 }
 
+.kidsCard:not(.completed):active {
+  transform: translateY(6px);
+  box-shadow:
+    0 8px 16px rgb(45 41 38 / 0.08),
+    0 2px 0 rgb(232 224 216 / 0.88);
+}
+
 .kidsCard.completed {
   background-color: var(--color-success-light);
   border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border) 76%);
   opacity: 1;
+  transform: translateY(6px);
   box-shadow:
-    0 16px 24px rgb(76 175 80 / 0.14),
-    0 8px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
+    0 8px 16px rgb(76 175 80 / 0.12),
+    0 2px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
 }
 
 .kidsCard.completed .title {
@@ -350,6 +358,20 @@
     box-shadow:
       0 14px 22px rgb(45 41 38 / 0.08),
       0 6px 0 rgb(232 224 216 / 0.88);
+  }
+
+  .kidsCard:not(.completed):active {
+    transform: translateY(4px);
+    box-shadow:
+      0 6px 12px rgb(45 41 38 / 0.08),
+      0 2px 0 rgb(232 224 216 / 0.88);
+  }
+
+  .kidsCard.completed {
+    transform: translateY(4px);
+    box-shadow:
+      0 6px 12px rgb(76 175 80 / 0.12),
+      0 2px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
   }
 
   .kidsCard .content {
