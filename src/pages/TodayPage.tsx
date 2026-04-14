@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
 import { TaskList } from '@components/task';
+import { PointsTile } from '@components/ui';
 import { calculatePoints } from '@services/taskService';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
@@ -214,6 +215,10 @@ export default function TodayPage() {
     navigate('/tasks');
   };
 
+  const handleOpenPoints = () => {
+    navigate('/points');
+  };
+
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       {!display.kidsMode && <DayStrip />}
@@ -257,18 +262,10 @@ export default function TodayPage() {
                 </div>
               </div>
 
-              <div className={`${styles.progressPanel} ${styles.kidsPointsCard}`}>
-                <p className={styles.eyebrow}>Punkty dziś</p>
-                <div className={styles.kidsPointsValue}>
-                  {display.showPoints && (
-                    <span className={styles.kidsPointsIcon} aria-hidden="true">
-                      ⭐
-                    </span>
-                  )}
-                  <strong>{display.showPoints ? points : progress.completed}</strong>
-                </div>
-                {!display.showPoints && <p className={styles.kidsPointsLabel}>zadania</p>}
-              </div>
+              <PointsTile
+                totalPoints={display.showPoints ? points : progress.completed}
+                onClickAction={handleOpenPoints}
+              />
             </div>
 
           </>
