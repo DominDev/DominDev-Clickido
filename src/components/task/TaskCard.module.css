@@ -176,8 +176,8 @@
 .kidsStatusStar {
   width: 16px;
   height: 16px;
-  color: #f5b301;
-  filter: drop-shadow(0 2px 4px rgb(245 179 1 / 0.24));
+  color: var(--theme-kids-star-color);
+  filter: var(--theme-kids-star-shadow-soft);
   flex: 0 0 auto;
 }
 

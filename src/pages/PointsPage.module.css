@@ -154,13 +154,13 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  color: #f5b301;
+  color: var(--theme-kids-star-color);
 }
 
 .rewardStarIcon {
   width: 30px;
   height: 30px;
-  filter: drop-shadow(0 4px 8px rgb(245 179 1 / 0.26));
+  filter: var(--theme-kids-star-shadow);
 }
 
 .rewardCard strong {
