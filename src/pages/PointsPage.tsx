@@ -244,7 +244,21 @@ export default function PointsPage() {
             <div className={styles.titleBlock}>
               <p className={styles.eyebrow}>Sklep</p>
               <h1 className={styles.kidsTitle}>Nagrody</h1>
-              <p className={styles.kidsSubtitle}>Wybierz coś dla siebie.</p>
+              {stats.nextReward ? (
+                <div className={styles.kidsMiniProgress}>
+                  <div className={styles.kidsMiniProgressTrack} aria-hidden="true">
+                    <div
+                      className={styles.kidsMiniProgressFill}
+                      style={{ width: `${Math.max(8, Math.round((stats.totalPoints / stats.nextReward.target) * 100))}%` }}
+                    />
+                  </div>
+                  <p className={styles.kidsMiniProgressLabel}>
+                    Do "{stats.nextReward.title}" brakuje {stats.nextReward.target - stats.totalPoints} gwiazdek
+                  </p>
+                </div>
+              ) : (
+                <p className={styles.kidsSubtitle}>Wszystkie nagrody zdobyte!</p>
+              )}
             </div>
             <div
               className={`${styles.kidsCompanion} ${styles[`kidsCompanion${kidsMood.mood[0].toUpperCase()}${kidsMood.mood.slice(1)}`]}`}
