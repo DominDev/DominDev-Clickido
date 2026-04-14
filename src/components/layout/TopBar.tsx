@@ -70,20 +70,26 @@ export default function TopBar() {
   return (
     <header className={`${styles.topbar} ${display.kidsMode ? styles.kidsMode : ''}`}>
       <div className={styles.leading}>
-        {display.kidsMode && (
-          <span className={styles.kidsBadge}>{selectedDayIsToday ? '🧸 Dziś' : '🧭 Inny dzień'}</span>
-        )}
         <div className={styles.dateSection}>
-          <span className={styles.date}>{formattedDate}</span>
-          <span className={styles.dayStatus}>
-            {!selectedDayIsToday
-              ? progress.total === 0
-                ? 'Podgląd innego dnia · brak zadań'
-                : `Podgląd innego dnia · ${progress.completed}/${progress.total} zadań ukończonych`
-              : progress.total === 0
-                ? 'Brak zadań na wybrany dzień'
-                : `${progress.completed}/${progress.total} zadań ukończonych`}
-          </span>
+          {display.kidsMode ? (
+            <>
+              <span className={styles.kidsTitle}>🧸 Dziś</span>
+              <span className={styles.kidsSubline}>Twoje zadania na teraz</span>
+            </>
+          ) : (
+            <>
+              <span className={styles.date}>{formattedDate}</span>
+              <span className={styles.dayStatus}>
+                {!selectedDayIsToday
+                  ? progress.total === 0
+                    ? 'Podgląd innego dnia · brak zadań'
+                    : `Podgląd innego dnia · ${progress.completed}/${progress.total} zadań ukończonych`
+                  : progress.total === 0
+                    ? 'Brak zadań na wybrany dzień'
+                    : `${progress.completed}/${progress.total} zadań ukończonych`}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -105,10 +111,11 @@ export default function TopBar() {
               type="button"
               className={styles.parentExitButton}
               onClick={handleParentExit}
-              aria-label="Wyjdź z trybu dziecięcego jako rodzic"
+              aria-label="Wejście do trybu rodzica"
               aria-expanded={display.kidsModePin ? parentPinOpen : undefined}
+              title="Dla rodzica"
             >
-              Dla rodzica
+              <span aria-hidden="true">🔒</span>
             </button>
 
             {display.kidsModePin && parentPinOpen && (
@@ -158,19 +165,19 @@ export default function TopBar() {
 
         <div className={styles.clockSection}>
           <span className={styles.clock}>{formattedTime}</span>
-          <span className={styles.clockHint}>
-            {display.kidsMode ? 'Rodzic może wrócić tym przyciskiem obok.' : `${progress.percentage}% planu gotowe`}
-          </span>
+          {!display.kidsMode && <span className={styles.clockHint}>{`${progress.percentage}% planu gotowe`}</span>}
         </div>
 
-        <div className={styles.progressSection}>
-          <ProgressRing
-            percentage={progress.percentage}
-            size={display.kidsMode ? 64 : 56}
-            strokeWidth={display.kidsMode ? 5 : 4}
-            label={`Postęp dnia: ${progress.completed} z ${progress.total} zadań, ${progress.percentage}%`}
-          />
-        </div>
+        {!display.kidsMode && (
+          <div className={styles.progressSection}>
+            <ProgressRing
+              percentage={progress.percentage}
+              size={56}
+              strokeWidth={4}
+              label={`Postęp dnia: ${progress.completed} z ${progress.total} zadań, ${progress.percentage}%`}
+            />
+          </div>
+        )}
       </div>
     </header>
   );

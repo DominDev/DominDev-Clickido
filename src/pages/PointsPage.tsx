@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { showInfoToast } from '@store/uiStore';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
@@ -189,153 +188,129 @@ export default function PointsPage() {
     };
   }, [display.kidsMode, stats.nextReward, stats.totalCompleted, stats.totalPoints]);
 
+  const hasStatsData = stats.totalCompleted > 0;
+
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>
-            {display.kidsMode ? 'Tablica nagród' : 'Twoje postępy'}
-          </p>
-          <h1 className={styles.title}>
-            {display.kidsMode ? 'Moje punkty' : 'Punkty i statystyki'}
-          </h1>
-          <p className={styles.subtitle}>
-            {display.kidsMode
-              ? 'Tutaj widać, ile udało się już zdobyć. Każde zrobione zadanie daje kolejne gwiazdki i przybliża do następnego celu.'
-              : 'Najważniejsze liczby w jednym miejscu: punkty, aktywność, serie i postęp tygodnia.'}
-          </p>
+          <p className={styles.eyebrow}>{display.kidsMode ? 'Nagrody' : 'Twoje postępy'}</p>
+          <h1 className={styles.title}>{display.kidsMode ? 'Moje skarby' : 'Punkty'}</h1>
+          {!display.kidsMode && (
+            <p className={styles.subtitle}>
+              Jedno miejsce do szybkiego sprawdzenia wyniku, serii i tempa całego domu.
+            </p>
+          )}
         </div>
 
-        <div className={`${styles.heroCard} ${display.kidsMode ? styles.kidsHeroCard : ''}`}>
-          <span className={styles.heroLabel}>
-            {display.kidsMode ? '⭐ Dzisiejszy wynik' : 'Dzisiaj'}
+        <div className={styles.heroCard}>
+          <span className={styles.heroLabel}>{display.kidsMode ? 'Twoje skarby' : 'Dzisiaj'}</span>
+          <strong className={styles.heroValue}>
+            {display.kidsMode ? `${stats.totalPoints} gwiazdek` : formatPoints(todayPoints)}
+          </strong>
+          <span className={styles.heroHint}>
+            {display.kidsMode
+              ? `Dzisiaj: ${todayPoints} punktów`
+              : `Łącznie ${formatPoints(stats.totalPoints)} · ${stats.currentStreak} dni serii`}
           </span>
-          <strong className={styles.heroValue}>{formatPoints(todayPoints)}</strong>
-          {display.kidsMode ? (
-            <>
-              <span className={styles.heroHint}>
-                Poziom {stats.level} · do kolejnego brakuje {stats.pointsToNextLevel} pkt
-              </span>
-              <div className={styles.levelTrack} aria-hidden="true">
-                <div className={styles.levelFill} style={{ width: `${stats.levelProgress}%` }} />
-              </div>
-            </>
-          ) : (
-            <span className={styles.heroHint}>
-              Łącznie {formatPoints(stats.totalPoints)} · {stats.currentStreak} dni serii
-            </span>
-          )}
         </div>
       </header>
 
-      <section className={styles.focusCard} aria-label="Najważniejszy następny krok">
-        <span className={styles.focusEmoji} aria-hidden="true">
-          {primaryNextStep.emoji}
-        </span>
-        <div className={styles.focusContent}>
-          <strong>{primaryNextStep.title}</strong>
-          <span>{primaryNextStep.description}</span>
-        </div>
-        <Link className={styles.focusLink} to={primaryNextStep.to}>
-          {primaryNextStep.actionLabel}
-        </Link>
-      </section>
+      {!display.kidsMode && (
+        <section className={styles.focusCard} aria-label="Najważniejszy następny krok">
+          <span className={styles.focusEmoji} aria-hidden="true">
+            {primaryNextStep.emoji}
+          </span>
+          <div className={styles.focusContent}>
+            <strong>{primaryNextStep.title}</strong>
+            <span>{primaryNextStep.description}</span>
+          </div>
+          <Link className={styles.focusLink} to={primaryNextStep.to}>
+            {primaryNextStep.actionLabel}
+          </Link>
+        </section>
+      )}
 
-      {display.kidsMode && (
+      {!hasStatsData && (
+        <section className={styles.emptyStatePanel} aria-label="Brak danych punktowych">
+          <div className={styles.panelHeader}>
+            <h2>
+              {display.kidsMode
+                ? 'Nagrody pojawią się po pierwszych zadaniach'
+                : 'Statystyki pojawią się po pierwszych zadaniach'}
+            </h2>
+          </div>
+          <p className={styles.emptyStateText}>
+            {display.kidsMode
+              ? 'Gdy zaczniesz klikać zadania na ekranie „Dziś”, tutaj pojawią się punkty, kolejne poziomy i odblokowane nagrody.'
+              : 'Na razie ten ekran jest pusty, bo nie ma jeszcze wykonanych zadań. Wróć do dnia albo przygotuj pierwszą bazę zadań.'}
+          </p>
+        </section>
+      )}
+
+      {display.kidsMode && hasStatsData && (
         <>
           <section className={styles.kidsRewards} aria-label="Postęp nagród">
             <article className={styles.rewardCard}>
               <span className={styles.rewardEmoji} aria-hidden="true">
-                🏅
+                ⭐
               </span>
-              <strong>Poziom {stats.level}</strong>
-              <span>Łącznie zdobyto {stats.totalPoints} punktów.</span>
-            </article>
-
-            <article className={styles.rewardCard}>
-              <span className={styles.rewardEmoji} aria-hidden="true">
-                🚀
-              </span>
-              <strong>Następny cel</strong>
-              <span>
-                {stats.nextReward
-                  ? `${stats.nextReward.title} za ${stats.nextReward.target} pkt`
-                  : 'Wszystkie obecne cele są już odblokowane.'}
-              </span>
+              <strong>Twoje skarby: {stats.totalPoints} gwiazdek</strong>
             </article>
           </section>
 
-          <section className={styles.milestonesPanel} aria-label="Kamienie milowe">
+          <section className={styles.milestonesPanel} aria-label="Nagrody do kupienia">
             <div className={styles.panelHeader}>
-              <h2>Ścieżka nagród</h2>
-              <span>{stats.unlockedRewards}/{REWARD_MILESTONES.length} odblokowane</span>
+              <h2>Co możesz kupić</h2>
             </div>
 
             <div className={styles.milestoneGrid}>
               {REWARD_MILESTONES.map((reward) => {
                 const unlocked = stats.totalPoints >= reward.target;
-                const isNext = !unlocked && stats.nextReward?.target === reward.target;
+                const missingPoints = Math.max(0, reward.target - stats.totalPoints);
+                const progressPercent = Math.min(
+                  100,
+                  Math.max(8, Math.round((stats.totalPoints / reward.target) * 100))
+                );
 
                 return (
                   <article
                     key={reward.target}
-                    className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
-                      isNext ? styles.nextMilestone : ''
-                    }`}
+                    className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''}`}
                   >
                     <span className={styles.milestoneEmoji} aria-hidden="true">
                       {reward.emoji}
                     </span>
                     <strong>{reward.title}</strong>
-                    <span>{reward.hint}</span>
+
+                    {!unlocked && (
+                      <div className={styles.rewardProgress} aria-hidden="true">
+                        <div className={styles.rewardProgressTrack}>
+                          <div
+                            className={styles.rewardProgressFill}
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     <div className={styles.milestoneFooter}>
-                      <span>{reward.target} pkt</span>
-                      <span>{unlocked ? 'Odblokowane' : isNext ? 'Następne' : 'Przed Tobą'}</span>
+                      <span>{reward.target} gwiazdek</span>
+                      {unlocked ? (
+                        <span className={styles.rewardClaim}>Odbierz!</span>
+                      ) : (
+                        <span>Jeszcze {missingPoints}</span>
+                      )}
                     </div>
                   </article>
                 );
               })}
             </div>
           </section>
-
-          <section className={styles.kidsActionPanel} aria-label="Co dalej">
-            <div className={styles.panelHeader}>
-              <h2>Co dalej?</h2>
-              <span>Najlepiej zdobywa się punkty, gdy od razu wracasz do zadań.</span>
-            </div>
-
-            <div className={styles.kidsActionGrid}>
-              <Link className={styles.kidsActionCard} to="/today">
-                <span className={styles.kidsActionEmoji} aria-hidden="true">
-                  🧸
-                </span>
-                <span className={styles.kidsActionText}>
-                  <strong>Wróć do dzisiaj</strong>
-                  <span>Zobacz duże kafelki z zadaniami na teraz.</span>
-                </span>
-              </Link>
-
-              <button
-                type="button"
-                className={styles.kidsActionCard}
-                onClick={() =>
-                  showInfoToast('Nowe zadania może dodać rodzic z trybu dla dorosłych.', 4500)
-                }
-              >
-                <span className={styles.kidsActionEmoji} aria-hidden="true">
-                  🧩
-                </span>
-                <span className={styles.kidsActionText}>
-                  <strong>Poproś o nowe zadania</strong>
-                  <span>Rodzic może dodać kolejne misje i nowe obrazki.</span>
-                </span>
-              </button>
-            </div>
-          </section>
         </>
       )}
 
-      {!display.kidsMode && (
+      {!display.kidsMode && hasStatsData && (
         <section className={styles.parentActionPanel} aria-label="Co dalej po statystykach">
           <div className={styles.panelHeader}>
             <h2>Co dalej?</h2>
@@ -362,92 +337,86 @@ export default function PointsPage() {
                 <span>Dodaj nowe obowiązki albo popraw obecną strukturę.</span>
               </span>
             </Link>
-
-            <Link className={styles.parentActionCard} to="/settings">
-              <span className={styles.parentActionEmoji} aria-hidden="true">
-                ⚙️
-              </span>
-              <span className={styles.parentActionText}>
-                <strong>Dopasuj ustawienia</strong>
-                <span>Zmień wygląd, kids mode i zachowanie ekranu.</span>
-              </span>
-            </Link>
           </div>
         </section>
       )}
 
-      <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">
-        <article className={styles.statCard}>
-          <span className={styles.cardLabel}>{display.kidsMode ? '🏆 Łącznie' : 'Łącznie'}</span>
-          <strong className={styles.cardValue}>{formatPoints(stats.totalPoints)}</strong>
-        </article>
-        <article className={styles.statCard}>
-          <span className={styles.cardLabel}>{display.kidsMode ? '🚀 Ten tydzień' : 'Ten tydzień'}</span>
-          <strong className={styles.cardValue}>{formatPoints(stats.weekPoints)}</strong>
-        </article>
-        <article className={styles.statCard}>
-          <span className={styles.cardLabel}>{display.kidsMode ? '✅ Zadania' : 'Zrobione zadania'}</span>
-          <strong className={styles.cardValue}>{stats.totalCompleted}</strong>
-        </article>
-        <article className={styles.statCard}>
-          <span className={styles.cardLabel}>{display.kidsMode ? '🔥 Dni aktywne' : 'Aktywne dni'}</span>
-          <strong className={styles.cardValue}>{stats.activeDays}</strong>
-        </article>
-      </section>
+      {hasStatsData && !display.kidsMode && (
+        <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Łącznie</span>
+            <strong className={styles.cardValue}>{formatPoints(stats.totalPoints)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Ten tydzień</span>
+            <strong className={styles.cardValue}>{formatPoints(stats.weekPoints)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Zrobione zadania</span>
+            <strong className={styles.cardValue}>{stats.totalCompleted}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Aktywne dni</span>
+            <strong className={styles.cardValue}>{stats.activeDays}</strong>
+          </article>
+        </section>
+      )}
 
-      <section className={styles.detailsGrid}>
-        <article className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2>{display.kidsMode ? 'Twoje rekordy' : 'Streak i rytm'}</h2>
-            {!display.kidsMode && <span>Najlepsza regularność i ulubione nawyki</span>}
-          </div>
+      {hasStatsData && !display.kidsMode && (
+        <section className={styles.detailsGrid}>
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2>Najważniejsze trendy</h2>
+              <span>Seria, regularność i najczęstsza kategoria</span>
+            </div>
 
-          <dl className={styles.detailList}>
-            <div>
-              <dt>{display.kidsMode ? '🔥 Seria teraz' : 'Aktualny streak'}</dt>
-              <dd>{stats.currentStreak} dni</dd>
-            </div>
-            <div>
-              <dt>{display.kidsMode ? '🌈 Najlepsza seria' : 'Najlepszy streak'}</dt>
-              <dd>{stats.bestStreak} dni</dd>
-            </div>
-            <div>
-              <dt>{display.kidsMode ? '📅 Start przygody' : 'Pierwsza aktywność'}</dt>
-              <dd>{stats.firstDay ? formatShortDate(stats.firstDay) : 'Jeszcze brak danych'}</dd>
-            </div>
-            <div>
-              <dt>{display.kidsMode ? '🎯 Najczęściej' : 'Najczęstsza kategoria'}</dt>
-              <dd>
-                {stats.favoriteCategory ? getCategoryLabel(stats.favoriteCategory as CategoryId) : 'Brak danych'}
-              </dd>
-            </div>
-          </dl>
-        </article>
-
-        <article className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2>{display.kidsMode ? 'Punkty z ostatnich dni' : 'Ostatnie 7 dni'}</h2>
-            <span>{display.kidsMode ? 'Każdy słupek to dzień pracy' : 'Szybki podgląd tygodnia'}</span>
-          </div>
-
-          <div className={styles.chart}>
-            {stats.recentDays.map((day) => (
-              <div key={day.dateString} className={styles.barItem}>
-                <div className={styles.barTrack} aria-hidden="true">
-                  <div
-                    className={styles.barFill}
-                    style={{ height: `${(day.points / stats.maxRecentPoints) * 100}%` }}
-                  />
-                </div>
-                <span className={styles.barValue}>
-                  {display.kidsMode ? `⭐ ${day.points}` : day.points}
-                </span>
-                <span className={styles.barLabel}>{day.label}</span>
+            <dl className={styles.detailList}>
+              <div>
+                <dt>Aktualny streak</dt>
+                <dd>{stats.currentStreak} dni</dd>
               </div>
-            ))}
-          </div>
-        </article>
-      </section>
+              <div>
+                <dt>Najlepszy streak</dt>
+                <dd>{stats.bestStreak} dni</dd>
+              </div>
+              <div>
+                <dt>Pierwsza aktywność</dt>
+                <dd>{stats.firstDay ? formatShortDate(stats.firstDay) : 'Jeszcze brak danych'}</dd>
+              </div>
+              <div>
+                <dt>Najczęstsza kategoria</dt>
+                <dd>
+                  {stats.favoriteCategory
+                    ? getCategoryLabel(stats.favoriteCategory as CategoryId)
+                    : 'Brak danych'}
+                </dd>
+              </div>
+            </dl>
+          </article>
+
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2>Ostatnie 7 dni</h2>
+              <span>Szybki podgląd tygodnia</span>
+            </div>
+
+            <div className={styles.chart}>
+              {stats.recentDays.map((day) => (
+                <div key={day.dateString} className={styles.barItem}>
+                  <div className={styles.barTrack} aria-hidden="true">
+                    <div
+                      className={styles.barFill}
+                      style={{ height: `${(day.points / stats.maxRecentPoints) * 100}%` }}
+                    />
+                  </div>
+                  <span className={styles.barValue}>{day.points}</span>
+                  <span className={styles.barLabel}>{day.label}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+      )}
     </section>
   );
 }

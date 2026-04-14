@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Task } from '@/types';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { getCategoryColor, getCategoryLabel } from '@utils/categories';
+import { getCategoryColor } from '@utils/categories';
 import { formatMinutes } from '@utils/formatting';
 import Checkbox from '../ui/Checkbox';
 import styles from './TaskCard.module.css';
@@ -18,7 +18,7 @@ interface TaskCardProps {
   onEdit?: (task: Task) => void;
 }
 
-const KIDS_CELEBRATION_EMOJIS = ['🎉', '🌟', '💪', '😎', '🏆'];
+const KIDS_CELEBRATION_EMOJIS = ['🎉', '🌟', '😄', '😎', '🏆'];
 const KIDS_CELEBRATION_TEXTS = ['SUPER!', 'BRAWO!', 'MEGA!', 'WOW!', 'ŚWIETNIE!'];
 
 function randomFrom<T>(items: T[]) {
@@ -69,11 +69,11 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
   };
 
   const categoryColor = getCategoryColor(task.category);
-  const categoryLabel = getCategoryLabel(task.category);
 
   return (
     <>
       <motion.article
+        data-complete-stamp={display.kidsMode && isCompleted ? 'SUPER!' : undefined}
         className={`${styles.card} ${isCompleted ? styles.completed : ''} ${
           display.kidsMode ? styles.kidsCard : ''
         }`}
@@ -81,17 +81,24 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
         initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: -100 }}
+        whileTap={
+          display.kidsMode && !prefersReducedMotion
+            ? { scale: isCompleted ? 0.985 : 0.94 }
+            : undefined
+        }
         transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.2 }}
         style={{ '--category-color': categoryColor } as React.CSSProperties}
       >
-        <div className={styles.checkboxArea}>
-          <Checkbox
-            checked={isCompleted}
-            onChange={handleToggle}
-            size={display.kidsMode ? 48 : 32}
-            aria-label={`Oznacz "${task.title}" jako ${isCompleted ? 'nieukończone' : 'ukończone'}`}
-          />
-        </div>
+        {!display.kidsMode && (
+          <div className={styles.checkboxArea}>
+            <Checkbox
+              checked={isCompleted}
+              onChange={handleToggle}
+              size={32}
+              aria-label={`Oznacz "${task.title}" jako ${isCompleted ? 'nieukończone' : 'ukończone'}`}
+            />
+          </div>
+        )}
 
         <button
           className={styles.content}
@@ -99,10 +106,20 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
           type="button"
           aria-label={
             display.kidsMode
-              ? `Wykonaj zadanie "${task.title}"`
+              ? `${isCompleted ? 'Odznacz' : 'Zaznacz'} zadanie "${task.title}"`
               : `Edytuj zadanie "${task.title}"`
           }
         >
+          {display.kidsMode && (
+            <span
+              className={`${styles.kidsStatusBadge} ${
+                isCompleted ? styles.kidsStatusDone : styles.kidsStatusTodo
+              }`}
+            >
+              {isCompleted ? '✓ Gotowe 😊' : `⭐ ${task.points}`}
+            </span>
+          )}
+
           <div className={styles.emojiWrap}>
             <span className={styles.emoji} aria-hidden="true">
               {task.emoji}
@@ -110,26 +127,11 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
           </div>
 
           <div className={styles.textContent}>
-            {display.kidsMode && (
-              <span className={styles.kidsCategoryBadge}>{categoryLabel}</span>
-            )}
-
             <h3 className={styles.title}>{task.title}</h3>
 
             {!display.kidsMode && display.showTimeEstimate && task.estimatedMinutes > 0 && (
               <span className={styles.time}>{formatMinutes(task.estimatedMinutes)}</span>
             )}
-
-            {display.kidsMode ? (
-              <div className={styles.kidsFooter}>
-                <span className={styles.kidsHint}>
-                  {isCompleted ? 'Gotowe!' : 'Dotknij, gdy zrobione'}
-                </span>
-                {display.showPoints && (
-                  <span className={styles.kidsPointsBubble}>⭐ {task.points}</span>
-                )}
-              </div>
-            ) : null}
           </div>
 
           {!display.kidsMode && display.showPoints && (

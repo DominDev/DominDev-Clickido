@@ -49,35 +49,23 @@
     radial-gradient(circle at top right, rgb(255 205 96 / 0.14), transparent 22%),
     linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 247 242 / 0.96)),
     var(--color-surface);
-  --theme-topbar-kids-bg:
-    radial-gradient(circle at top left, rgb(131 222 255 / 0.18), transparent 26%),
-    radial-gradient(circle at top right, rgb(255 205 96 / 0.2), transparent 24%),
-    linear-gradient(180deg, rgb(246 252 255), rgb(250 248 238));
-  --theme-bottomnav-kids-bg:
-    radial-gradient(circle at top left, rgb(131 222 255 / 0.12), transparent 22%),
-    radial-gradient(circle at top right, rgb(255 209 92 / 0.18), transparent 20%),
-    linear-gradient(180deg, rgb(255 252 243), rgb(255 248 232));
-  --theme-bottomnav-kids-icon-bg: rgb(255 255 255 / 0.78);
-  --theme-bottomnav-kids-active-bg: linear-gradient(135deg, #ffd978, #ffbf74);
+  --theme-topbar-kids-bg: var(--theme-topbar-bg);
+  --theme-bottomnav-kids-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg-primary) 8%);
+  --theme-bottomnav-kids-icon-bg: transparent;
+  --theme-bottomnav-kids-active-bg: color-mix(in srgb, var(--color-accent-light) 82%, var(--color-surface) 18%);
   --theme-surface-soft: linear-gradient(180deg, var(--color-surface), var(--color-surface-elevated));
   --theme-panel-soft: linear-gradient(180deg, var(--color-surface), var(--color-bg-secondary));
   --theme-panel-warm: linear-gradient(180deg, #fff6ef, var(--color-surface));
   --theme-hero-warm: linear-gradient(135deg, var(--color-accent-light), #fff1dd);
-  --theme-kids-page-bg:
-    radial-gradient(circle at top left, rgb(131 222 255 / 0.14), transparent 24%),
-    radial-gradient(circle at top right, rgb(255 209 92 / 0.18), transparent 22%);
-  --theme-kids-hero-bg:
-    radial-gradient(circle at top right, rgb(255 255 255 / 0.7), transparent 22%),
-    linear-gradient(135deg, #fff8e5, #ffffff);
-  --theme-kids-hero-accent: linear-gradient(135deg, #ffd86d, #ffb873);
-  --theme-kids-cool-panel: linear-gradient(180deg, #f5fcff, #ffffff);
-  --theme-kids-warm-panel: linear-gradient(180deg, #fff8ef, #ffffff);
-  --theme-kids-soft-panel: linear-gradient(180deg, #ffffff, #fff8ee);
-  --theme-points-page-bg:
-    radial-gradient(circle at top right, rgba(255, 214, 153, 0.35), transparent 30%),
-    radial-gradient(circle at top left, rgba(255, 183, 197, 0.25), transparent 28%);
+  --theme-kids-page-bg: var(--color-bg-primary);
+  --theme-kids-hero-bg: var(--theme-surface-soft);
+  --theme-kids-hero-accent: var(--color-accent-light);
+  --theme-kids-cool-panel: var(--theme-panel-soft);
+  --theme-kids-warm-panel: var(--theme-panel-warm);
+  --theme-kids-soft-panel: var(--color-surface);
+  --theme-points-page-bg: var(--color-bg-primary);
   --theme-hero-accent: linear-gradient(135deg, var(--color-accent), #ff915f);
-  --theme-reward-card-bg: linear-gradient(180deg, #ffffff, #fff7ea);
+  --theme-reward-card-bg: var(--color-surface);
   --theme-taskform-sheet-bg:
     radial-gradient(circle at top right, rgb(255 199 94 / 0.14), transparent 22%),
     linear-gradient(180deg, rgb(255 255 255 / 0.98), rgb(252 250 245 / 0.98));

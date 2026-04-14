@@ -20,7 +20,12 @@
 }
 
 .kidsNav {
-  background: var(--theme-bottomnav-kids-bg);
+  width: max-content;
+  max-width: calc(100vw - (var(--space-3) * 2));
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  margin: 0 auto;
 }
 
 .navItem {
@@ -85,41 +90,59 @@
 }
 
 .kidsMode {
+  flex: 0 0 auto;
+  flex-direction: row;
   gap: 6px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding: 8px 12px;
+  color: var(--color-text-muted);
+  border-radius: 20px;
 }
 
 .kidsMode .iconWrap {
-  width: 54px;
-  height: 54px;
-  background: var(--theme-bottomnav-kids-icon-bg);
-  border-radius: 20px;
-  box-shadow: 0 8px 18px rgb(17 24 39 / 0.08);
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border-radius: 999px;
+  box-shadow: none;
 }
 
 .kidsMode .icon {
-  font-size: 2rem;
+  font-size: 1.75rem;
 }
 
 .kidsMode .label {
-  font-size: 0.95rem;
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
+  display: none;
+  font-size: 0.9rem;
+  font-weight: var(--font-medium);
+  color: currentColor;
+  white-space: nowrap;
 }
 
 .kidsMode.active {
-  background: color-mix(in srgb, var(--color-surface) 74%, transparent 26%);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent-light) 82%, var(--color-surface) 18%);
 }
 
 .kidsMode.active .iconWrap {
-  background: var(--theme-bottomnav-kids-active-bg);
-  transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 12px 22px rgb(240 168 0 / 0.18);
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.kidsMode.active .label {
+  display: inline-flex;
 }
 
 .kidsMode.active::before {
-  display: none;
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  background-color: var(--color-accent);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  transform: translateX(-50%);
 }
 
 @media (max-width: 420px) {
@@ -153,19 +176,18 @@
   }
 
   .kidsMode {
-    gap: 4px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    gap: 6px;
+    padding: 8px 10px;
   }
 
   .kidsMode .iconWrap {
-    width: 46px;
-    height: 46px;
-    border-radius: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
   }
 
   .kidsMode .icon {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .kidsMode .label {
@@ -184,5 +206,10 @@
     border-width: var(--bottomnav-desktop-border-width);
     border-radius: 28px;
     transform: translateX(-50%);
+  }
+
+  .kidsNav {
+    width: max-content;
+    max-width: calc(100vw - 32px);
   }
 }

@@ -6,10 +6,6 @@
   padding-bottom: calc(var(--bottomnav-height) + var(--space-8));
 }
 
-.kidsPage {
-  background: var(--theme-points-page-bg);
-}
-
 .header {
   display: grid;
   gap: var(--space-4);
@@ -46,22 +42,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.kidsHeroCard {
-  position: relative;
-  overflow: hidden;
-  min-height: 160px;
-  justify-content: flex-end;
-}
-
-.kidsHeroCard::before {
-  content: '🌟';
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  font-size: 38px;
-  opacity: 0.9;
-}
-
 .heroLabel {
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
@@ -81,23 +61,9 @@
   opacity: 0.92;
 }
 
-.levelTrack {
-  width: 100%;
-  height: 12px;
-  overflow: hidden;
-  background: rgb(255 255 255 / 0.22);
-  border-radius: var(--radius-full);
-}
-
-.levelFill {
-  height: 100%;
-  border-radius: inherit;
-  background: rgb(255 255 255 / 0.92);
-}
-
 .kidsRewards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-3);
 }
 
@@ -173,8 +139,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  background: var(--theme-reward-card-bg);
-  border-color: var(--color-border);
+  background: var(--color-surface);
+  border-color: var(--color-border-light);
+  text-align: center;
+  align-items: center;
 }
 
 .rewardEmoji {
@@ -196,59 +164,6 @@
   gap: var(--space-3);
 }
 
-.kidsActionPanel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.kidsActionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-}
-
-.kidsActionCard {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 2px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border) 76%);
-  border-radius: var(--radius-2xl);
-  background: var(--theme-kids-soft-panel);
-  color: var(--color-text-primary);
-  text-decoration: none;
-  box-shadow: var(--shadow-card);
-}
-
-.kidsActionEmoji {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  min-width: 60px;
-  height: 60px;
-  border-radius: 20px;
-  background: var(--color-accent-light);
-  font-size: 2rem;
-}
-
-.kidsActionText {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.kidsActionText strong {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-}
-
-.kidsActionText span {
-  color: var(--color-text-secondary);
-  line-height: 1.45;
-}
-
 .parentActionPanel {
   display: flex;
   flex-direction: column;
@@ -257,7 +172,7 @@
 
 .parentActionGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
@@ -322,7 +237,7 @@
 
 .milestoneGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-3);
 }
 
@@ -330,7 +245,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  background: var(--theme-kids-soft-panel);
+  background: var(--color-surface);
 }
 
 .milestoneEmoji {
@@ -357,14 +272,41 @@
   font-weight: var(--font-bold);
 }
 
+.rewardProgress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.rewardProgressTrack {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  border-radius: 999px;
+}
+
+.rewardProgressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+}
+
+.rewardClaim {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  border-radius: 999px;
+}
+
 .unlocked {
   border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border) 65%);
   background: color-mix(in srgb, var(--color-success-light) 72%, var(--color-surface) 28%);
-}
-
-.nextMilestone {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 18%, transparent 82%), var(--shadow-card);
 }
 
 .cardsGrid {
@@ -388,25 +330,30 @@
 .kidsPage .panel,
 .kidsPage .milestoneCard,
 .kidsPage .focusCard {
-  border-width: 2px;
+  border-width: 1px;
 }
 
 .kidsPage .statCard,
 .kidsPage .panel {
-  background: var(--theme-kids-soft-panel);
+  background: var(--color-surface);
 }
 
 .kidsPage .focusCard {
-  background: var(--theme-kids-soft-panel);
+  background: var(--color-surface);
 }
 
-.kidsPage .cardLabel {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
+.emptyStatePanel {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
-.kidsPage .cardValue {
-  font-size: 30px;
+.emptyStateText {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
 .detailsGrid {
@@ -523,7 +470,6 @@
 @media (max-width: 640px) {
   .kidsRewards,
   .milestoneGrid,
-  .kidsActionGrid,
   .parentActionGrid {
     grid-template-columns: 1fr;
   }
@@ -558,7 +504,6 @@
   .panel,
   .milestoneCard,
   .focusCard,
-  .kidsActionCard,
   .parentActionCard {
     padding: var(--space-3);
     border-radius: 20px;
@@ -568,28 +513,15 @@
     font-size: clamp(2.1rem, 10vw, 2.7rem);
   }
 
-  .kidsHeroCard {
-    min-height: 136px;
-  }
-
-  .kidsHeroCard::before {
-    top: 12px;
-    right: 14px;
-    font-size: 32px;
-  }
-
   .rewardCard,
-  .kidsActionCard,
   .parentActionCard {
     gap: var(--space-2);
   }
 
-  .kidsActionCard,
   .parentActionCard {
     align-items: flex-start;
   }
 
-  .kidsActionEmoji,
   .parentActionEmoji,
   .focusEmoji {
     width: 48px;
