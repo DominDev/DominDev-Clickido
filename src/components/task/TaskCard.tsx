@@ -10,6 +10,7 @@ import { useTaskStore } from '@store/taskStore';
 import { getCategoryColor } from '@utils/categories';
 import { formatMinutes } from '@utils/formatting';
 import Checkbox from '../ui/Checkbox';
+import { KidsStarIcon } from '../ui';
 import styles from './TaskCard.module.css';
 
 interface TaskCardProps {
@@ -116,7 +117,14 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
                 isCompleted ? styles.kidsStatusDone : styles.kidsStatusTodo
               }`}
             >
-              {isCompleted ? '✓ Gotowe 😊' : `⭐ ${task.points}`}
+              {isCompleted ? (
+                '✓ Gotowe 😊'
+              ) : (
+                <>
+                  <KidsStarIcon className={styles.kidsStatusStar} />
+                  <span>{task.points}</span>
+                </>
+              )}
             </span>
           )}
 
