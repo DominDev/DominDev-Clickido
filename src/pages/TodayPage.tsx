@@ -226,9 +226,21 @@ export default function TodayPage() {
                 <div className={styles.titleBlock}>
                   <p className={styles.eyebrow}>Plan na dziś</p>
                   <h1 className={styles.kidsTitle}>{kidsMood.title}</h1>
-                  <p className={styles.kidsSubtitle}>
-                    {pendingTasks > 0 ? 'Wybierz zadanie.' : 'Zobacz swoje nagrody.'}
-                  </p>
+                  {pendingTasks > 0 ? (
+                    <div className={styles.kidsMiniProgress}>
+                      <div className={styles.kidsMiniProgressTrack} aria-hidden="true">
+                        <div
+                          className={styles.kidsMiniProgressFill}
+                          style={{ width: `${Math.max(progress.percentage, 8)}%` }}
+                        />
+                      </div>
+                      <p className={styles.kidsMiniProgressLabel}>
+                        {progress.completed}/{progress.total} gotowe
+                      </p>
+                    </div>
+                  ) : (
+                    <p className={styles.kidsSubtitle}>Zobacz swoje nagrody.</p>
+                  )}
                 </div>
 
                 <div
