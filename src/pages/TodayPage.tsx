@@ -263,7 +263,8 @@ export default function TodayPage() {
               </div>
 
               <PointsTile
-                totalPoints={display.showPoints ? points : progress.completed}
+                label="Punkty dziś"
+                value={display.showPoints ? points : progress.completed}
                 onClickAction={handleOpenPoints}
               />
             </div>

@@ -17,6 +17,12 @@
   grid-template-columns: minmax(0, 1.45fr) minmax(180px, 0.55fr);
   gap: var(--space-4);
   width: 100%;
+  align-items: stretch;
+}
+
+.kidsTopRow > * {
+  height: 100%;
+  min-height: 176px;
 }
 
 .headerCard,
@@ -735,6 +741,10 @@
 @media (max-width: 420px) {
   .kidsTopRow {
     grid-template-columns: 1fr;
+  }
+  .kidsTopRow > * {
+    height: auto;
+    min-height: auto;
   }
 
   .page {

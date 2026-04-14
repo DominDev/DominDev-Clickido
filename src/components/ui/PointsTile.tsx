@@ -3,11 +3,20 @@ import KidsStarIcon from './KidsStarIcon';
 import styles from './PointsTile.module.css';
 
 interface PointsTileProps {
-  totalPoints: number;
+  value: number;
+  label?: string;
+  subValue?: number;
+  subLabel?: string;
   onClickAction?: () => void;
 }
 
-export default function PointsTile({ totalPoints, onClickAction }: PointsTileProps) {
+export default function PointsTile({ 
+  value, 
+  label = 'Punkty dziś', 
+  subValue,
+  subLabel,
+  onClickAction 
+}: PointsTileProps) {
   const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
@@ -28,30 +37,37 @@ export default function PointsTile({ totalPoints, onClickAction }: PointsTilePro
       return;
     }
 
-    setIsSpinning(true);
+    if (onClickAction) {
+      setIsSpinning(true);
+    }
   };
+
+  const isInteractive = Boolean(onClickAction);
 
   return (
     <button
       type="button"
-      className={styles.tile}
+      className={`${styles.tile} ${!isInteractive ? styles.nonInteractive : ''}`}
       onClick={handleClick}
-      aria-label="Otwórz punkty i nagrody"
+      aria-label="Punkty i nagrody"
+      disabled={!isInteractive}
     >
       <div className={styles.header}>
-        <h2 className={styles.title}>Punkty dziś</h2>
-        <span className={styles.arrow} aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path
-              d="M5 12h14m-6-6 6 6-6 6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
+        <h2 className={styles.title}>{label}</h2>
+        {isInteractive && (
+          <span className={styles.arrow} aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+              <path
+                d="M5 12h14m-6-6 6 6-6 6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        )}
       </div>
 
       <div className={styles.body}>
@@ -61,8 +77,18 @@ export default function PointsTile({ totalPoints, onClickAction }: PointsTilePro
         >
           <KidsStarIcon />
         </span>
-        <span className={styles.value}>{totalPoints}</span>
+        <span className={styles.value}>{value}</span>
       </div>
+
+      {subValue !== undefined && subLabel && (
+        <div className={styles.footer}>
+          <span className={styles.subLabel}>{subLabel}</span>
+          <span className={styles.subValue}>
+            <KidsStarIcon className={styles.tinyStar} />
+            +{subValue}
+          </span>
+        </div>
+      )}
     </button>
   );
 }

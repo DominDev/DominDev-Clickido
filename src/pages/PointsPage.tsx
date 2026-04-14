@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { KidsStarIcon } from '@components/ui';
+import { KidsStarIcon, PointsTile } from '@components/ui';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
@@ -39,10 +39,55 @@ function formatShortDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
+type KidsMood = {
+  mood: 'start' | 'happy' | 'excited' | 'done';
+  title: string;
+  subtitle: string;
+};
+
+function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood {
+  if (pendingTasks === 0) {
+    return {
+      mood: 'done',
+      title: 'Brawo!',
+      subtitle: 'Na dziś wszystko gotowe.',
+    };
+  }
+
+  if (progressPercentage >= 80) {
+    return {
+      mood: 'excited',
+      title: 'Już prawie!',
+      subtitle: 'Zostało tylko trochę.',
+    };
+  }
+
+  if (progressPercentage >= 40) {
+    return {
+      mood: 'happy',
+      title: 'Idzie świetnie',
+      subtitle: 'Jeszcze kilka kafelków.',
+    };
+  }
+
+  return {
+    mood: 'start',
+    title: 'Zaczynamy',
+    subtitle: 'Dotknij duży kafelek.',
+  };
+}
+
 export default function PointsPage() {
-  const { completions, tasks, selectedDate, getPointsForSelectedDate } = useTaskStore();
+  const { completions, tasks, selectedDate, getPointsForSelectedDate, getProgressForSelectedDate } = useTaskStore();
   const { display } = useSettingsStore();
   const todayPoints = getPointsForSelectedDate();
+  const progress = getProgressForSelectedDate();
+  const pendingTasks = Math.max(progress.total - progress.completed, 0);
+
+  const kidsMood = useMemo(
+    () => getKidsMood(progress.percentage, pendingTasks),
+    [progress.percentage, pendingTasks]
+  );
 
   const stats = useMemo(() => {
     const totalPoints = completions.reduce((sum, completion) => sum + completion.points, 0);
@@ -193,29 +238,55 @@ export default function PointsPage() {
 
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
-      <header className={styles.header}>
-        <div>
-          <p className={styles.eyebrow}>{display.kidsMode ? 'Nagrody' : 'Twoje postępy'}</p>
-          <h1 className={styles.title}>{display.kidsMode ? 'Moje skarby' : 'Punkty'}</h1>
-          {!display.kidsMode && (
+      {display.kidsMode ? (
+        <div className={styles.kidsTopRow}>
+          <div className={styles.headerCard}>
+            <div className={styles.titleBlock}>
+              <p className={styles.eyebrow}>Sklepik</p>
+              <h1 className={styles.kidsTitle}>Moje skarby</h1>
+              <p className={styles.kidsSubtitle}>Wybierz nagrodę za swoje gwiazdki!</p>
+            </div>
+            <div
+              className={`${styles.kidsCompanion} ${styles[`kidsCompanion${kidsMood.mood[0].toUpperCase()}${kidsMood.mood.slice(1)}`]}`}
+              aria-hidden="true"
+            >
+              <span className={styles.kidsCompanionFace}>
+                <span className={styles.kidsCompanionEyes}>
+                  <span />
+                  <span />
+                </span>
+                <span className={styles.kidsCompanionMouth} />
+              </span>
+            </div>
+          </div>
+          <PointsTile 
+            label="Moje skarby"
+            value={stats.totalPoints} 
+            subLabel="Zebrane dzisiaj"
+            subValue={todayPoints}
+          />
+        </div>
+      ) : (
+        <header className={styles.header}>
+          <div>
+            <p className={styles.eyebrow}>Twoje postępy</p>
+            <h1 className={styles.title}>Punkty</h1>
             <p className={styles.subtitle}>
               Jedno miejsce do szybkiego sprawdzenia wyniku, serii i tempa całego domu.
             </p>
-          )}
-        </div>
+          </div>
 
-        <div className={styles.heroCard}>
-          <span className={styles.heroLabel}>{display.kidsMode ? 'Twoje skarby' : 'Dzisiaj'}</span>
-          <strong className={styles.heroValue}>
-            {display.kidsMode ? `${stats.totalPoints} gwiazdek` : formatPoints(todayPoints)}
-          </strong>
-          <span className={styles.heroHint}>
-            {display.kidsMode
-              ? `Dzisiaj: ${todayPoints} punktów`
-              : `Łącznie ${formatPoints(stats.totalPoints)} · ${stats.currentStreak} dni serii`}
-          </span>
-        </div>
-      </header>
+          <div className={styles.heroCard}>
+            <span className={styles.heroLabel}>Dzisiaj</span>
+            <strong className={styles.heroValue}>
+              {formatPoints(todayPoints)}
+            </strong>
+            <span className={styles.heroHint}>
+              Łącznie {formatPoints(stats.totalPoints)} · {stats.currentStreak} dni serii
+            </span>
+          </div>
+        </header>
+      )}
 
       {!display.kidsMode && (
         <section className={styles.focusCard} aria-label="Najważniejszy następny krok">
@@ -233,82 +304,86 @@ export default function PointsPage() {
       )}
 
       {!hasStatsData && (
-        <section className={styles.emptyStatePanel} aria-label="Brak danych punktowych">
-          <div className={styles.panelHeader}>
-            <h2>
-              {display.kidsMode
-                ? 'Nagrody pojawią się po pierwszych zadaniach'
-                : 'Statystyki pojawią się po pierwszych zadaniach'}
-            </h2>
+        <section className={`${styles.emptyStatePanel} ${display.kidsMode ? styles.kidsEmptyState : ''}`} aria-label="Brak danych punktowych">
+          <div className={styles.emptyStateHeader}>
+            <span className={styles.emptyStateEmoji} aria-hidden="true">
+              {display.kidsMode ? '🎁' : '📊'}
+            </span>
+            <div className={styles.emptyStateText}>
+              <h2>
+                {display.kidsMode
+                  ? 'Nagrody pojawią się tutaj!'
+                  : 'Statystyki pojawią się po pierwszych zadaniach'}
+              </h2>
+              <p>
+                {display.kidsMode
+                  ? 'Kiedy zrobisz pierwsze zadania z listy „Dziś”, zaczniesz zbierać gwiazdki na wspaniałe nagrody.'
+                  : 'Na razie ten ekran jest pusty, bo nie ma jeszcze wykonanych zadań. Wróć do dnia albo przygotuj pierwszą bazę zadań.'}
+              </p>
+            </div>
           </div>
-          <p className={styles.emptyStateText}>
-            {display.kidsMode
-              ? 'Gdy zaczniesz klikać zadania na ekranie „Dziś”, tutaj pojawią się punkty, kolejne poziomy i odblokowane nagrody.'
-              : 'Na razie ten ekran jest pusty, bo nie ma jeszcze wykonanych zadań. Wróć do dnia albo przygotuj pierwszą bazę zadań.'}
-          </p>
+          {display.kidsMode && (
+            <Link className={styles.emptyStateAction} to="/today">
+              Wróć do zadań
+            </Link>
+          )}
         </section>
       )}
 
       {display.kidsMode && hasStatsData && (
-        <>
-          <section className={styles.kidsRewards} aria-label="Postęp nagród">
-            <article className={styles.rewardCard}>
-              <span className={styles.rewardEmoji} aria-hidden="true">
-                <KidsStarIcon className={styles.rewardStarIcon} />
-              </span>
-              <strong>Twoje skarby: {stats.totalPoints} gwiazdek</strong>
-            </article>
-          </section>
+        <section className={styles.milestonesPanel} aria-label="Nagrody do kupienia">
+          <div className={styles.milestoneGrid}>
+            {REWARD_MILESTONES.map((reward) => {
+              const unlocked = stats.totalPoints >= reward.target;
+              const missingPoints = Math.max(0, reward.target - stats.totalPoints);
+              const progressPercent = Math.min(
+                100,
+                Math.max(8, Math.round((stats.totalPoints / reward.target) * 100))
+              );
 
-          <section className={styles.milestonesPanel} aria-label="Nagrody do kupienia">
-            <div className={styles.panelHeader}>
-              <h2>Co możesz kupić</h2>
-            </div>
-
-            <div className={styles.milestoneGrid}>
-              {REWARD_MILESTONES.map((reward) => {
-                const unlocked = stats.totalPoints >= reward.target;
-                const missingPoints = Math.max(0, reward.target - stats.totalPoints);
-                const progressPercent = Math.min(
-                  100,
-                  Math.max(8, Math.round((stats.totalPoints / reward.target) * 100))
-                );
-
-                return (
-                  <article
-                    key={reward.target}
-                    className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''}`}
-                  >
-                    <span className={styles.milestoneEmoji} aria-hidden="true">
-                      {reward.emoji}
-                    </span>
-                    <strong>{reward.title}</strong>
-
-                    {!unlocked && (
-                      <div className={styles.rewardProgress} aria-hidden="true">
-                        <div className={styles.rewardProgressTrack}>
-                          <div
-                            className={styles.rewardProgressFill}
-                            style={{ width: `${progressPercent}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className={styles.milestoneFooter}>
-                      <span>{reward.target} gwiazdek</span>
-                      {unlocked ? (
-                        <span className={styles.rewardClaim}>Odbierz!</span>
-                      ) : (
-                        <span>Jeszcze {missingPoints}</span>
-                      )}
+              return (
+                <article
+                  key={reward.target}
+                  className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''}`}
+                >
+                  <div className={styles.milestoneCardContent}>
+                    <div className={styles.milestoneEmojiWrap}>
+                      <span className={styles.milestoneEmoji} aria-hidden="true">
+                        {reward.emoji}
+                      </span>
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        </>
+                    <div className={styles.milestoneTextContent}>
+                      <strong>{reward.title}</strong>
+                      <span>{reward.hint}</span>
+                    </div>
+                  </div>
+
+                  {!unlocked && (
+                    <div className={styles.kidsMiniProgress} aria-hidden="true">
+                      <div className={styles.kidsMiniProgressTrack}>
+                        <div
+                          className={styles.kidsMiniProgressFill}
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={styles.milestoneFooter}>
+                    <span className={styles.milestoneTarget}>
+                      <KidsStarIcon className={styles.smallStarIcon} /> {reward.target}
+                    </span>
+                    {unlocked ? (
+                      <span className={styles.rewardClaim}>Odbierz!</span>
+                    ) : (
+                      <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {!display.kidsMode && hasStatsData && (
