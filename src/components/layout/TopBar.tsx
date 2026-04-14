@@ -107,6 +107,11 @@ export default function TopBar() {
           </button>
         )}
 
+        <div className={styles.clockSection}>
+          <span className={styles.clock}>{formattedTime}</span>
+          {!display.kidsMode && <span className={styles.clockHint}>{`${progress.percentage}% planu gotowe`}</span>}
+        </div>
+
         {display.kidsMode && (
           <div className={styles.parentExitWrap}>
             <button
@@ -117,7 +122,18 @@ export default function TopBar() {
               aria-expanded={display.kidsModePin ? parentPinOpen : undefined}
               title="Dla rodzica"
             >
-              <span aria-hidden="true">🔒</span>
+              <span className={styles.parentExitIcon} aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path
+                    d="M12 3.75 5.5 6.5v4.35c0 4.1 2.46 7.9 6.27 9.66a.55.55 0 0 0 .46 0c3.81-1.76 6.27-5.56 6.27-9.66V6.5L12 3.75Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
             </button>
 
             {display.kidsModePin && parentPinOpen && (
@@ -164,11 +180,6 @@ export default function TopBar() {
             )}
           </div>
         )}
-
-        <div className={styles.clockSection}>
-          <span className={styles.clock}>{formattedTime}</span>
-          {!display.kidsMode && <span className={styles.clockHint}>{`${progress.percentage}% planu gotowe`}</span>}
-        </div>
 
         {!display.kidsMode && (
           <div className={styles.progressSection}>
