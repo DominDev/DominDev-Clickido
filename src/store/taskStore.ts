@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import { Task, TaskCompletion } from '@/types';
+import { Task, TaskCompletion, ClaimedReward } from '@/types';
 import * as taskService from '@/services/taskService';
 import * as completionService from '@/services/completionService';
 import { getLocalDateKey } from '@/utils/date';
@@ -12,7 +12,7 @@ import { getTasksForDate } from '@/utils/recurrence';
 interface TaskState {
   tasks: Task[];
   completions: TaskCompletion[];
-  claimedRewards: number[];
+  claimedRewards: ClaimedReward[];
   selectedDate: Date;
   isLoading: boolean;
 
@@ -21,6 +21,7 @@ interface TaskState {
   loadCompletions: () => void;
   loadClaimedRewards: () => void;
   claimReward: (target: number) => void;
+  unclaimReward: (target: number) => void;
   setSelectedDate: (date: Date) => void;
 
   // Task CRUD
@@ -41,6 +42,9 @@ interface TaskState {
   getPendingTasksForSelectedDate: () => Task[];
   getProgressForSelectedDate: () => { completed: number; total: number; percentage: number };
   getPointsForSelectedDate: () => number;
+  getTotalEarnedPoints: () => number;
+  getTotalSpentPoints: () => number;
+  getAvailablePoints: () => number;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -67,6 +71,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   claimReward: (target: number) => {
     const newClaimed = completionService.claimRewardTarget(target);
+    set({ claimedRewards: newClaimed });
+  },
+
+  unclaimReward: (target: number) => {
+    const newClaimed = completionService.unclaimRewardTarget(target);
     set({ claimedRewards: newClaimed });
   },
 
@@ -189,5 +198,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   getPointsForSelectedDate: () => {
     const { selectedDate } = get();
     return completionService.getPointsForDate(selectedDate);
+  },
+
+  getTotalEarnedPoints: () => {
+    const { completions } = get();
+    return completions.reduce((sum, c) => sum + c.points, 0);
+  },
+
+  getTotalSpentPoints: () => {
+    const { claimedRewards } = get();
+    return claimedRewards.reduce((sum, r) => sum + r.pointsSpent, 0);
+  },
+
+  getAvailablePoints: () => {
+    return get().getTotalEarnedPoints() - get().getTotalSpentPoints();
   },
 }));

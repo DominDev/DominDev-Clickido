@@ -3,8 +3,10 @@
  * Designed for future migration to Supabase/Firebase
  */
 
+import { ClaimedReward } from '@/types';
+
 const STORAGE_PREFIX = 'ck_';
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 2;
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -86,6 +88,7 @@ export function exportData(): string {
     exportedAt: new Date().toISOString(),
     tasks: getItem(STORAGE_KEYS.TASKS, []),
     completions: getItem(STORAGE_KEYS.COMPLETIONS, []),
+    claimedRewards: getItem(STORAGE_KEYS.CLAIMED_REWARDS, []),
     settings: getItem(STORAGE_KEYS.SETTINGS, null),
   };
   return JSON.stringify(data, null, 2);
@@ -106,10 +109,17 @@ export function importData(jsonString: string): boolean {
     // Import data
     setItem(STORAGE_KEYS.TASKS, data.tasks);
     setItem(STORAGE_KEYS.COMPLETIONS, data.completions || []);
+
+    // Handle claimedRewards migration from old format (number[]) to new format (ClaimedReward[])
+    if (data.claimedRewards) {
+      const migratedRewards = migrateClaimedRewards(data.claimedRewards);
+      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedRewards);
+    }
+
     if (data.settings) {
       setItem(STORAGE_KEYS.SETTINGS, data.settings);
     }
-    setItem(STORAGE_KEYS.VERSION, data.version);
+    setItem(STORAGE_KEYS.VERSION, CURRENT_VERSION);
 
     return true;
   } catch (error) {
@@ -119,14 +129,43 @@ export function importData(jsonString: string): boolean {
 }
 
 /**
+ * Migrate claimed rewards from old format (number[]) to new format (ClaimedReward[])
+ */
+function migrateClaimedRewards(rewards: unknown): ClaimedReward[] {
+  if (!Array.isArray(rewards)) {
+    return [];
+  }
+
+  // Check if already in new format
+  if (rewards.length > 0 && typeof rewards[0] === 'object' && rewards[0] !== null && 'target' in rewards[0]) {
+    return rewards as ClaimedReward[];
+  }
+
+  // Convert from old format (number[]) to new format (ClaimedReward[])
+  return rewards
+    .filter((item): item is number => typeof item === 'number')
+    .map((target) => ({
+      target,
+      claimedAt: new Date().toISOString(),
+      pointsSpent: target,
+    }));
+}
+
+/**
  * Check and run migrations if needed
  */
 export function runMigrations(): void {
   const storedVersion = getItem(STORAGE_KEYS.VERSION, 0);
 
   if (storedVersion < CURRENT_VERSION) {
-    // Run migrations here when needed
-    // For now, just update version
+    // Migration v1 -> v2: Convert claimed rewards from number[] to ClaimedReward[]
+    if (storedVersion < 2) {
+      const oldRewards = getItem<unknown>(STORAGE_KEYS.CLAIMED_REWARDS, []);
+      const migratedRewards = migrateClaimedRewards(oldRewards);
+      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedRewards);
+      console.log('Migrated claimed rewards to new format');
+    }
+
     setItem(STORAGE_KEYS.VERSION, CURRENT_VERSION);
     console.log(`Migrated storage from v${storedVersion} to v${CURRENT_VERSION}`);
   }

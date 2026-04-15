@@ -6,16 +6,15 @@ import { useEffect, useState } from 'react';
 import { isToday } from 'date-fns';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@store/uiStore';
+import { showInfoToast, showSuccessToast } from '@store/uiStore';
 import { capitalize, formatDateFull, formatTime } from '@utils/formatting';
 import ProgressRing from '../ui/ProgressRing';
+import { PinModal } from '../ui';
 import styles from './TopBar.module.css';
 
 export default function TopBar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [parentPinOpen, setParentPinOpen] = useState(false);
-  const [parentPinValue, setParentPinValue] = useState('');
-  const [parentPinError, setParentPinError] = useState<string | null>(null);
   const { selectedDate, getProgressForSelectedDate, setSelectedDate } = useTaskStore();
   const { screensaver, display, toggleKidsMode } = useSettingsStore();
 
@@ -52,24 +51,17 @@ export default function TopBar() {
       return;
     }
 
-    setParentPinOpen((current) => !current);
-    setParentPinValue('');
-    setParentPinError(null);
+    setParentPinOpen(true);
   };
 
-  const handleUnlockWithPin = () => {
-    const result = toggleKidsMode(parentPinValue.trim());
-
+  const handlePinSubmit = (pin: string): boolean => {
+    const result = toggleKidsMode(pin);
     if (result.success) {
       setParentPinOpen(false);
-      setParentPinValue('');
-      setParentPinError(null);
       showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
-      return;
+      return true;
     }
-
-    setParentPinError('Nieprawidłowy PIN rodzica.');
-    showErrorToast('Nieprawidłowy PIN rodzica.');
+    return false;
   };
 
   return (
@@ -113,13 +105,12 @@ export default function TopBar() {
         </div>
 
         {display.kidsMode && (
-          <div className={styles.parentExitWrap}>
+          <>
             <button
               type="button"
               className={styles.parentExitButton}
               onClick={handleParentExit}
               aria-label="Wejście do trybu rodzica"
-              aria-expanded={display.kidsModePin ? parentPinOpen : undefined}
               title="Dla rodzica"
             >
               <span className={styles.parentExitIcon} aria-hidden="true">
@@ -136,49 +127,15 @@ export default function TopBar() {
               </span>
             </button>
 
-            {display.kidsModePin && parentPinOpen && (
-              <div className={styles.parentPinPanel} role="group" aria-label="Odblokowanie trybu rodzica">
-                <label className={styles.parentPinLabel}>
-                  <span>PIN rodzica</span>
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    autoComplete="one-time-code"
-                    maxLength={4}
-                    className={styles.parentPinInput}
-                    value={parentPinValue}
-                    onChange={(event) => {
-                      setParentPinValue(event.target.value.replace(/\D/g, '').slice(0, 4));
-                      if (parentPinError) {
-                        setParentPinError(null);
-                      }
-                    }}
-                    placeholder="1234"
-                  />
-                </label>
-
-                <div className={styles.parentPinActions}>
-                  <button type="button" className={styles.parentPinConfirm} onClick={handleUnlockWithPin}>
-                    Odblokuj
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.parentPinCancel}
-                    onClick={() => {
-                      setParentPinOpen(false);
-                      setParentPinValue('');
-                      setParentPinError(null);
-                    }}
-                  >
-                    Anuluj
-                  </button>
-                </div>
-
-                {parentPinError && <p className={styles.parentPinError}>{parentPinError}</p>}
-              </div>
-            )}
-          </div>
+            <PinModal
+              isOpen={parentPinOpen}
+              onClose={() => setParentPinOpen(false)}
+              onSubmit={handlePinSubmit}
+              title="Tryb rodzica"
+              description="Wprowadź PIN, aby wyłączyć tryb dziecięcy."
+              submitLabel="Odblokuj"
+            />
+          </>
         )}
 
         {!display.kidsMode && (

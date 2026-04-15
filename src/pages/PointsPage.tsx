@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { KidsStarIcon, PointsTile } from '@components/ui';
+import { KidsStarIcon, PointsTile, PinModal } from '@components/ui';
 import { CategoryId } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
@@ -78,16 +78,44 @@ function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood
 }
 
 export default function PointsPage() {
-  const { completions, tasks, selectedDate, getPointsForSelectedDate, getProgressForSelectedDate, claimedRewards, claimReward } = useTaskStore();
+  const {
+    completions,
+    tasks,
+    selectedDate,
+    getPointsForSelectedDate,
+    getProgressForSelectedDate,
+    claimedRewards,
+    claimReward,
+    unclaimReward,
+    getAvailablePoints,
+    getTotalEarnedPoints,
+  } = useTaskStore();
   const { display } = useSettingsStore();
   const todayPoints = getPointsForSelectedDate();
   const progress = getProgressForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
+  const availablePoints = getAvailablePoints();
+  const totalEarnedPoints = getTotalEarnedPoints();
 
   const [invalidTarget, setInvalidTarget] = useState<number | null>(null);
+  const [unclaimTarget, setUnclaimTarget] = useState<number | null>(null);
+
+  // Check if reward target is claimed
+  const isRewardClaimed = (target: number) => claimedRewards.some((r) => r.target === target);
 
   const handleMilestoneClick = (unlocked: boolean, claimed: boolean, target: number) => {
-    if (claimed) return;
+    if (claimed) {
+      // Clicked on claimed reward - try to unclaim
+      if (!display.kidsModePin) {
+        // No PIN set - unclaim directly
+        unclaimReward(target);
+      } else {
+        // PIN set - show modal
+        setUnclaimTarget(target);
+      }
+      return;
+    }
+
     if (!unlocked) {
       setInvalidTarget(target);
       setTimeout(() => setInvalidTarget(null), 400);
@@ -96,13 +124,23 @@ export default function PointsPage() {
     }
   };
 
+  const handleUnclaimWithPin = (pin: string): boolean => {
+    if (pin === display.kidsModePin) {
+      if (unclaimTarget !== null) {
+        unclaimReward(unclaimTarget);
+        setUnclaimTarget(null);
+      }
+      return true;
+    }
+    return false;
+  };
+
   const kidsMood = useMemo(
     () => getKidsMood(progress.percentage, pendingTasks),
     [progress.percentage, pendingTasks]
   );
 
   const stats = useMemo(() => {
-    const totalPoints = completions.reduce((sum, completion) => sum + completion.points, 0);
     const uniqueDates = [...new Set(completions.map((completion) => completion.date))].sort();
     const activeDays = uniqueDates.length;
     const firstDay = uniqueDates[0] ?? null;
@@ -175,18 +213,23 @@ export default function PointsPage() {
     });
 
     const maxRecentPoints = Math.max(...recentDays.map((day) => day.points), 1);
-    const level = Math.max(1, Math.floor(totalPoints / 100) + 1);
+    const level = Math.max(1, Math.floor(totalEarnedPoints / 100) + 1);
     const nextLevelTarget = level * 100;
     const previousLevelTarget = Math.max(0, (level - 1) * 100);
-    const pointsIntoLevel = totalPoints - previousLevelTarget;
+    const pointsIntoLevel = totalEarnedPoints - previousLevelTarget;
     const levelSpan = Math.max(1, nextLevelTarget - previousLevelTarget);
     const levelProgress = Math.min(100, Math.round((pointsIntoLevel / levelSpan) * 100));
-    const pointsToNextLevel = Math.max(0, nextLevelTarget - totalPoints);
-    const unlockedRewards = REWARD_MILESTONES.filter((reward) => totalPoints >= reward.target && !claimedRewards.includes(reward.target)).length;
-    const nextReward = REWARD_MILESTONES.find((reward) => totalPoints < reward.target) ?? null;
+    const pointsToNextLevel = Math.max(0, nextLevelTarget - totalEarnedPoints);
+    const unlockedRewards = REWARD_MILESTONES.filter(
+      (reward) => availablePoints >= reward.target && !isRewardClaimed(reward.target)
+    ).length;
+    const nextReward = REWARD_MILESTONES.find(
+      (reward) => !isRewardClaimed(reward.target) && availablePoints < reward.target
+    ) ?? null;
 
     return {
-      totalPoints,
+      totalPoints: totalEarnedPoints,
+      availablePoints,
       activeDays,
       firstDay,
       weekPoints,
@@ -204,7 +247,7 @@ export default function PointsPage() {
       unlockedRewards,
       nextReward,
     };
-  }, [completions, selectedDate, tasks]);
+  }, [completions, selectedDate, tasks, availablePoints, totalEarnedPoints, claimedRewards]);
 
   const primaryNextStep = useMemo(() => {
     if (display.kidsMode) {
@@ -212,7 +255,7 @@ export default function PointsPage() {
         return {
           emoji: '🚀',
           title: 'Najlepiej teraz wrócić do zadań',
-          description: `Do celu "${stats.nextReward.title}" brakuje jeszcze ${stats.nextReward.target - stats.totalPoints} punktów.`,
+          description: `Do celu "${stats.nextReward.title}" brakuje jeszcze ${stats.nextReward.target - stats.availablePoints} punktów.`,
           actionLabel: 'Wróć do dzisiaj',
           to: '/today',
         };
@@ -244,7 +287,7 @@ export default function PointsPage() {
       actionLabel: 'Wróć do dnia',
       to: '/today',
     };
-  }, [display.kidsMode, stats.nextReward, stats.totalCompleted, stats.totalPoints]);
+  }, [display.kidsMode, stats.nextReward, stats.totalCompleted, stats.availablePoints]);
 
   const hasStatsData = stats.totalCompleted > 0;
 
@@ -261,11 +304,11 @@ export default function PointsPage() {
                   <div className={styles.kidsMiniProgressTrack} aria-hidden="true">
                     <div
                       className={styles.kidsMiniProgressFill}
-                      style={{ width: `${Math.max(8, Math.round((stats.totalPoints / stats.nextReward.target) * 100))}%` }}
+                      style={{ width: `${Math.max(8, Math.round((stats.availablePoints / stats.nextReward.target) * 100))}%` }}
                     />
                   </div>
                   <p className={styles.kidsMiniProgressLabel}>
-                    Do "{stats.nextReward.title}" brakuje {stats.nextReward.target - stats.totalPoints} gwiazdek
+                    Do "{stats.nextReward.title}" brakuje {stats.nextReward.target - stats.availablePoints} gwiazdek
                   </p>
                 </div>
               ) : (
@@ -285,9 +328,9 @@ export default function PointsPage() {
               </span>
             </div>
           </div>
-          <PointsTile 
+          <PointsTile
             label="Moje skarby"
-            value={stats.totalPoints} 
+            value={stats.availablePoints}
             subLabel="Zebrane dzisiaj"
             subValue={todayPoints}
           />
@@ -343,7 +386,7 @@ export default function PointsPage() {
               </h2>
               <p>
                 {display.kidsMode
-                  ? 'Kiedy zrobisz pierwsze zadania z listy „Dziś”, zaczniesz zbierać gwiazdki na wspaniałe nagrody.'
+                  ? 'Kiedy zrobisz pierwsze zadania z listy „Dziś", zaczniesz zbierać gwiazdki na wspaniałe nagrody.'
                   : 'Na razie ten ekran jest pusty, bo nie ma jeszcze wykonanych zadań. Wróć do dnia albo przygotuj pierwszą bazę zadań.'}
               </p>
             </div>
@@ -361,24 +404,25 @@ export default function PointsPage() {
           <div className={styles.milestoneGrid}>
             {[...REWARD_MILESTONES]
               .sort((a, b) => {
-                const aClaimed = claimedRewards.includes(a.target);
-                const bClaimed = claimedRewards.includes(b.target);
+                const aClaimed = isRewardClaimed(a.target);
+                const bClaimed = isRewardClaimed(b.target);
                 if (aClaimed && !bClaimed) return 1;
                 if (!aClaimed && bClaimed) return -1;
                 return a.target - b.target;
               })
               .map((reward) => {
-              const claimed = claimedRewards.includes(reward.target);
-              const unlocked = stats.totalPoints >= reward.target && !claimed;
-              const missingPoints = Math.max(0, reward.target - stats.totalPoints);
+              const claimed = isRewardClaimed(reward.target);
+              const unlocked = stats.availablePoints >= reward.target && !claimed;
+              const missingPoints = Math.max(0, reward.target - stats.availablePoints);
               const progressPercent = Math.min(
                 100,
-                Math.max(8, Math.round((stats.totalPoints / reward.target) * 100))
+                Math.max(8, Math.round((stats.availablePoints / reward.target) * 100))
               );
 
               return (
                 <article
                   key={reward.target}
+                  data-claimed-stamp="ODEBRANE!"
                   className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
                     claimed ? styles.claimed : ''
                   } ${!unlocked && !claimed && invalidTarget === reward.target ? styles.invalidShake : ''}`}
@@ -411,12 +455,12 @@ export default function PointsPage() {
                     <span className={styles.milestoneTarget}>
                       <KidsStarIcon className={styles.smallStarIcon} /> {reward.target}
                     </span>
-                    {claimed ? (
-                      <span className={styles.rewardClaimed}>✓ Odebrane</span>
-                    ) : unlocked ? (
-                      <span className={styles.rewardClaim}>Odbierz!</span>
-                    ) : (
-                      <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
+                    {!claimed && (
+                      unlocked ? (
+                        <span className={styles.rewardClaim}>Odbierz!</span>
+                      ) : (
+                        <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
+                      )
                     )}
                   </div>
                 </article>
@@ -533,6 +577,15 @@ export default function PointsPage() {
           </article>
         </section>
       )}
+
+      <PinModal
+        isOpen={unclaimTarget !== null}
+        onClose={() => setUnclaimTarget(null)}
+        onSubmit={handleUnclaimWithPin}
+        title="Cofnij nagrodę"
+        description="Aby cofnąć odebraną nagrodę i zwrócić punkty, wpisz PIN rodzica."
+        submitLabel="Cofnij nagrodę"
+      />
     </section>
   );
 }
