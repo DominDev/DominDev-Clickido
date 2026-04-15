@@ -82,7 +82,7 @@ export default function SettingsPage() {
     resetSettings,
     loadSettings,
   } = useSettingsStore();
-  const { loadTasks, loadCompletions } = useTaskStore();
+  const { loadTasks, loadCompletions, loadClaimedRewards } = useTaskStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
@@ -145,6 +145,7 @@ export default function SettingsPage() {
 
       loadTasks();
       loadCompletions();
+      loadClaimedRewards();
       loadSettings();
 
       setImportSummary(`Zaimportowano dane z pliku: ${file.name}`);

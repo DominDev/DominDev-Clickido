@@ -15,6 +15,25 @@ export function getAllCompletions(): TaskCompletion[] {
 }
 
 /**
+ * Get all claimed reward targets
+ */
+export function getClaimedRewards(): number[] {
+  return getItem<number[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
+}
+
+/**
+ * Mark a reward as claimed
+ */
+export function claimRewardTarget(target: number): number[] {
+  const claimed = getClaimedRewards();
+  if (!claimed.includes(target)) {
+    claimed.push(target);
+    setItem(STORAGE_KEYS.CLAIMED_REWARDS, claimed);
+  }
+  return claimed;
+}
+
+/**
  * Check if task is completed for a specific date
  */
 export function isTaskCompleted(taskId: string, date: Date): boolean {

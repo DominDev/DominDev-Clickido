@@ -277,16 +277,23 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 0;
+  background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg-secondary) 40%);
+  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-2xl);
   transform: translateY(6px);
-  box-shadow:
-    0 8px 16px rgb(45 41 38 / 0.08),
-    0 2px 0 rgb(232 224 216 / 0.88);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-base);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-base), border-color var(--transition-fast);
+}
+
+.kidsPage .milestoneCard:not(.unlocked):not(.claimed) .milestoneEmojiWrap {
+  opacity: 0.6;
+  filter: grayscale(0.8);
+}
+
+.kidsPage .milestoneCard:not(.unlocked):not(.claimed) .milestoneTextContent {
+  opacity: 0.7;
 }
 
 .kidsPage .milestoneCard.invalidShake {
@@ -398,31 +405,58 @@
   min-height: 38px;
   padding: 0 16px;
   color: var(--color-text-inverse);
-  background: linear-gradient(135deg, var(--color-success), #43a047);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
   border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  animation: rewardPulse 2s infinite;
+}
+
+@keyframes rewardPulse {
+  0% { transform: scale(1); }
+  5% { transform: scale(1.05); }
+  10% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.rewardClaimed {
+  color: var(--color-success);
+  font-weight: var(--font-bold);
 }
 
 .kidsPage .unlocked {
-  background-color: var(--color-success-light);
+  background-color: var(--color-surface);
+  border: 1px solid transparent;
   transform: translateY(0);
   box-shadow:
-    0 18px 28px rgb(76 175 80 / 0.14),
-    0 8px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
+    0 18px 28px rgb(45 41 38 / 0.08),
+    0 8px 0 rgb(232 224 216 / 0.88);
 }
 
 .kidsPage .unlocked:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 8px 16px rgb(45 41 38 / 0.08),
+    0 2px 0 rgb(232 224 216 / 0.88);
+}
+
+.kidsPage .unlocked .milestoneEmojiWrap {
+  background: var(--color-bg-secondary);
+}
+
+.kidsPage .claimed {
+  background-color: var(--color-success-light);
+  border: 1px solid color-mix(in srgb, var(--color-success) 24%, var(--color-border) 76%);
   transform: translateY(6px);
   box-shadow:
     0 8px 16px rgb(76 175 80 / 0.12),
     0 2px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
 }
 
-.kidsPage .unlocked .milestoneEmojiWrap {
+.kidsPage .claimed .milestoneEmojiWrap {
   background: color-mix(in srgb, var(--color-success-light) 72%, var(--color-surface) 28%);
 }
 
-.kidsPage .unlocked::after {
+.kidsPage .claimed::after {
   content: '';
   position: absolute;
   inset: 6px;
@@ -807,11 +841,18 @@
   .kidsPage .unlocked {
     transform: translateY(0);
     box-shadow:
-      0 14px 22px rgb(76 175 80 / 0.12),
-      0 6px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
+      0 14px 22px rgb(45 41 38 / 0.08),
+      0 6px 0 rgb(232 224 216 / 0.88);
   }
 
   .kidsPage .unlocked:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 6px 12px rgb(45 41 38 / 0.08),
+      0 2px 0 rgb(232 224 216 / 0.88);
+  }
+
+  .kidsPage .claimed {
     transform: translateY(4px);
     box-shadow:
       0 6px 12px rgb(76 175 80 / 0.12),
