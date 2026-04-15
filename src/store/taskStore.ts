@@ -12,12 +12,15 @@ import { getTasksForDate } from '@/utils/recurrence';
 interface TaskState {
   tasks: Task[];
   completions: TaskCompletion[];
+  claimedRewards: number[];
   selectedDate: Date;
   isLoading: boolean;
 
   // Actions
   loadTasks: () => void;
   loadCompletions: () => void;
+  loadClaimedRewards: () => void;
+  claimReward: (target: number) => void;
   setSelectedDate: (date: Date) => void;
 
   // Task CRUD
@@ -43,6 +46,7 @@ interface TaskState {
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   completions: [],
+  claimedRewards: [],
   selectedDate: new Date(),
   isLoading: false,
 
@@ -54,6 +58,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   loadCompletions: () => {
     const completions = completionService.getAllCompletions();
     set({ completions });
+  },
+
+  loadClaimedRewards: () => {
+    const claimedRewards = completionService.getClaimedRewards();
+    set({ claimedRewards });
+  },
+
+  claimReward: (target: number) => {
+    const newClaimed = completionService.claimRewardTarget(target);
+    set({ claimedRewards: newClaimed });
   },
 
   setSelectedDate: (date: Date) => {

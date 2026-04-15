@@ -10,6 +10,7 @@ const CURRENT_VERSION = 1;
 export const STORAGE_KEYS = {
   TASKS: `${STORAGE_PREFIX}tasks`,
   COMPLETIONS: `${STORAGE_PREFIX}completions`,
+  CLAIMED_REWARDS: `${STORAGE_PREFIX}claimed_rewards`,
   SETTINGS: `${STORAGE_PREFIX}settings`,
   VERSION: `${STORAGE_PREFIX}version`,
   UNDO_BUFFER: `${STORAGE_PREFIX}undo`,

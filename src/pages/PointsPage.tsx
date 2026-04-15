@@ -78,7 +78,7 @@ function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood
 }
 
 export default function PointsPage() {
-  const { completions, tasks, selectedDate, getPointsForSelectedDate, getProgressForSelectedDate } = useTaskStore();
+  const { completions, tasks, selectedDate, getPointsForSelectedDate, getProgressForSelectedDate, claimedRewards, claimReward } = useTaskStore();
   const { display } = useSettingsStore();
   const todayPoints = getPointsForSelectedDate();
   const progress = getProgressForSelectedDate();
@@ -86,10 +86,13 @@ export default function PointsPage() {
 
   const [invalidTarget, setInvalidTarget] = useState<number | null>(null);
 
-  const handleMilestoneClick = (unlocked: boolean, target: number) => {
+  const handleMilestoneClick = (unlocked: boolean, claimed: boolean, target: number) => {
+    if (claimed) return;
     if (!unlocked) {
       setInvalidTarget(target);
       setTimeout(() => setInvalidTarget(null), 400);
+    } else {
+      claimReward(target);
     }
   };
 
@@ -179,7 +182,7 @@ export default function PointsPage() {
     const levelSpan = Math.max(1, nextLevelTarget - previousLevelTarget);
     const levelProgress = Math.min(100, Math.round((pointsIntoLevel / levelSpan) * 100));
     const pointsToNextLevel = Math.max(0, nextLevelTarget - totalPoints);
-    const unlockedRewards = REWARD_MILESTONES.filter((reward) => totalPoints >= reward.target).length;
+    const unlockedRewards = REWARD_MILESTONES.filter((reward) => totalPoints >= reward.target && !claimedRewards.includes(reward.target)).length;
     const nextReward = REWARD_MILESTONES.find((reward) => totalPoints < reward.target) ?? null;
 
     return {
@@ -356,8 +359,17 @@ export default function PointsPage() {
       {display.kidsMode && hasStatsData && (
         <section className={styles.milestonesPanel} aria-label="Nagrody do kupienia">
           <div className={styles.milestoneGrid}>
-            {REWARD_MILESTONES.map((reward) => {
-              const unlocked = stats.totalPoints >= reward.target;
+            {[...REWARD_MILESTONES]
+              .sort((a, b) => {
+                const aClaimed = claimedRewards.includes(a.target);
+                const bClaimed = claimedRewards.includes(b.target);
+                if (aClaimed && !bClaimed) return 1;
+                if (!aClaimed && bClaimed) return -1;
+                return a.target - b.target;
+              })
+              .map((reward) => {
+              const claimed = claimedRewards.includes(reward.target);
+              const unlocked = stats.totalPoints >= reward.target && !claimed;
               const missingPoints = Math.max(0, reward.target - stats.totalPoints);
               const progressPercent = Math.min(
                 100,
@@ -368,9 +380,9 @@ export default function PointsPage() {
                 <article
                   key={reward.target}
                   className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
-                    invalidTarget === reward.target ? styles.invalidShake : ''
-                  }`}
-                  onClick={() => handleMilestoneClick(unlocked, reward.target)}
+                    claimed ? styles.claimed : ''
+                  } ${!unlocked && !claimed && invalidTarget === reward.target ? styles.invalidShake : ''}`}
+                  onClick={() => handleMilestoneClick(unlocked, claimed, reward.target)}
                 >
                   <div className={styles.milestoneCardContent}>
                     <div className={styles.milestoneEmojiWrap}>
@@ -384,7 +396,7 @@ export default function PointsPage() {
                     </div>
                   </div>
 
-                  {!unlocked && (
+                  {!unlocked && !claimed && (
                     <div className={styles.kidsMiniProgress} aria-hidden="true">
                       <div className={styles.kidsMiniProgressTrack}>
                         <div
@@ -399,7 +411,9 @@ export default function PointsPage() {
                     <span className={styles.milestoneTarget}>
                       <KidsStarIcon className={styles.smallStarIcon} /> {reward.target}
                     </span>
-                    {unlocked ? (
+                    {claimed ? (
+                      <span className={styles.rewardClaimed}>✓ Odebrane</span>
+                    ) : unlocked ? (
                       <span className={styles.rewardClaim}>Odbierz!</span>
                     ) : (
                       <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
