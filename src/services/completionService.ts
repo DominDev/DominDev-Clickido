@@ -1,8 +1,8 @@
 /**
- * Completion Service - Track task completions
+ * Completion Service - Track task completions and rewards
  */
 
-import { TaskCompletion } from '@/types';
+import { TaskCompletion, ClaimedReward } from '@/types';
 import { getLocalDateKey } from '@/utils/date';
 import { getItem, setItem, STORAGE_KEYS } from './storageService';
 import { parseISO, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -15,22 +15,52 @@ export function getAllCompletions(): TaskCompletion[] {
 }
 
 /**
- * Get all claimed reward targets
+ * Get all claimed rewards
  */
-export function getClaimedRewards(): number[] {
-  return getItem<number[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
+export function getClaimedRewards(): ClaimedReward[] {
+  return getItem<ClaimedReward[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
 }
 
 /**
  * Mark a reward as claimed
  */
-export function claimRewardTarget(target: number): number[] {
+export function claimRewardTarget(target: number): ClaimedReward[] {
   const claimed = getClaimedRewards();
-  if (!claimed.includes(target)) {
-    claimed.push(target);
+  const alreadyClaimed = claimed.some((r) => r.target === target);
+
+  if (!alreadyClaimed) {
+    const newReward: ClaimedReward = {
+      target,
+      claimedAt: new Date().toISOString(),
+      pointsSpent: target,
+    };
+    claimed.push(newReward);
     setItem(STORAGE_KEYS.CLAIMED_REWARDS, claimed);
   }
+
   return claimed;
+}
+
+/**
+ * Unclaim a reward (return points)
+ */
+export function unclaimRewardTarget(target: number): ClaimedReward[] {
+  const claimed = getClaimedRewards();
+  const filtered = claimed.filter((r) => r.target !== target);
+
+  if (filtered.length !== claimed.length) {
+    setItem(STORAGE_KEYS.CLAIMED_REWARDS, filtered);
+  }
+
+  return filtered;
+}
+
+/**
+ * Get total points spent on rewards
+ */
+export function getTotalSpentPoints(): number {
+  const claimed = getClaimedRewards();
+  return claimed.reduce((sum, r) => sum + r.pointsSpent, 0);
 }
 
 /**

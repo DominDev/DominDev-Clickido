@@ -5,3 +5,4 @@ export { default as Toast } from './Toast';
 export { default as Button } from './Button';
 export { default as PointsTile } from './PointsTile';
 export { default as KidsStarIcon } from './KidsStarIcon';
+export { default as PinModal } from './PinModal';

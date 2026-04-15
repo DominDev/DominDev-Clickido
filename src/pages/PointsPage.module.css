@@ -457,11 +457,25 @@
 }
 
 .kidsPage .claimed::after {
-  content: '';
+  content: attr(data-claimed-stamp);
   position: absolute;
-  inset: 6px;
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  border-radius: 20px;
+  right: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--color-success);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-success-light) 8%);
+  border: 2px dashed color-mix(in srgb, var(--color-success) 34%, var(--color-border) 66%);
+  border-radius: 999px;
+  box-shadow: 0 10px 16px rgb(76 175 80 / 0.12);
+  transform: rotate(-9deg);
   pointer-events: none;
 }
 
@@ -857,6 +871,14 @@
     box-shadow:
       0 6px 12px rgb(76 175 80 / 0.12),
       0 2px 0 color-mix(in srgb, var(--color-success-light) 72%, var(--color-border) 28%);
+  }
+
+  .kidsPage .claimed::after {
+    right: 12px;
+    bottom: 12px;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.82rem;
   }
 
   .kidsMiniProgressLabel {

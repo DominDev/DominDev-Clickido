@@ -31,6 +31,12 @@ export interface TaskCompletion {
   points: number;
 }
 
+export interface ClaimedReward {
+  target: number; // milestone target (e.g., 50, 100, 180, 260)
+  claimedAt: string; // ISO datetime string
+  pointsSpent: number; // points spent on this reward
+}
+
 // Category definition
 export interface Category {
   id: CategoryId;
