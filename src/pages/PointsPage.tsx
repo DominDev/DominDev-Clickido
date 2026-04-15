@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
@@ -83,6 +83,15 @@ export default function PointsPage() {
   const todayPoints = getPointsForSelectedDate();
   const progress = getProgressForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
+
+  const [invalidTarget, setInvalidTarget] = useState<number | null>(null);
+
+  const handleMilestoneClick = (unlocked: boolean, target: number) => {
+    if (!unlocked) {
+      setInvalidTarget(target);
+      setTimeout(() => setInvalidTarget(null), 400);
+    }
+  };
 
   const kidsMood = useMemo(
     () => getKidsMood(progress.percentage, pendingTasks),
@@ -358,7 +367,10 @@ export default function PointsPage() {
               return (
                 <article
                   key={reward.target}
-                  className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''}`}
+                  className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
+                    invalidTarget === reward.target ? styles.invalidShake : ''
+                  }`}
+                  onClick={() => handleMilestoneClick(unlocked, reward.target)}
                 >
                   <div className={styles.milestoneCardContent}>
                     <div className={styles.milestoneEmojiWrap}>
