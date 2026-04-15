@@ -294,12 +294,18 @@
   border: 2px solid var(--color-accent);
 }
 
+.kidsPage .milestoneCard.invalidShake .rewardMissing {
+  color: var(--color-accent);
+  transition: color var(--transition-fast);
+}
+
 @keyframes invalidShake {
-  0%, 100% { transform: translateY(6px) translateX(0); }
-  20% { transform: translateY(6px) translateX(-4px); }
-  40% { transform: translateY(6px) translateX(4px); }
-  60% { transform: translateY(6px) translateX(-4px); }
-  80% { transform: translateY(6px) translateX(4px); }
+  0% { transform: translateY(6px) translateX(0) scale(1); }
+  20% { transform: translateY(6px) translateX(-4px) scale(1.02); }
+  40% { transform: translateY(6px) translateX(4px) scale(1.02); }
+  60% { transform: translateY(6px) translateX(-4px) scale(1.02); }
+  80% { transform: translateY(6px) translateX(4px) scale(1.02); }
+  100% { transform: translateY(6px) translateX(0) scale(1); }
 }
 
 .kidsPage .milestoneCard::before {
