@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { CategoryId } from '@/types';
 import { useTaskStore } from '@store/taskStore';
 import { useUIStore, showSuccessToast, showUndoToast } from '@store/uiStore';
@@ -52,6 +52,8 @@ export default function TasksPage() {
   const [searchValue, setSearchValue] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
   const [sortMode, setSortMode] = useState<SortMode>('name');
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+  const templatesRef = useRef<HTMLElement>(null);
 
   const completionsByTask = useMemo(() => {
     return completions.reduce<Record<string, number>>((acc, completion) => {
@@ -148,8 +150,19 @@ export default function TasksPage() {
   };
 
   const handleCreateTask = () => {
+    setQuickMenuOpen(false);
     setEditingTask(null);
     openModal('taskForm');
+  };
+
+  const handleScrollToTemplates = () => {
+    setQuickMenuOpen(false);
+    templatesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleSeedTasksFromFab = () => {
+    setQuickMenuOpen(false);
+    handleSeedTasks();
   };
 
   const handleEditTask = (taskId: string) => {
@@ -185,26 +198,14 @@ export default function TasksPage() {
 
   return (
     <section className={styles.page}>
-      <div className={styles.header}>
-        <div>
-          <p className={styles.eyebrow}>Baza obowiązków</p>
-          <h1>Zadania</h1>
-          <p>
-            Tutaj rodzic buduje i porządkuje bazę zadań dla całej rodziny. Widok dnia korzysta
-            później dokładnie z tych pozycji.
-          </p>
-        </div>
-        <div className={styles.headerActions}>
-          <button type="button" className={styles.primaryAction} onClick={handleCreateTask}>
-            Nowe zadanie
-          </button>
-          {tasks.length === 0 && (
-            <button type="button" className={styles.secondaryAction} onClick={handleSeedTasks}>
-              Dodaj zestaw startowy
-            </button>
-          )}
-        </div>
-      </div>
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>Baza obowiązków</p>
+        <h1 className={styles.title}>Zadania</h1>
+        <p className={styles.subtitle}>
+          Tutaj rodzic buduje i porządkuje bazę zadań dla całej rodziny. Widok dnia korzysta
+          później dokładnie z tych pozycji.
+        </p>
+      </header>
 
       <section className={styles.overviewGrid} aria-label="Podsumowanie bazy zadań">
         <article className={styles.overviewCard}>
@@ -280,7 +281,7 @@ export default function TasksPage() {
         </div>
       </section>
 
-      <section className={styles.templatesCard}>
+      <section ref={templatesRef} className={styles.templatesCard}>
         <div className={styles.sectionHeading}>
           <h2>Szybkie dodawanie</h2>
           <span className={styles.inlineBadge}>szablony</span>
@@ -392,6 +393,69 @@ export default function TasksPage() {
           ))}
         </div>
       )}
+
+      <div className={styles.floatingActions}>
+        {quickMenuOpen && (
+          <div className={styles.quickMenu} role="menu" aria-label="Dodaj zadanie">
+            <button
+              type="button"
+              className={styles.quickMenuAction}
+              onClick={handleCreateTask}
+              role="menuitem"
+            >
+              <span className={styles.quickMenuEmoji} aria-hidden="true">
+                ⚡
+              </span>
+              <span className={styles.quickMenuText}>
+                <strong>Nowe zadanie</strong>
+                <span>Utwórz własne zadanie od zera.</span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={styles.quickMenuAction}
+              onClick={handleScrollToTemplates}
+              role="menuitem"
+            >
+              <span className={styles.quickMenuEmoji} aria-hidden="true">
+                🧩
+              </span>
+              <span className={styles.quickMenuText}>
+                <strong>Z szablonu</strong>
+                <span>Wybierz z gotowych propozycji.</span>
+              </span>
+            </button>
+
+            {tasks.length === 0 && (
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={handleSeedTasksFromFab}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  🚀
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Zestaw startowy</strong>
+                  <span>Dodaj 3 podstawowe zadania.</span>
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+
+        <button
+          type="button"
+          className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
+          onClick={() => setQuickMenuOpen((current) => !current)}
+          aria-label="Dodaj zadanie"
+          aria-expanded={quickMenuOpen}
+        >
+          <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
+        </button>
+      </div>
     </section>
   );
 }

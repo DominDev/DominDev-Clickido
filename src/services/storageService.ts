@@ -3,15 +3,24 @@
  * Designed for future migration to Supabase/Firebase
  */
 
-import { ClaimedReward } from '@/types';
+import { ClaimedReward, CustomReward } from '@/types';
 
 const STORAGE_PREFIX = 'ck_';
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 4;
+
+// Default rewards created on first run
+const DEFAULT_REWARDS: Omit<CustomReward, 'id' | 'createdAt'>[] = [
+  { target: 50, emoji: '🍿', title: 'Mała nagroda', hint: 'Krótka przyjemność po dobrym starcie.', audience: 'family' },
+  { target: 100, emoji: '🎨', title: 'Poziom 2', hint: 'Czas na większy wybór i więcej zabawy.', audience: 'family' },
+  { target: 180, emoji: '🎮', title: 'Super misja', hint: 'Nagroda za regularne zbieranie punktów.', audience: 'family' },
+  { target: 260, emoji: '🍕', title: 'Nagroda rodzinna', hint: 'Cel, który naprawdę czuć i widać.', audience: 'family' },
+];
 
 // Storage keys
 export const STORAGE_KEYS = {
   TASKS: `${STORAGE_PREFIX}tasks`,
   COMPLETIONS: `${STORAGE_PREFIX}completions`,
+  REWARDS: `${STORAGE_PREFIX}rewards`,
   CLAIMED_REWARDS: `${STORAGE_PREFIX}claimed_rewards`,
   SETTINGS: `${STORAGE_PREFIX}settings`,
   VERSION: `${STORAGE_PREFIX}version`,
@@ -88,6 +97,7 @@ export function exportData(): string {
     exportedAt: new Date().toISOString(),
     tasks: getItem(STORAGE_KEYS.TASKS, []),
     completions: getItem(STORAGE_KEYS.COMPLETIONS, []),
+    rewards: getItem(STORAGE_KEYS.REWARDS, []),
     claimedRewards: getItem(STORAGE_KEYS.CLAIMED_REWARDS, []),
     settings: getItem(STORAGE_KEYS.SETTINGS, null),
   };
@@ -110,10 +120,20 @@ export function importData(jsonString: string): boolean {
     setItem(STORAGE_KEYS.TASKS, data.tasks);
     setItem(STORAGE_KEYS.COMPLETIONS, data.completions || []);
 
-    // Handle claimedRewards migration from old format (number[]) to new format (ClaimedReward[])
+    // Import rewards or create defaults
+    if (data.rewards && Array.isArray(data.rewards) && data.rewards.length > 0) {
+      setItem(STORAGE_KEYS.REWARDS, data.rewards);
+    } else {
+      // Create default rewards if not present in import
+      const defaultRewards = createDefaultRewards();
+      setItem(STORAGE_KEYS.REWARDS, defaultRewards);
+    }
+
+    // Handle claimedRewards migration
     if (data.claimedRewards) {
-      const migratedRewards = migrateClaimedRewards(data.claimedRewards);
-      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedRewards);
+      const rewards = getItem<CustomReward[]>(STORAGE_KEYS.REWARDS, []);
+      const migratedClaimed = migrateClaimedRewards(data.claimedRewards, rewards);
+      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedClaimed);
     }
 
     if (data.settings) {
@@ -129,27 +149,69 @@ export function importData(jsonString: string): boolean {
 }
 
 /**
- * Migrate claimed rewards from old format (number[]) to new format (ClaimedReward[])
+ * Generate unique ID for rewards
  */
-function migrateClaimedRewards(rewards: unknown): ClaimedReward[] {
-  if (!Array.isArray(rewards)) {
+function generateRewardId(): string {
+  return `reward_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
+ * Create default rewards
+ */
+function createDefaultRewards(): CustomReward[] {
+  const now = new Date().toISOString();
+  return DEFAULT_REWARDS.map((reward) => ({
+    ...reward,
+    id: `default_${reward.target}`,
+    createdAt: now,
+  }));
+}
+
+/**
+ * Migrate claimed rewards from old formats to new format with rewardId
+ */
+function migrateClaimedRewards(claimedData: unknown, rewards: CustomReward[]): ClaimedReward[] {
+  if (!Array.isArray(claimedData)) {
     return [];
   }
 
-  // Check if already in new format
-  if (rewards.length > 0 && typeof rewards[0] === 'object' && rewards[0] !== null && 'target' in rewards[0]) {
-    return rewards as ClaimedReward[];
+  // Check if already in newest format (has rewardId)
+  if (claimedData.length > 0 && typeof claimedData[0] === 'object' && claimedData[0] !== null && 'rewardId' in claimedData[0]) {
+    return claimedData as ClaimedReward[];
   }
 
-  // Convert from old format (number[]) to new format (ClaimedReward[])
-  return rewards
+  // Check if in v2 format (has target but not rewardId)
+  if (claimedData.length > 0 && typeof claimedData[0] === 'object' && claimedData[0] !== null && 'target' in claimedData[0]) {
+    // Convert from v2 format to v3 format
+    return (claimedData as Array<{ target: number; claimedAt: string; pointsSpent: number }>)
+      .map((item) => {
+        const reward = rewards.find((r) => r.target === item.target);
+        return {
+          rewardId: reward?.id ?? `default_${item.target}`,
+          rewardTitle: reward?.title ?? `Nagroda ${item.target}`,
+          rewardEmoji: reward?.emoji ?? '🎁',
+          claimedAt: item.claimedAt,
+          pointsSpent: item.pointsSpent,
+        };
+      });
+  }
+
+  // Convert from v1 format (number[]) to v3 format
+  return claimedData
     .filter((item): item is number => typeof item === 'number')
-    .map((target) => ({
-      target,
-      claimedAt: new Date().toISOString(),
-      pointsSpent: target,
-    }));
+    .map((target) => {
+      const reward = rewards.find((r) => r.target === target);
+      return {
+        rewardId: reward?.id ?? `default_${target}`,
+        rewardTitle: reward?.title ?? `Nagroda ${target}`,
+        rewardEmoji: reward?.emoji ?? '🎁',
+        claimedAt: new Date().toISOString(),
+        pointsSpent: target,
+      };
+    });
 }
+
+export { generateRewardId, createDefaultRewards };
 
 /**
  * Check and run migrations if needed
@@ -158,12 +220,33 @@ export function runMigrations(): void {
   const storedVersion = getItem(STORAGE_KEYS.VERSION, 0);
 
   if (storedVersion < CURRENT_VERSION) {
-    // Migration v1 -> v2: Convert claimed rewards from number[] to ClaimedReward[]
-    if (storedVersion < 2) {
-      const oldRewards = getItem<unknown>(STORAGE_KEYS.CLAIMED_REWARDS, []);
-      const migratedRewards = migrateClaimedRewards(oldRewards);
-      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedRewards);
-      console.log('Migrated claimed rewards to new format');
+    // Migration v2 -> v3: Add custom rewards and update claimed rewards format
+    if (storedVersion < 3) {
+      // Create default rewards if not present
+      const existingRewards = getItem<CustomReward[]>(STORAGE_KEYS.REWARDS, []);
+      if (existingRewards.length === 0) {
+        const defaultRewards = createDefaultRewards();
+        setItem(STORAGE_KEYS.REWARDS, defaultRewards);
+        console.log('Created default rewards');
+      }
+
+      // Migrate claimed rewards to new format with rewardId
+      const rewards = getItem<CustomReward[]>(STORAGE_KEYS.REWARDS, []);
+      const oldClaimed = getItem<unknown>(STORAGE_KEYS.CLAIMED_REWARDS, []);
+      const migratedClaimed = migrateClaimedRewards(oldClaimed, rewards);
+      setItem(STORAGE_KEYS.CLAIMED_REWARDS, migratedClaimed);
+      console.log('Migrated claimed rewards to v3 format');
+    }
+
+    // Migration v3 -> v4: Add audience field to rewards
+    if (storedVersion < 4) {
+      const rewards = getItem<CustomReward[]>(STORAGE_KEYS.REWARDS, []);
+      const migratedRewards = rewards.map((reward) => ({
+        ...reward,
+        audience: reward.audience ?? 'family', // Default to family (visible to all)
+      }));
+      setItem(STORAGE_KEYS.REWARDS, migratedRewards);
+      console.log('Added audience field to rewards (v4 migration)');
     }
 
     setItem(STORAGE_KEYS.VERSION, CURRENT_VERSION);

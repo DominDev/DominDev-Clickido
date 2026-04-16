@@ -16,47 +16,15 @@ export function getAllCompletions(): TaskCompletion[] {
 
 /**
  * Get all claimed rewards
+ * @deprecated Use rewardService.getClaimedRewards() instead
  */
 export function getClaimedRewards(): ClaimedReward[] {
   return getItem<ClaimedReward[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
 }
 
 /**
- * Mark a reward as claimed
- */
-export function claimRewardTarget(target: number): ClaimedReward[] {
-  const claimed = getClaimedRewards();
-  const alreadyClaimed = claimed.some((r) => r.target === target);
-
-  if (!alreadyClaimed) {
-    const newReward: ClaimedReward = {
-      target,
-      claimedAt: new Date().toISOString(),
-      pointsSpent: target,
-    };
-    claimed.push(newReward);
-    setItem(STORAGE_KEYS.CLAIMED_REWARDS, claimed);
-  }
-
-  return claimed;
-}
-
-/**
- * Unclaim a reward (return points)
- */
-export function unclaimRewardTarget(target: number): ClaimedReward[] {
-  const claimed = getClaimedRewards();
-  const filtered = claimed.filter((r) => r.target !== target);
-
-  if (filtered.length !== claimed.length) {
-    setItem(STORAGE_KEYS.CLAIMED_REWARDS, filtered);
-  }
-
-  return filtered;
-}
-
-/**
  * Get total points spent on rewards
+ * @deprecated Use rewardService.getTotalSpentPoints() instead
  */
 export function getTotalSpentPoints(): number {
   const claimed = getClaimedRewards();

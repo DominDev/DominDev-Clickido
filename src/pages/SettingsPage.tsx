@@ -82,7 +82,7 @@ export default function SettingsPage() {
     resetSettings,
     loadSettings,
   } = useSettingsStore();
-  const { loadTasks, loadCompletions, loadClaimedRewards } = useTaskStore();
+  const { loadTasks, loadCompletions, loadClaimedRewards, loadRewards } = useTaskStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
@@ -145,6 +145,7 @@ export default function SettingsPage() {
 
       loadTasks();
       loadCompletions();
+      loadRewards();
       loadClaimedRewards();
       loadSettings();
 
@@ -252,8 +253,8 @@ export default function SettingsPage() {
     <section className={styles.page}>
       <header className={styles.header}>
         <p className={styles.eyebrow}>Sterowanie aplikacją</p>
-        <h1>Ustawienia</h1>
-        <p>
+        <h1 className={styles.title}>Ustawienia</h1>
+        <p className={styles.subtitle}>
           Ten ekran ma służyć do szybkich decyzji. Widać od razu, co jest aktywne, a mniej ważne
           rzeczy są schowane niżej.
         </p>
