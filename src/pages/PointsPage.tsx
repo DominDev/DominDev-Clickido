@@ -2,26 +2,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { KidsStarIcon, PointsTile, PinModal } from '@components/ui';
-import { CategoryId } from '@/types';
+import { KidsStarIcon, PointsTile, PinModal, RewardModal } from '@components/ui';
+import { CategoryId, CustomReward, RewardAudience } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
 import { formatPoints } from '@utils/formatting';
 import styles from './PointsPage.module.css';
-
-type RewardMilestone = {
-  target: number;
-  emoji: string;
-  title: string;
-  hint: string;
-};
-
-const REWARD_MILESTONES: RewardMilestone[] = [
-  { target: 50, emoji: '🍿', title: 'Mała nagroda', hint: 'Krótka przyjemność po dobrym starcie.' },
-  { target: 100, emoji: '🎨', title: 'Poziom 2', hint: 'Czas na większy wybór i więcej zabawy.' },
-  { target: 180, emoji: '🎮', title: 'Super misja', hint: 'Nagroda za regularne zbieranie punktów.' },
-  { target: 260, emoji: '🍕', title: 'Nagroda rodzinna', hint: 'Cel, który naprawdę czuć i widać.' },
-];
 
 function startOfWeek(date: Date) {
   const nextDate = new Date(date);
@@ -89,6 +75,10 @@ export default function PointsPage() {
     unclaimReward,
     getAvailablePoints,
     getTotalEarnedPoints,
+    rewards,
+    addReward,
+    updateReward,
+    deleteReward,
   } = useTaskStore();
   const { display } = useSettingsStore();
   const todayPoints = getPointsForSelectedDate();
@@ -97,42 +87,77 @@ export default function PointsPage() {
   const availablePoints = getAvailablePoints();
   const totalEarnedPoints = getTotalEarnedPoints();
 
-  const [invalidTarget, setInvalidTarget] = useState<number | null>(null);
-  const [unclaimTarget, setUnclaimTarget] = useState<number | null>(null);
+  const [invalidRewardId, setInvalidRewardId] = useState<string | null>(null);
+  const [unclaimRewardId, setUnclaimRewardId] = useState<string | null>(null);
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
+  const [editingReward, setEditingReward] = useState<CustomReward | null>(null);
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+  const [initialAudience, setInitialAudience] = useState<RewardAudience>('family');
 
-  // Check if reward target is claimed
-  const isRewardClaimed = (target: number) => claimedRewards.some((r) => r.target === target);
+  // Filter rewards by audience based on kidsMode
+  const visibleRewards = useMemo(() => {
+    if (display.kidsMode) {
+      // In kids mode, only show rewards for 'child' or 'family' audience
+      return rewards.filter((r) => r.audience === 'child' || r.audience === 'family');
+    }
+    // In parent mode, show all rewards
+    return rewards;
+  }, [rewards, display.kidsMode]);
 
-  const handleMilestoneClick = (unlocked: boolean, claimed: boolean, target: number) => {
+  // Check if reward is claimed by ID
+  const isRewardClaimed = (rewardId: string) => claimedRewards.some((r) => r.rewardId === rewardId);
+
+  const handleMilestoneClick = (unlocked: boolean, claimed: boolean, rewardId: string) => {
     if (claimed) {
       // Clicked on claimed reward - try to unclaim
       if (!display.kidsModePin) {
         // No PIN set - unclaim directly
-        unclaimReward(target);
+        unclaimReward(rewardId);
       } else {
         // PIN set - show modal
-        setUnclaimTarget(target);
+        setUnclaimRewardId(rewardId);
       }
       return;
     }
 
     if (!unlocked) {
-      setInvalidTarget(target);
-      setTimeout(() => setInvalidTarget(null), 400);
+      setInvalidRewardId(rewardId);
+      setTimeout(() => setInvalidRewardId(null), 400);
     } else {
-      claimReward(target);
+      claimReward(rewardId);
     }
   };
 
   const handleUnclaimWithPin = (pin: string): boolean => {
     if (pin === display.kidsModePin) {
-      if (unclaimTarget !== null) {
-        unclaimReward(unclaimTarget);
-        setUnclaimTarget(null);
+      if (unclaimRewardId !== null) {
+        unclaimReward(unclaimRewardId);
+        setUnclaimRewardId(null);
       }
       return true;
     }
     return false;
+  };
+
+  const handleSaveReward = (data: Omit<CustomReward, 'id' | 'createdAt'>) => {
+    if (editingReward) {
+      updateReward(editingReward.id, data);
+    } else {
+      addReward(data);
+    }
+    setEditingReward(null);
+  };
+
+  const handleEditReward = (reward: CustomReward) => {
+    setEditingReward(reward);
+    setIsRewardModalOpen(true);
+  };
+
+  const handleAddReward = (audience: RewardAudience = 'family') => {
+    setEditingReward(null);
+    setInitialAudience(audience);
+    setQuickMenuOpen(false);
+    setIsRewardModalOpen(true);
   };
 
   const kidsMood = useMemo(
@@ -220,12 +245,12 @@ export default function PointsPage() {
     const levelSpan = Math.max(1, nextLevelTarget - previousLevelTarget);
     const levelProgress = Math.min(100, Math.round((pointsIntoLevel / levelSpan) * 100));
     const pointsToNextLevel = Math.max(0, nextLevelTarget - totalEarnedPoints);
-    const unlockedRewards = REWARD_MILESTONES.filter(
-      (reward) => availablePoints >= reward.target && !isRewardClaimed(reward.target)
+    const unlockedRewards = visibleRewards.filter(
+      (reward) => availablePoints >= reward.target && !isRewardClaimed(reward.id)
     ).length;
-    const nextReward = REWARD_MILESTONES.find(
-      (reward) => !isRewardClaimed(reward.target) && availablePoints < reward.target
-    ) ?? null;
+    const nextReward = [...visibleRewards]
+      .sort((a, b) => a.target - b.target)
+      .find((reward) => !isRewardClaimed(reward.id) && availablePoints < reward.target) ?? null;
 
     return {
       totalPoints: totalEarnedPoints,
@@ -247,7 +272,7 @@ export default function PointsPage() {
       unlockedRewards,
       nextReward,
     };
-  }, [completions, selectedDate, tasks, availablePoints, totalEarnedPoints, claimedRewards]);
+  }, [completions, selectedDate, tasks, availablePoints, totalEarnedPoints, claimedRewards, visibleRewards]);
 
   const primaryNextStep = useMemo(() => {
     if (display.kidsMode) {
@@ -402,16 +427,16 @@ export default function PointsPage() {
       {display.kidsMode && hasStatsData && (
         <section className={styles.milestonesPanel} aria-label="Nagrody do kupienia">
           <div className={styles.milestoneGrid}>
-            {[...REWARD_MILESTONES]
+            {[...visibleRewards]
               .sort((a, b) => {
-                const aClaimed = isRewardClaimed(a.target);
-                const bClaimed = isRewardClaimed(b.target);
+                const aClaimed = isRewardClaimed(a.id);
+                const bClaimed = isRewardClaimed(b.id);
                 if (aClaimed && !bClaimed) return 1;
                 if (!aClaimed && bClaimed) return -1;
                 return a.target - b.target;
               })
               .map((reward) => {
-              const claimed = isRewardClaimed(reward.target);
+              const claimed = isRewardClaimed(reward.id);
               const unlocked = stats.availablePoints >= reward.target && !claimed;
               const missingPoints = Math.max(0, reward.target - stats.availablePoints);
               const progressPercent = Math.min(
@@ -421,12 +446,12 @@ export default function PointsPage() {
 
               return (
                 <article
-                  key={reward.target}
+                  key={reward.id}
                   data-claimed-stamp="ODEBRANE!"
                   className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
                     claimed ? styles.claimed : ''
-                  } ${!unlocked && !claimed && invalidTarget === reward.target ? styles.invalidShake : ''}`}
-                  onClick={() => handleMilestoneClick(unlocked, claimed, reward.target)}
+                  } ${!unlocked && !claimed && invalidRewardId === reward.id ? styles.invalidShake : ''}`}
+                  onClick={() => handleMilestoneClick(unlocked, claimed, reward.id)}
                 >
                   <div className={styles.milestoneCardContent}>
                     <div className={styles.milestoneEmojiWrap}>
@@ -436,7 +461,7 @@ export default function PointsPage() {
                     </div>
                     <div className={styles.milestoneTextContent}>
                       <strong>{reward.title}</strong>
-                      <span>{reward.hint}</span>
+                      <span>{reward.hint ?? ''}</span>
                     </div>
                   </div>
 
@@ -498,6 +523,63 @@ export default function PointsPage() {
               </span>
             </Link>
           </div>
+        </section>
+      )}
+
+      {!display.kidsMode && (
+        <section className={styles.rewardsManagementPanel} aria-label="Zarządzanie nagrodami">
+          <div className={styles.panelHeader}>
+            <h2>Nagrody</h2>
+            <span>Nagrody, które dziecko może zdobyć za zebrane punkty.</span>
+          </div>
+
+          <div className={styles.rewardsList}>
+            {rewards
+              .sort((a, b) => a.target - b.target)
+              .map((reward) => {
+                const claimed = isRewardClaimed(reward.id);
+                return (
+                  <div key={reward.id} className={`${styles.rewardItem} ${claimed ? styles.rewardItemClaimed : ''}`}>
+                    <span className={styles.rewardItemEmoji}>{reward.emoji}</span>
+                    <div className={styles.rewardItemInfo}>
+                      <strong>{reward.title}</strong>
+                      <span>
+                        {reward.target} pkt
+                        {reward.audience === 'adult' && ' · Tylko dorośli'}
+                        {reward.audience === 'child' && ' · Tylko dziecko'}
+                        {reward.hint ? ` · ${reward.hint}` : ''}
+                        {claimed && ' · Odebrana'}
+                      </span>
+                    </div>
+                    <div className={styles.rewardItemActions}>
+                      <button
+                        type="button"
+                        className={styles.rewardEditButton}
+                        onClick={() => handleEditReward(reward)}
+                        aria-label={`Edytuj nagrodę ${reward.title}`}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.rewardDeleteButton}
+                        onClick={() => {
+                          const result = deleteReward(reward.id);
+                          if (!result.success && result.reason) {
+                            alert(result.reason);
+                          }
+                        }}
+                        aria-label={`Usuń nagrodę ${reward.title}`}
+                        disabled={claimed}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
         </section>
       )}
 
@@ -579,13 +661,87 @@ export default function PointsPage() {
       )}
 
       <PinModal
-        isOpen={unclaimTarget !== null}
-        onClose={() => setUnclaimTarget(null)}
+        isOpen={unclaimRewardId !== null}
+        onClose={() => setUnclaimRewardId(null)}
         onSubmit={handleUnclaimWithPin}
         title="Cofnij nagrodę"
         description="Aby cofnąć odebraną nagrodę i zwrócić punkty, wpisz PIN rodzica."
         submitLabel="Cofnij nagrodę"
       />
+
+      <RewardModal
+        isOpen={isRewardModalOpen}
+        onClose={() => {
+          setIsRewardModalOpen(false);
+          setEditingReward(null);
+        }}
+        onSave={handleSaveReward}
+        reward={editingReward}
+        initialAudience={initialAudience}
+      />
+
+      {!display.kidsMode && (
+        <div className={styles.floatingActions}>
+          {quickMenuOpen && (
+            <div className={styles.quickMenu} role="menu" aria-label="Dodaj nagrodę">
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={() => handleAddReward('family')}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  👨‍👩‍👧
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Dla wszystkich</strong>
+                  <span>Widoczna w trybie dziecka i rodzica.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={() => handleAddReward('child')}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  👶
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Tylko dziecko</strong>
+                  <span>Widoczna tylko w trybie dziecka.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.quickMenuAction}
+                onClick={() => handleAddReward('adult')}
+                role="menuitem"
+              >
+                <span className={styles.quickMenuEmoji} aria-hidden="true">
+                  🍷
+                </span>
+                <span className={styles.quickMenuText}>
+                  <strong>Tylko dorosły</strong>
+                  <span>Ukryta przed dzieckiem.</span>
+                </span>
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
+            onClick={() => setQuickMenuOpen((current) => !current)}
+            aria-label="Dodaj nagrodę"
+            aria-expanded={quickMenuOpen}
+          >
+            <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
+          </button>
+        </div>
+      )}
     </section>
   );
 }

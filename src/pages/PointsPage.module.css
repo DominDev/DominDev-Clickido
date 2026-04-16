@@ -150,12 +150,14 @@
 .title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
 }
 
 .subtitle {
-  margin: var(--space-2) 0 0;
+  margin: 0;
+  margin-top: var(--space-1);
   color: var(--color-text-secondary);
+  max-width: 640px;
 }
 
 .heroCard {
@@ -925,6 +927,343 @@
 
   .detailList dd {
     text-align: left;
+  }
+}
+
+/* Rewards Management Panel (Parent Mode) */
+.rewardsManagementPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+}
+
+.rewardsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rewardItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-fast);
+}
+
+.rewardItem:hover {
+  background: color-mix(in srgb, var(--color-bg-secondary) 88%, var(--color-surface) 12%);
+}
+
+.rewardItemClaimed {
+  background: var(--color-success-light);
+}
+
+.rewardItemClaimed:hover {
+  background: color-mix(in srgb, var(--color-success-light) 88%, var(--color-success) 12%);
+}
+
+.rewardItemEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  font-size: 1.6rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.rewardItemClaimed .rewardItemEmoji {
+  background: color-mix(in srgb, var(--color-surface) 72%, var(--color-success-light) 28%);
+}
+
+.rewardItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rewardItemInfo strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  line-height: 1.3;
+}
+
+.rewardItemInfo span {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rewardItemActions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.rewardEditButton,
+.rewardDeleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 1.1rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.rewardEditButton:hover {
+  background: var(--color-surface);
+}
+
+.rewardDeleteButton:hover {
+  background: color-mix(in srgb, var(--color-error) 12%, var(--color-surface) 88%);
+}
+
+.rewardDeleteButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rewardDeleteButton:disabled:hover {
+  background: transparent;
+}
+
+.addRewardButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-accent);
+  background: transparent;
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.addRewardButton:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-hover);
+}
+
+@media (max-width: 420px) {
+  .rewardsManagementPanel {
+    padding: var(--space-3);
+    border-radius: 20px;
+  }
+
+  .rewardItem {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .rewardItemEmoji {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    font-size: 1.4rem;
+  }
+
+  .rewardEditButton,
+  .rewardDeleteButton {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .addRewardButton {
+    min-height: 44px;
+  }
+}
+
+/* Floating Action Button */
+.floatingActions {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-7));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-end;
+  z-index: 320;
+}
+
+.quickMenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(280px, calc(100vw - 32px));
+}
+
+.quickMenuAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 68px;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-surface-elevated) 94%, var(--color-bg-primary) 6%);
+  border: 1px solid var(--color-border-light);
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.quickMenuEmoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: var(--color-accent-light);
+  font-size: 1.4rem;
+}
+
+.quickMenuText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quickMenuText strong {
+  font-size: var(--text-base);
+}
+
+.quickMenuText span {
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--color-text-inverse);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.fabOpen {
+  transform: rotate(90deg);
+  background: var(--color-accent-hover);
+}
+
+.fab:active,
+.quickMenuAction:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .floatingActions {
+    left: auto;
+    right: var(--space-3);
+    transform: none;
+    bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-6));
+  }
+
+  .quickMenu {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .quickMenuAction {
+    min-height: 64px;
+    padding: var(--space-3);
+  }
+
+  .fab {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 420px) {
+  .floatingActions {
+    left: auto;
+    right: 12px;
+    transform: none;
+    bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + 34px);
+  }
+}
+
+@media (min-width: 768px) {
+  .floatingActions {
+    left: 50%;
+    right: auto;
+    bottom: var(--bottomnav-desktop-bottom);
+    width: var(--bottomnav-desktop-width);
+    max-width: var(--bottomnav-desktop-max-width);
+    height: var(--bottomnav-desktop-outer-height);
+    align-items: initial;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .quickMenu {
+    position: absolute;
+    right: var(--bottomnav-fab-right-desktop);
+    bottom: calc(100% + var(--bottomnav-quickmenu-gap-desktop));
+    width: var(--bottomnav-quickmenu-width-desktop);
+    pointer-events: auto;
+  }
+
+  .fab {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-block: auto;
+    right: var(--bottomnav-fab-right-desktop);
+    width: var(--bottomnav-fab-size-desktop);
+    height: var(--bottomnav-fab-size-desktop);
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop));
+    pointer-events: auto;
+  }
+
+  .fabOpen {
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg);
+  }
+
+  .fab:active {
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) scale(0.98);
+  }
+
+  .fabOpen:active {
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg) scale(0.98);
   }
 }
 

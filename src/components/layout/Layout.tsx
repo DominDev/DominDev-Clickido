@@ -15,7 +15,7 @@ import { runMigrations } from '@services/storageService';
 import styles from './Layout.module.css';
 
 export default function Layout() {
-  const { loadTasks, loadCompletions, loadClaimedRewards } = useTaskStore();
+  const { loadTasks, loadCompletions, loadRewards, loadClaimedRewards } = useTaskStore();
   const { loadSettings } = useSettingsStore();
 
   // Initialize app on mount
@@ -24,8 +24,9 @@ export default function Layout() {
     loadSettings();
     loadTasks();
     loadCompletions();
+    loadRewards();
     loadClaimedRewards();
-  }, [loadTasks, loadCompletions, loadClaimedRewards, loadSettings]);
+  }, [loadTasks, loadCompletions, loadRewards, loadClaimedRewards, loadSettings]);
 
   return (
     <div className={styles.layout}>

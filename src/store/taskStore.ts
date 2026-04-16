@@ -3,15 +3,17 @@
  */
 
 import { create } from 'zustand';
-import { Task, TaskCompletion, ClaimedReward } from '@/types';
+import { Task, TaskCompletion, ClaimedReward, CustomReward } from '@/types';
 import * as taskService from '@/services/taskService';
 import * as completionService from '@/services/completionService';
+import * as rewardService from '@/services/rewardService';
 import { getLocalDateKey } from '@/utils/date';
 import { getTasksForDate } from '@/utils/recurrence';
 
 interface TaskState {
   tasks: Task[];
   completions: TaskCompletion[];
+  rewards: CustomReward[];
   claimedRewards: ClaimedReward[];
   selectedDate: Date;
   isLoading: boolean;
@@ -19,10 +21,16 @@ interface TaskState {
   // Actions
   loadTasks: () => void;
   loadCompletions: () => void;
+  loadRewards: () => void;
   loadClaimedRewards: () => void;
-  claimReward: (target: number) => void;
-  unclaimReward: (target: number) => void;
+  claimReward: (rewardId: string) => void;
+  unclaimReward: (rewardId: string) => void;
   setSelectedDate: (date: Date) => void;
+
+  // Reward CRUD
+  addReward: (data: Omit<CustomReward, 'id' | 'createdAt'>) => CustomReward;
+  updateReward: (id: string, data: Partial<Omit<CustomReward, 'id' | 'createdAt'>>) => CustomReward | null;
+  deleteReward: (id: string) => { success: boolean; reason?: string };
 
   // Task CRUD
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Task;
@@ -50,6 +58,7 @@ interface TaskState {
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   completions: [],
+  rewards: [],
   claimedRewards: [],
   selectedDate: new Date(),
   isLoading: false,
@@ -64,19 +73,52 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ completions });
   },
 
+  loadRewards: () => {
+    const rewards = rewardService.getAllRewards();
+    set({ rewards });
+  },
+
   loadClaimedRewards: () => {
-    const claimedRewards = completionService.getClaimedRewards();
+    const claimedRewards = rewardService.getClaimedRewards();
     set({ claimedRewards });
   },
 
-  claimReward: (target: number) => {
-    const newClaimed = completionService.claimRewardTarget(target);
-    set({ claimedRewards: newClaimed });
+  claimReward: (rewardId: string) => {
+    const claimed = rewardService.claimReward(rewardId);
+    if (claimed) {
+      get().loadClaimedRewards();
+    }
   },
 
-  unclaimReward: (target: number) => {
-    const newClaimed = completionService.unclaimRewardTarget(target);
-    set({ claimedRewards: newClaimed });
+  unclaimReward: (rewardId: string) => {
+    rewardService.unclaimReward(rewardId);
+    get().loadClaimedRewards();
+  },
+
+  addReward: (data) => {
+    const newReward = rewardService.createReward(data);
+    set((state) => ({ rewards: [...state.rewards, newReward] }));
+    return newReward;
+  },
+
+  updateReward: (id, data) => {
+    const updated = rewardService.updateReward(id, data);
+    if (updated) {
+      set((state) => ({
+        rewards: state.rewards.map((r) => (r.id === id ? updated : r)),
+      }));
+    }
+    return updated;
+  },
+
+  deleteReward: (id) => {
+    const result = rewardService.deleteReward(id);
+    if (result.success) {
+      set((state) => ({
+        rewards: state.rewards.filter((r) => r.id !== id),
+      }));
+    }
+    return result;
   },
 
   setSelectedDate: (date: Date) => {

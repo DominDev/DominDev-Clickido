@@ -31,8 +31,22 @@ export interface TaskCompletion {
   points: number;
 }
 
+export type RewardAudience = 'child' | 'adult' | 'family';
+
+export interface CustomReward {
+  id: string;
+  target: number; // cost in points
+  emoji: string;
+  title: string;
+  hint?: string;
+  audience: RewardAudience; // who can see this reward
+  createdAt: string;
+}
+
 export interface ClaimedReward {
-  target: number; // milestone target (e.g., 50, 100, 180, 260)
+  rewardId: string; // CustomReward.id
+  rewardTitle: string; // snapshot of title at claim time
+  rewardEmoji: string; // snapshot of emoji at claim time
   claimedAt: string; // ISO datetime string
   pointsSpent: number; // points spent on this reward
 }

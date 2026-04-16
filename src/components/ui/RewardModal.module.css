@@ -1,0 +1,241 @@
+/* RewardModal - Modal for creating/editing rewards */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-overlay) 72%, transparent 28%);
+  backdrop-filter: blur(10px);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  padding: var(--space-6);
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.inputNumber {
+  max-width: 120px;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+}
+
+.inputError {
+  border-color: var(--color-error);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-error);
+}
+
+/* Emoji grid */
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--space-2);
+}
+
+.emojiOption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  font-size: 1.5rem;
+  background: var(--color-bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.emojiOption:hover {
+  background: var(--color-surface);
+  transform: scale(1.1);
+}
+
+.emojiOption:active {
+  transform: scale(0.95);
+}
+
+.emojiSelected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(255, 107, 53, 0.25);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+}
+
+.submitButton:active {
+  transform: translateY(0);
+}
+
+.cancelButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.cancelButton:hover {
+  color: var(--color-text-primary);
+}
+
+/* Audience grid */
+.audienceGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.audienceOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  text-align: left;
+  background: var(--color-bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.audienceOption:hover {
+  background: color-mix(in srgb, var(--color-bg-secondary) 80%, var(--color-surface) 20%);
+}
+
+.audienceOption strong {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.audienceOption span {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.audienceSelected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.audienceSelected:hover {
+  background: var(--color-accent-light);
+}
+
+@media (max-width: 420px) {
+  .card {
+    padding: var(--space-4);
+    border-radius: 20px;
+  }
+
+  .emojiGrid {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+  }
+
+  .emojiOption {
+    font-size: 1.25rem;
+    border-radius: 10px;
+  }
+}
