@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CategoryId } from '@/types';
 import { useTaskStore } from '@store/taskStore';
 import { useUIStore, showSuccessToast, showUndoToast } from '@store/uiStore';
@@ -52,9 +52,6 @@ export default function TasksPage() {
   const [searchValue, setSearchValue] = useState('');
   const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
   const [sortMode, setSortMode] = useState<SortMode>('name');
-  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
-  const templatesRef = useRef<HTMLElement>(null);
-
   const completionsByTask = useMemo(() => {
     return completions.reduce<Record<string, number>>((acc, completion) => {
       acc[completion.taskId] = (acc[completion.taskId] ?? 0) + 1;
@@ -150,19 +147,8 @@ export default function TasksPage() {
   };
 
   const handleCreateTask = () => {
-    setQuickMenuOpen(false);
     setEditingTask(null);
     openModal('taskForm');
-  };
-
-  const handleScrollToTemplates = () => {
-    setQuickMenuOpen(false);
-    templatesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const handleSeedTasksFromFab = () => {
-    setQuickMenuOpen(false);
-    handleSeedTasks();
   };
 
   const handleEditTask = (taskId: string) => {
@@ -281,7 +267,7 @@ export default function TasksPage() {
         </div>
       </section>
 
-      <section ref={templatesRef} className={styles.templatesCard}>
+      <section className={styles.templatesCard}>
         <div className={styles.sectionHeading}>
           <h2>Szybkie dodawanie</h2>
           <span className={styles.inlineBadge}>szablony</span>
@@ -394,68 +380,6 @@ export default function TasksPage() {
         </div>
       )}
 
-      <div className={styles.floatingActions}>
-        {quickMenuOpen && (
-          <div className={styles.quickMenu} role="menu" aria-label="Dodaj zadanie">
-            <button
-              type="button"
-              className={styles.quickMenuAction}
-              onClick={handleCreateTask}
-              role="menuitem"
-            >
-              <span className={styles.quickMenuEmoji} aria-hidden="true">
-                ⚡
-              </span>
-              <span className={styles.quickMenuText}>
-                <strong>Nowe zadanie</strong>
-                <span>Utwórz własne zadanie od zera.</span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className={styles.quickMenuAction}
-              onClick={handleScrollToTemplates}
-              role="menuitem"
-            >
-              <span className={styles.quickMenuEmoji} aria-hidden="true">
-                🧩
-              </span>
-              <span className={styles.quickMenuText}>
-                <strong>Z szablonu</strong>
-                <span>Wybierz z gotowych propozycji.</span>
-              </span>
-            </button>
-
-            {tasks.length === 0 && (
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={handleSeedTasksFromFab}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  🚀
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Zestaw startowy</strong>
-                  <span>Dodaj 3 podstawowe zadania.</span>
-                </span>
-              </button>
-            )}
-          </div>
-        )}
-
-        <button
-          type="button"
-          className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
-          onClick={() => setQuickMenuOpen((current) => !current)}
-          aria-label="Dodaj zadanie"
-          aria-expanded={quickMenuOpen}
-        >
-          <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
-        </button>
-      </div>
     </section>
   );
 }
