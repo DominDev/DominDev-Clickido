@@ -8,6 +8,19 @@
   border-radius: 999px;
 }
 
+.clickable {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.clickable:hover {
+  transform: scale(1.05);
+}
+
+.clickable:active {
+  transform: scale(0.98);
+}
+
 .svg {
   display: block;
   filter: drop-shadow(0 6px 10px rgb(17 24 39 / 0.08));

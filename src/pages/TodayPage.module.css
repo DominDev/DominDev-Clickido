@@ -27,8 +27,7 @@
 
 .headerCard,
 .progressPanel,
-.motivationCard,
-.focusCard {
+.motivationCard {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
@@ -58,76 +57,27 @@
   letter-spacing: 0.08em;
 }
 
-.title,
 .kidsTitle {
   margin: 0;
   font-family: var(--font-heading);
   line-height: var(--leading-tight);
 }
 
-.title {
-  font-size: var(--text-2xl);
-  text-transform: capitalize;
-}
-
-.subtitle,
 .kidsSubtitle {
   margin: 0;
   color: var(--color-text-secondary);
-}
-
-.dayContext {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: center;
-  margin-top: var(--space-2);
-}
-
-.contextBadge,
-.contextButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-}
-
-.contextBadge {
-  color: var(--color-text-primary);
-  background: var(--color-accent-light);
-  border: 1px solid var(--color-border);
-}
-
-.contextButton {
-  color: var(--color-text-primary);
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-}
-
-.progressBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 76px;
-  min-height: 76px;
-  padding: var(--space-3);
-  border-radius: 50%;
-  background: var(--theme-hero-warm);
-  color: var(--color-accent);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
 }
 
 .progressPanel {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--theme-panel-soft);
+  padding: var(--space-5);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-elevated),
+    color-mix(in srgb, var(--color-surface-elevated) 94%, var(--color-bg-secondary) 6%)
+  );
 }
 
 .progressPanelHeader {
@@ -144,23 +94,39 @@
 }
 
 .progressPanelHeader span {
-  font-size: var(--text-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
   font-weight: var(--font-bold);
   color: var(--color-accent);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-full);
 }
 
 .progressTrack {
   width: 100%;
-  height: 12px;
+  height: 14px;
   overflow: hidden;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-full);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.06);
 }
 
 .progressFill {
   height: 100%;
   border-radius: inherit;
-  background: var(--color-accent);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  box-shadow: 0 2px 8px rgb(240 168 0 / 0.25);
+  transition: width 0.4s ease-out;
+}
+
+.progressFill[data-complete="true"] {
+  background: linear-gradient(90deg, var(--color-success), color-mix(in srgb, var(--color-success) 80%, #4ade80 20%));
+  box-shadow: 0 2px 8px rgb(34 197 94 / 0.3);
 }
 
 .quickStats {
@@ -177,10 +143,24 @@
   padding: var(--space-4);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .quickStatCard {
-  background: var(--theme-panel-soft);
+  background: var(--color-surface);
+}
+
+.quickStatCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.08);
+}
+
+.quickStatCard[data-highlight="pending"] {
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border-light) 70%);
+}
+
+.quickStatCard[data-highlight="points"] .quickStatValue {
+  color: var(--color-accent);
 }
 
 .quickStatLabel {
@@ -195,80 +175,77 @@
 
 .motivationCard {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  background: var(--theme-panel-warm);
-}
-
-.motivationCard span {
-  color: var(--color-text-secondary);
-}
-
-.focusCard {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--space-3);
   align-items: center;
+  gap: var(--space-4);
   padding: var(--space-4);
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-surface) 88%, var(--color-accent-light) 12%),
+    color-mix(in srgb, var(--color-surface) 85%, var(--color-accent-light) 15%),
     var(--color-surface)
   );
+  animation: motivationPulse 3s ease-in-out infinite;
 }
 
-.focusEmoji {
+.motivationCard[data-complete="true"] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-surface) 80%, var(--color-success) 20%),
+    var(--color-surface)
+  );
+  animation: motivationCelebrate 2s ease-in-out infinite;
+}
+
+.motivationEmoji {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  min-width: 58px;
-  height: 58px;
-  border-radius: 20px;
+  width: 52px;
+  min-width: 52px;
+  height: 52px;
+  border-radius: 16px;
   background: var(--color-accent-light);
-  font-size: 1.9rem;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 12px rgb(240 168 0 / 0.15);
 }
 
-.focusContent {
+.motivationCard[data-complete="true"] .motivationEmoji {
+  background: color-mix(in srgb, var(--color-success) 20%, var(--color-surface) 80%);
+  box-shadow: 0 4px 12px rgb(34 197 94 / 0.2);
+}
+
+.motivationContent {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.focusContent strong {
+.motivationContent strong {
   font-family: var(--font-heading);
   font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
-.focusContent span {
+.motivationContent span {
   color: var(--color-text-secondary);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
-.focusButton {
-  min-height: 48px;
-  padding: 0 var(--space-4);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
-  border: 0;
-  border-radius: var(--radius-full);
-  box-shadow: 0 14px 24px rgb(240 168 0 / 0.18);
-  cursor: pointer;
+@keyframes motivationPulse {
+  0%, 100% {
+    box-shadow: var(--shadow-card), 0 0 0 0 rgb(240 168 0 / 0);
+  }
+  50% {
+    box-shadow: var(--shadow-card), 0 0 0 4px rgb(240 168 0 / 0.08);
+  }
 }
 
-.nextActionsPanel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+@keyframes motivationCelebrate {
+  0%, 100% {
+    box-shadow: var(--shadow-card), 0 0 0 0 rgb(34 197 94 / 0);
+  }
+  50% {
+    box-shadow: var(--shadow-card), 0 0 0 6px rgb(34 197 94 / 0.12);
+  }
 }
 
 .firstStartCard {
@@ -375,82 +352,6 @@
 .firstStartSecondary {
   color: var(--color-text-primary);
   background: var(--color-surface-elevated);
-}
-
-.nextActionsHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nextActionsHeader strong {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-}
-
-.nextActionsHeader span {
-  color: var(--color-text-secondary);
-}
-
-.nextActionsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-}
-
-.nextActionCard {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 100px;
-  padding: var(--space-4);
-  color: var(--color-text-primary);
-  text-align: left;
-  text-decoration: none;
-  background: var(--theme-panel-soft);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-}
-
-.nextActionEmoji {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  min-width: 52px;
-  height: 52px;
-  border-radius: 18px;
-  background: var(--color-accent-light);
-  font-size: 1.6rem;
-}
-
-.nextActionText {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.nextActionText strong {
-  font-size: var(--text-base);
-}
-
-.nextActionText span {
-  color: var(--color-text-secondary);
-  line-height: 1.45;
-}
-
-.kidsMoodBadge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 92px;
-  height: 92px;
-  font-size: 3rem;
-  background: var(--color-accent-light);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  box-shadow: none;
 }
 
 .kidsCompanion {
@@ -660,25 +561,8 @@
     grid-template-columns: minmax(0, 1.2fr) minmax(140px, 0.8fr);
   }
 
-  .quickStats,
-  .nextActionsGrid {
+  .quickStats {
     grid-template-columns: 1fr;
-  }
-
-  .focusCard {
-    grid-template-columns: 1fr;
-  }
-
-  .focusEmoji {
-    margin: 0 auto;
-  }
-
-  .focusContent {
-    text-align: center;
-  }
-
-  .focusButton {
-    width: 100%;
   }
 
   .floatingActions {
@@ -728,15 +612,6 @@
   .firstStartActions {
     flex-direction: column;
   }
-
-  .kidsHeroBubble {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .kidsHeroEmoji {
-    margin: 0 auto;
-  }
 }
 
 @media (max-width: 420px) {
@@ -763,22 +638,9 @@
   .headerCard,
   .progressPanel,
   .motivationCard,
-  .focusCard,
-  .nextActionsPanel,
   .firstStartCard {
     padding: var(--space-3);
     border-radius: 20px;
-  }
-
-  .progressBadge {
-    min-width: 64px;
-    min-height: 64px;
-    font-size: var(--text-lg);
-  }
-
-  .nextActionCard {
-    min-height: 88px;
-    padding: var(--space-3);
   }
 
   .kidsMiniProgress {
@@ -789,7 +651,6 @@
     font-size: 0.8rem;
   }
 
-  .nextActionEmoji,
   .firstStartEmoji {
     width: 46px;
     min-width: 46px;
@@ -798,19 +659,28 @@
     font-size: 1.4rem;
   }
 
-  .kidsGuideStep,
   .firstStartStep {
     gap: var(--space-2);
     padding: var(--space-3);
   }
 
-  .kidsGuideIcon,
   .firstStartNumber {
     width: 34px;
     min-width: 34px;
     height: 34px;
   }
 
+  .motivationEmoji {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 1.4rem;
+  }
+
+  .motivationContent strong {
+    font-size: var(--text-base);
+  }
 }
 
 @media (min-width: 768px) {
@@ -820,11 +690,6 @@
     margin: 0 auto;
     padding: var(--space-6);
     padding-bottom: calc(var(--bottomnav-height) + var(--space-16));
-  }
-
-  .kidsHero {
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-    align-items: stretch;
   }
 
   .floatingActions {
@@ -859,12 +724,12 @@
     pointer-events: auto;
   }
 
-  .fabOpen {
-    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg);
-  }
-
   .fab:active {
     transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) scale(0.98);
+  }
+
+  .fabOpen {
+    transform: translateY(var(--bottomnav-fab-optical-offset-desktop)) rotate(90deg);
   }
 
   .fabOpen:active {
@@ -880,5 +745,25 @@
 
   50% {
     transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motivationCard,
+  .motivationCard[data-complete="true"],
+  .kidsCompanion {
+    animation: none;
+  }
+
+  .progressFill {
+    transition: none;
+  }
+
+  .quickStatCard {
+    transition: none;
+  }
+
+  .quickStatCard:hover {
+    transform: none;
   }
 }

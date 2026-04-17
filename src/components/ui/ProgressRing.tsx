@@ -5,12 +5,18 @@
 import { motion } from 'framer-motion';
 import styles from './ProgressRing.module.css';
 
+type DisplayMode = 'percentage' | 'fraction';
+
 interface ProgressRingProps {
   percentage: number;
   size?: number;
   strokeWidth?: number;
   showPercentage?: boolean;
   label?: string;
+  displayMode?: DisplayMode;
+  completed?: number;
+  total?: number;
+  onClick?: () => void;
 }
 
 export default function ProgressRing({
@@ -19,6 +25,10 @@ export default function ProgressRing({
   strokeWidth = 4,
   showPercentage = true,
   label,
+  displayMode = 'percentage',
+  completed = 0,
+  total = 0,
+  onClick,
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -27,14 +37,20 @@ export default function ProgressRing({
   const isComplete = normalizedPercentage >= 100;
 
   const center = size / 2;
+  const isClickable = Boolean(onClick);
+
+  const displayText = displayMode === 'fraction' ? `${completed}/${total}` : `${normalizedPercentage}%`;
 
   return (
     <div
-      className={styles.container}
+      className={`${styles.container} ${isClickable ? styles.clickable : ''}`}
       style={{ width: size, height: size }}
       data-complete={isComplete}
-      role="img"
+      role={isClickable ? 'button' : 'img'}
+      tabIndex={isClickable ? 0 : undefined}
       aria-label={label ?? `Postęp wykonania: ${normalizedPercentage}%`}
+      onClick={onClick}
+      onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); } : undefined}
     >
       <svg
         className={styles.svg}
@@ -74,7 +90,7 @@ export default function ProgressRing({
 
       {showPercentage && (
         <span className={styles.percentage}>
-          {normalizedPercentage}%
+          {displayText}
         </span>
       )}
     </div>

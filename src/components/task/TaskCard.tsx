@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Task } from '@/types';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { getCategoryColor } from '@utils/categories';
+import { getCategoryById, getCategoryColor } from '@utils/categories';
 import { formatMinutes } from '@utils/formatting';
 import Checkbox from '../ui/Checkbox';
 import { KidsStarIcon } from '../ui';
@@ -60,16 +60,23 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
     }
   };
 
-  const handleContentClick = () => {
+  const categoryColor = getCategoryColor(task.category);
+  const category = getCategoryById(task.category);
+
+  const handleCardClick = () => {
     if (display.kidsMode) {
       handleToggle();
-      return;
     }
-
-    onEdit?.(task);
   };
 
-  const categoryColor = getCategoryColor(task.category);
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(task);
+  };
 
   return (
     <>
@@ -89,9 +96,13 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
         }
         transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.2 }}
         style={{ '--category-color': categoryColor } as React.CSSProperties}
+        onClick={handleCardClick}
+        role={display.kidsMode ? 'button' : undefined}
+        tabIndex={display.kidsMode ? 0 : undefined}
+        aria-label={display.kidsMode ? `${isCompleted ? 'Odznacz' : 'Zaznacz'} zadanie "${task.title}"` : undefined}
       >
         {!display.kidsMode && (
-          <div className={styles.checkboxArea}>
+          <div className={styles.checkboxArea} onClick={handleCheckboxClick}>
             <Checkbox
               checked={isCompleted}
               onChange={handleToggle}
@@ -101,16 +112,7 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
           </div>
         )}
 
-        <button
-          className={styles.content}
-          onClick={handleContentClick}
-          type="button"
-          aria-label={
-            display.kidsMode
-              ? `${isCompleted ? 'Odznacz' : 'Zaznacz'} zadanie "${task.title}"`
-              : `Edytuj zadanie "${task.title}"`
-          }
-        >
+        <div className={styles.content}>
           {display.kidsMode && (
             <span
               className={`${styles.kidsStatusBadge} ${
@@ -132,15 +134,33 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
           <div className={styles.textContent}>
             <h3 className={styles.title}>{task.title}</h3>
 
-            {!display.kidsMode && display.showTimeEstimate && task.estimatedMinutes > 0 && (
-              <span className={styles.time}>{formatMinutes(task.estimatedMinutes)}</span>
+            {!display.kidsMode && (
+              <div className={styles.meta}>
+                {category && <span className={styles.category}>{category.label}</span>}
+                {display.showTimeEstimate && task.estimatedMinutes > 0 && (
+                  <span className={styles.time}>{formatMinutes(task.estimatedMinutes)}</span>
+                )}
+              </div>
             )}
           </div>
 
           {!display.kidsMode && display.showPoints && (
             <span className={styles.points}>+{task.points}</span>
           )}
-        </button>
+
+          {!display.kidsMode && onEdit && (
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={handleEditClick}
+              aria-label={`Edytuj zadanie "${task.title}"`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              </svg>
+            </button>
+          )}
+        </div>
       </motion.article>
 
       <AnimatePresence>
