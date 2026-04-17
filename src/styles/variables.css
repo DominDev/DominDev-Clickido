@@ -221,7 +221,7 @@
   --bottomnav-desktop-bottom: calc(var(--safe-area-bottom) + var(--space-4));
   --bottomnav-desktop-max-width: 560px;
   --bottomnav-desktop-width: min(var(--bottomnav-desktop-max-width), calc(100vw - 48px));
-  --bottomnav-fab-inline-gap: 2px;
+  --bottomnav-fab-inline-gap: 6px;
   --bottomnav-quickmenu-width: 280px;
   --bottomnav-quickmenu-gap: var(--space-2);
   --bottomnav-quickmenu-lift: 44px;
