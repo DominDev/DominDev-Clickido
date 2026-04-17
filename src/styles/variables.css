@@ -225,12 +225,7 @@
   --bottomnav-quickmenu-width: 280px;
   --bottomnav-quickmenu-gap: var(--space-2);
   --bottomnav-quickmenu-lift: 44px;
-  --bottomnav-quickmenu-lift-compact: 42px;
-  --bottomnav-fab-size-desktop: 68px;
-  --bottomnav-fab-optical-offset-desktop: 0px;
-  --bottomnav-fab-right-desktop: -86px;
-  --bottomnav-quickmenu-width-desktop: var(--bottomnav-quickmenu-width);
-  --bottomnav-quickmenu-gap-desktop: var(--bottomnav-quickmenu-gap);
+  --bottomnav-quickmenu-lift-compact: 40px;
   --bottomnav-toast-gap-desktop: 16px;
   --bottomnav-desktop-outer-height: calc(
     var(--bottomnav-height) +
