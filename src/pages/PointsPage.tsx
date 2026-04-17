@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
+import { useUIStore } from '@store/uiStore';
 import { KidsStarIcon, PointsTile, PinModal, RewardModal } from '@components/ui';
 import { CategoryId, CustomReward, RewardAudience } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
@@ -87,12 +88,23 @@ export default function PointsPage() {
   const availablePoints = getAvailablePoints();
   const totalEarnedPoints = getTotalEarnedPoints();
 
+  const { modal, closeModal } = useUIStore();
   const [invalidRewardId, setInvalidRewardId] = useState<string | null>(null);
   const [unclaimRewardId, setUnclaimRewardId] = useState<string | null>(null);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
   const [editingReward, setEditingReward] = useState<CustomReward | null>(null);
-  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [initialAudience, setInitialAudience] = useState<RewardAudience>('family');
+
+  // Listen for rewardForm modal from BottomNav FAB
+  useEffect(() => {
+    if (modal.isOpen && modal.type === 'rewardForm') {
+      setEditingReward(null);
+      const modalData = modal.data as { audience?: RewardAudience } | undefined;
+      setInitialAudience(modalData?.audience ?? 'family');
+      setIsRewardModalOpen(true);
+      closeModal();
+    }
+  }, [modal.isOpen, modal.type, modal.data, closeModal]);
 
   // Filter rewards by audience based on kidsMode
   const visibleRewards = useMemo(() => {
@@ -150,13 +162,6 @@ export default function PointsPage() {
 
   const handleEditReward = (reward: CustomReward) => {
     setEditingReward(reward);
-    setIsRewardModalOpen(true);
-  };
-
-  const handleAddReward = (audience: RewardAudience = 'family') => {
-    setEditingReward(null);
-    setInitialAudience(audience);
-    setQuickMenuOpen(false);
     setIsRewardModalOpen(true);
   };
 
@@ -680,68 +685,6 @@ export default function PointsPage() {
         initialAudience={initialAudience}
       />
 
-      {!display.kidsMode && (
-        <div className={styles.floatingActions}>
-          {quickMenuOpen && (
-            <div className={styles.quickMenu} role="menu" aria-label="Dodaj nagrodę">
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={() => handleAddReward('family')}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  👨‍👩‍👧
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Dla wszystkich</strong>
-                  <span>Widoczna w trybie dziecka i rodzica.</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={() => handleAddReward('child')}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  👶
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Tylko dziecko</strong>
-                  <span>Widoczna tylko w trybie dziecka.</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={() => handleAddReward('adult')}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  🍷
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Tylko dorosły</strong>
-                  <span>Ukryta przed dzieckiem.</span>
-                </span>
-              </button>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
-            onClick={() => setQuickMenuOpen((current) => !current)}
-            aria-label="Dodaj nagrodę"
-            aria-expanded={quickMenuOpen}
-          >
-            <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
-          </button>
-        </div>
-      )}
     </section>
   );
 }

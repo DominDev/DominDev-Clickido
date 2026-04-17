@@ -100,7 +100,7 @@ export interface Toast {
 
 export interface ModalState {
   isOpen: boolean;
-  type: 'taskForm' | 'confirm' | 'export' | 'import' | null;
+  type: 'taskForm' | 'rewardForm' | 'confirm' | 'export' | 'import' | null;
   data?: unknown;
 }
 
