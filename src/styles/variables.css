@@ -210,16 +210,25 @@
 
   /* BottomNav */
   --bottomnav-height: 72px;
+  --bottomnav-mobile-side: var(--space-3);
+  --bottomnav-mobile-side-compact: var(--space-2);
+  --bottomnav-mobile-bottom: calc(var(--safe-area-bottom) + var(--space-3));
+  --bottomnav-mobile-bottom-compact: calc(var(--safe-area-bottom) + var(--space-2));
+  --bottomnav-mobile-padding: 8px;
+  --bottomnav-mobile-padding-compact: 6px;
   --bottomnav-desktop-padding: 8px;
   --bottomnav-desktop-border-width: 1px;
   --bottomnav-desktop-bottom: calc(var(--safe-area-bottom) + var(--space-4));
   --bottomnav-desktop-max-width: 560px;
   --bottomnav-desktop-width: min(var(--bottomnav-desktop-max-width), calc(100vw - 48px));
+  --bottomnav-fab-inline-gap: 2px;
+  --bottomnav-quickmenu-width: 280px;
+  --bottomnav-quickmenu-gap: var(--space-2);
   --bottomnav-fab-size-desktop: 68px;
   --bottomnav-fab-optical-offset-desktop: 0px;
   --bottomnav-fab-right-desktop: -86px;
-  --bottomnav-quickmenu-width-desktop: 280px;
-  --bottomnav-quickmenu-gap-desktop: 14px;
+  --bottomnav-quickmenu-width-desktop: var(--bottomnav-quickmenu-width);
+  --bottomnav-quickmenu-gap-desktop: var(--bottomnav-quickmenu-gap);
   --bottomnav-toast-gap-desktop: 16px;
   --bottomnav-desktop-outer-height: calc(
     var(--bottomnav-height) +
