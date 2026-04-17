@@ -2,14 +2,14 @@
 
 .nav {
   position: fixed;
-  right: var(--space-3);
-  bottom: calc(var(--safe-area-bottom) + var(--space-3));
-  left: var(--space-3);
+  right: var(--bottomnav-mobile-side);
+  bottom: var(--bottomnav-mobile-bottom);
+  left: var(--bottomnav-mobile-side);
   display: flex;
   align-items: stretch;
   justify-content: space-around;
   min-height: var(--bottomnav-height);
-  padding: 8px;
+  padding: var(--bottomnav-mobile-padding);
   background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg-primary) 8%);
   border: 1px solid color-mix(in srgb, var(--color-border-light) 78%, var(--color-border) 22%);
   border-radius: 26px;
@@ -156,7 +156,7 @@
   justify-content: center;
   width: 52px;
   height: 52px;
-  margin: 0 2px;
+  margin: 0 var(--bottomnav-fab-inline-gap);
   font-size: 28px;
   line-height: 1;
   color: var(--color-text-inverse);
@@ -191,7 +191,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-3));
+  bottom: calc(var(--bottomnav-height) + var(--bottomnav-mobile-bottom));
   left: 0;
   z-index: calc(var(--z-fixed) - 1);
   background: rgb(0 0 0 / 0.25);
@@ -204,13 +204,17 @@
    Mobile default: nav bottom = safe-area + space-3 */
 .quickMenu {
   position: fixed;
-  right: var(--space-3);
-  bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-3) + var(--space-4));
+  right: var(--bottomnav-mobile-side);
+  bottom: calc(
+    var(--bottomnav-height) +
+    var(--bottomnav-mobile-bottom) +
+    var(--bottomnav-quickmenu-gap)
+  );
   z-index: calc(var(--z-fixed) + 1);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: min(280px, calc(100vw - 32px));
+  width: min(var(--bottomnav-quickmenu-width), calc(100vw - 32px));
 }
 
 .quickMenuAction {
@@ -266,11 +270,11 @@
 
 @media (max-width: 420px) {
   .nav {
-    right: var(--space-2);
-    bottom: calc(var(--safe-area-bottom) + var(--space-2));
-    left: var(--space-2);
+    right: var(--bottomnav-mobile-side-compact);
+    bottom: var(--bottomnav-mobile-bottom-compact);
+    left: var(--bottomnav-mobile-side-compact);
     min-height: 68px;
-    padding: 6px;
+    padding: var(--bottomnav-mobile-padding-compact);
     border-radius: 22px;
   }
 
@@ -315,12 +319,12 @@
 
   /* Small mobile: nav bottom = safe-area + space-2, nav height = 68px */
   .quickMenuOverlay {
-    bottom: calc(68px + var(--safe-area-bottom) + var(--space-2));
+    bottom: calc(68px + var(--bottomnav-mobile-bottom-compact));
   }
 
   .quickMenu {
-    right: var(--space-2);
-    bottom: calc(68px + var(--safe-area-bottom) + var(--space-2) + var(--space-4));
+    right: var(--bottomnav-mobile-side-compact);
+    bottom: calc(68px + var(--bottomnav-mobile-bottom-compact) + var(--bottomnav-quickmenu-gap));
   }
 }
 
@@ -348,8 +352,13 @@
   }
 
   .quickMenu {
-    /* Center-aligned nav: right edge = 50% - half of nav width */
-    right: calc(50% - (var(--bottomnav-desktop-width) / 2));
-    bottom: calc(var(--bottomnav-height) + var(--bottomnav-desktop-bottom) + var(--space-4));
+    right: calc(
+      50% - (var(--bottomnav-desktop-width) / 2)
+    );
+    bottom: calc(
+      var(--bottomnav-height) +
+      var(--bottomnav-desktop-bottom) +
+      var(--bottomnav-quickmenu-gap)
+    );
   }
 }
