@@ -191,7 +191,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: calc(var(--bottomnav-height) + var(--bottomnav-mobile-bottom));
+  bottom: calc(var(--bottomnav-mobile-bottom) + var(--bottomnav-quickmenu-lift));
   left: 0;
   z-index: calc(var(--z-fixed) - 1);
   background: rgb(0 0 0 / 0.25);
@@ -199,15 +199,15 @@
   -webkit-backdrop-filter: blur(4px);
 }
 
-/* Quick menu - positioned above nav bar, right-aligned
-   Gap between tiles and nav = var(--space-4)
-   Mobile default: nav bottom = safe-area + space-3 */
+/* Quick menu - positioned near nav bar, right-aligned
+   Gap between tiles and nav = var(--bottomnav-quickmenu-gap)
+   Mobile default: nav bottom = bottomnav-mobile-bottom */
 .quickMenu {
   position: fixed;
   right: var(--bottomnav-mobile-side);
   bottom: calc(
-    var(--bottomnav-height) +
     var(--bottomnav-mobile-bottom) +
+    var(--bottomnav-quickmenu-lift) +
     var(--bottomnav-quickmenu-gap)
   );
   z-index: calc(var(--z-fixed) + 1);
@@ -319,12 +319,16 @@
 
   /* Small mobile: nav bottom = safe-area + space-2, nav height = 68px */
   .quickMenuOverlay {
-    bottom: calc(68px + var(--bottomnav-mobile-bottom-compact));
+    bottom: calc(var(--bottomnav-mobile-bottom-compact) + var(--bottomnav-quickmenu-lift-compact));
   }
 
   .quickMenu {
     right: var(--bottomnav-mobile-side-compact);
-    bottom: calc(68px + var(--bottomnav-mobile-bottom-compact) + var(--bottomnav-quickmenu-gap));
+    bottom: calc(
+      var(--bottomnav-mobile-bottom-compact) +
+      var(--bottomnav-quickmenu-lift-compact) +
+      var(--bottomnav-quickmenu-gap)
+    );
   }
 }
 
@@ -348,7 +352,7 @@
 
   /* Desktop: nav bottom = bottomnav-desktop-bottom (safe-area + space-4) */
   .quickMenuOverlay {
-    bottom: calc(var(--bottomnav-height) + var(--bottomnav-desktop-bottom));
+    bottom: calc(var(--bottomnav-desktop-bottom) + var(--bottomnav-quickmenu-lift));
   }
 
   .quickMenu {
@@ -356,8 +360,8 @@
       50% - (var(--bottomnav-desktop-width) / 2)
     );
     bottom: calc(
-      var(--bottomnav-height) +
       var(--bottomnav-desktop-bottom) +
+      var(--bottomnav-quickmenu-lift) +
       var(--bottomnav-quickmenu-gap)
     );
   }

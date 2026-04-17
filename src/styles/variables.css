@@ -224,6 +224,8 @@
   --bottomnav-fab-inline-gap: 2px;
   --bottomnav-quickmenu-width: 280px;
   --bottomnav-quickmenu-gap: var(--space-2);
+  --bottomnav-quickmenu-lift: 44px;
+  --bottomnav-quickmenu-lift-compact: 42px;
   --bottomnav-fab-size-desktop: 68px;
   --bottomnav-fab-optical-offset-desktop: 0px;
   --bottomnav-fab-right-desktop: -86px;
