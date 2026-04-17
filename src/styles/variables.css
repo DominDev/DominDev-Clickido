@@ -216,6 +216,7 @@
   --bottomnav-mobile-bottom-compact: calc(var(--safe-area-bottom) + var(--space-2));
   --bottomnav-mobile-padding: 8px;
   --bottomnav-mobile-padding-compact: 6px;
+  --bottomnav-mobile-border-width: 1px;
   --bottomnav-desktop-padding: 8px;
   --bottomnav-desktop-border-width: 1px;
   --bottomnav-desktop-bottom: calc(var(--safe-area-bottom) + var(--space-4));
@@ -227,6 +228,16 @@
   --bottomnav-quickmenu-lift: 44px;
   --bottomnav-quickmenu-lift-compact: 40px;
   --bottomnav-toast-gap-desktop: 16px;
+  --bottomnav-mobile-outer-height: calc(
+    var(--bottomnav-height) +
+    (var(--bottomnav-mobile-padding) * 2) +
+    (var(--bottomnav-mobile-border-width) * 2)
+  );
+  --bottomnav-mobile-outer-height-compact: calc(
+    68px +
+    (var(--bottomnav-mobile-padding-compact) * 2) +
+    (var(--bottomnav-mobile-border-width) * 2)
+  );
   --bottomnav-desktop-outer-height: calc(
     var(--bottomnav-height) +
     (var(--bottomnav-desktop-padding) * 2) +
