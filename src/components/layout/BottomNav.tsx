@@ -2,7 +2,7 @@
  * BottomNav - Bottom navigation bar with integrated FAB
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useUIStore } from '@store/uiStore';
@@ -35,6 +35,23 @@ export default function BottomNav() {
 
   const navItems = display.kidsMode ? KIDS_NAV_ITEMS : DEFAULT_NAV_ITEMS;
   const isPointsPage = location.pathname === '/points';
+
+  // Block page scrolling when quick menu is open
+  useEffect(() => {
+    if (quickMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [quickMenuOpen]);
+
+  // Close quick menu when navigating to a different page
+  useEffect(() => {
+    setQuickMenuOpen(false);
+  }, [location.pathname]);
 
   const handleOpenQuickTask = () => {
     setQuickMenuOpen(false);
