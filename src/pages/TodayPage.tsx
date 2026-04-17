@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
 import { TaskList } from '@components/task';
@@ -8,7 +8,7 @@ import { calculatePoints } from '@services/taskService';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showSuccessToast, useUIStore } from '@store/uiStore';
-import { formatPoints, formatTasksCount, getMotivationalMessage } from '@utils/formatting';
+import { getMotivationalMessage } from '@utils/formatting';
 import { TASK_TEMPLATES } from '@utils/categories';
 import styles from './TodayPage.module.css';
 
@@ -63,7 +63,6 @@ export default function TodayPage() {
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
   const navigate = useNavigate();
-  const taskListAnchorRef = useRef<HTMLDivElement | null>(null);
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
   const tasks = getTasksForSelectedDate();
@@ -71,23 +70,9 @@ export default function TodayPage() {
   const points = getPointsForSelectedDate();
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
   const selectedDayIsToday = isToday(selectedDate);
-  const showAdultShortcuts = !display.kidsMode && tasks.length > 0;
 
   const totalPoints = useMemo(() => completions.reduce((sum, c) => sum + c.points, 0), [completions]);
   const totalCompleted = completions.length;
-
-  const summaryText = useMemo(
-    () => `${progress.completed}/${progress.total} ukończone · ${formatPoints(points)}`,
-    [progress.completed, progress.total, points]
-  );
-
-  const formattedDate = useMemo(() => {
-    return new Intl.DateTimeFormat('pl-PL', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    }).format(selectedDate);
-  }, [selectedDate]);
 
   useEffect(() => {
     if (display.kidsMode && !selectedDayIsToday) {
@@ -99,38 +84,6 @@ export default function TodayPage() {
     () => getKidsMood(progress.percentage, pendingTasks),
     [progress.percentage, pendingTasks]
   );
-
-  const primaryNextStep = useMemo(() => {
-    if (tasks.length === 0) {
-      return {
-        emoji: '➕',
-        title: 'Najpierw dodaj pierwszy zestaw zadań',
-        description:
-          'Pusty dzień nie powinien kończyć się decyzją „co teraz?”. Zacznij od jednej akcji.',
-        actionLabel: 'Dodaj zadanie',
-        onAction: () => openModal('taskForm'),
-      };
-    }
-
-    if (pendingTasks > 0) {
-      return {
-        emoji: '📋',
-        title: 'Najważniejsze teraz: dokończyć plan dnia',
-        description: `Zostało jeszcze ${pendingTasks} zadań. Najszybciej pomoże przejście prosto do listy poniżej.`,
-        actionLabel: 'Przejdź do listy',
-        onAction: () =>
-          taskListAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-      };
-    }
-
-    return {
-      emoji: '⭐',
-      title: 'Dzisiejszy plan jest domknięty',
-      description: 'To dobry moment, żeby sprawdzić punkty albo przygotować kolejne zadania.',
-      actionLabel: 'Sprawdź punkty',
-      onAction: () => navigate('/points'),
-    };
-  }, [navigate, openModal, pendingTasks, tasks.length]);
 
   const emptySuggestions = useMemo(
     () => [
@@ -207,8 +160,6 @@ export default function TodayPage() {
     [addTask]
   );
 
-  const returnToToday = () => setSelectedDate(new Date());
-
   const handleOpenQuickTask = () => {
     setQuickMenuOpen(false);
     openModal('taskForm');
@@ -278,63 +229,50 @@ export default function TodayPage() {
           </>
         ) : (
           <>
-            <div className={styles.headerCard}>
-              <div className={styles.titleBlock}>
-                <p className={styles.eyebrow}>Plan dnia</p>
-                <h1 className={styles.title}>{formattedDate}</h1>
-                <p className={styles.subtitle}>{summaryText}</p>
-                {!selectedDayIsToday && (
-                  <div className={styles.dayContext}>
-                    <span className={styles.contextBadge}>Podgląd innego dnia</span>
-                    <button type="button" className={styles.contextButton} onClick={returnToToday}>
-                      Wróć do dziś
-                    </button>
-                  </div>
-                )}
+            {display.showMotivation && (
+              <div className={styles.motivationCard} data-complete={progress.percentage === 100}>
+                <span className={styles.motivationEmoji} aria-hidden="true">
+                  {progress.percentage === 100 ? '🎉' : progress.percentage >= 50 ? '🔥' : '💪'}
+                </span>
+                <div className={styles.motivationContent}>
+                  <strong>{getMotivationalMessage(progress.percentage)}</strong>
+                  <span>
+                    {progress.percentage === 100
+                      ? 'Gratulacje! Wszystkie zadania na dziś wykonane.'
+                      : `${progress.completed} z ${progress.total} ukończone`}
+                  </span>
+                </div>
               </div>
-
-              <div className={styles.progressBadge}>{progress.percentage}%</div>
-            </div>
+            )}
 
             <div className={styles.progressPanel}>
+              <div className={styles.progressPanelHeader}>
+                <strong>Postęp dnia</strong>
+                <span>{progress.percentage}%</span>
+              </div>
+
               <div className={styles.progressTrack} aria-hidden="true">
-                <div className={styles.progressFill} style={{ width: `${progress.percentage}%` }} />
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${progress.percentage}%` }}
+                  data-complete={progress.percentage === 100}
+                />
               </div>
 
               <div className={styles.quickStats}>
-                <div className={styles.quickStatCard}>
+                <div className={styles.quickStatCard} data-highlight="pending">
                   <span className={styles.quickStatLabel}>Do zrobienia</span>
                   <strong className={styles.quickStatValue}>{pendingTasks}</strong>
                 </div>
-                <div className={styles.quickStatCard}>
+                <div className={styles.quickStatCard} data-highlight="points">
                   <span className={styles.quickStatLabel}>Punkty dziś</span>
                   <strong className={styles.quickStatValue}>{points}</strong>
                 </div>
                 <div className={styles.quickStatCard}>
-                  <span className={styles.quickStatLabel}>Wszystkie zadania</span>
+                  <span className={styles.quickStatLabel}>Zaplanowane</span>
                   <strong className={styles.quickStatValue}>{tasks.length}</strong>
                 </div>
               </div>
-            </div>
-
-            {display.showMotivation && (
-              <div className={styles.motivationCard}>
-                <strong>{getMotivationalMessage(progress.percentage)}</strong>
-                <span>{formatTasksCount(tasks.length)} zaplanowane na wybrany dzień.</span>
-              </div>
-            )}
-
-            <div className={styles.focusCard}>
-              <span className={styles.focusEmoji} aria-hidden="true">
-                {primaryNextStep.emoji}
-              </span>
-              <div className={styles.focusContent}>
-                <strong>{primaryNextStep.title}</strong>
-                <span>{primaryNextStep.description}</span>
-              </div>
-              <button type="button" className={styles.focusButton} onClick={primaryNextStep.onAction}>
-                {primaryNextStep.actionLabel}
-              </button>
             </div>
 
             {tasks.length === 0 && selectedDayIsToday && (
@@ -375,40 +313,10 @@ export default function TodayPage() {
               </div>
             )}
 
-            {showAdultShortcuts && (
-              <div className={styles.nextActionsPanel}>
-                <div className={styles.nextActionsHeader}>
-                  <strong>Przydatne skróty</strong>
-                  <span>Dodatkowe miejsca, gdy chcesz zarządzać planem lub sprawdzić wyniki.</span>
-                </div>
-
-                <div className={styles.nextActionsGrid}>
-                  <Link className={styles.nextActionCard} to="/tasks">
-                    <span className={styles.nextActionEmoji} aria-hidden="true">
-                      🧩
-                    </span>
-                    <span className={styles.nextActionText}>
-                      <strong>Baza zadań</strong>
-                      <span>Porządkuj szablony, edytuj zadania i układaj stały plan domu.</span>
-                    </span>
-                  </Link>
-
-                  <Link className={styles.nextActionCard} to="/points">
-                    <span className={styles.nextActionEmoji} aria-hidden="true">
-                      ⭐
-                    </span>
-                    <span className={styles.nextActionText}>
-                      <strong>Punkty i postępy</strong>
-                      <span>Sprawdź serię, aktywność i wyniki rodziny bez szukania po ekranach.</span>
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </>
+              </>
         )}
 
-        <div ref={taskListAnchorRef}>
+        <div>
           <TaskList
             tasks={tasks}
             emptyTitle={

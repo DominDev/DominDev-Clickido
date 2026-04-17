@@ -15,6 +15,7 @@ import styles from './TopBar.module.css';
 export default function TopBar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [parentPinOpen, setParentPinOpen] = useState(false);
+  const [progressDisplayMode, setProgressDisplayMode] = useState<'percentage' | 'fraction'>('percentage');
   const { selectedDate, getProgressForSelectedDate, setSelectedDate } = useTaskStore();
   const { screensaver, display, toggleKidsMode } = useSettingsStore();
 
@@ -64,6 +65,10 @@ export default function TopBar() {
     return false;
   };
 
+  const toggleProgressDisplay = () => {
+    setProgressDisplayMode((current) => (current === 'percentage' ? 'fraction' : 'percentage'));
+  };
+
   return (
     <header className={`${styles.topbar} ${display.kidsMode ? styles.kidsMode : ''}`}>
       <div className={styles.leading}>
@@ -71,18 +76,7 @@ export default function TopBar() {
           {display.kidsMode ? (
             <span className={styles.kidsTitle}>{`🧸 ${kidsDayTitle}`}</span>
           ) : (
-            <>
-              <span className={styles.date}>{formattedDate}</span>
-              <span className={styles.dayStatus}>
-                {!selectedDayIsToday
-                  ? progress.total === 0
-                    ? 'Podgląd innego dnia · brak zadań'
-                    : `Podgląd innego dnia · ${progress.completed}/${progress.total} zadań ukończonych`
-                  : progress.total === 0
-                    ? 'Brak zadań na wybrany dzień'
-                    : `${progress.completed}/${progress.total} zadań ukończonych`}
-              </span>
-            </>
+            <span className={styles.date}>{formattedDate}</span>
           )}
         </div>
       </div>
@@ -101,7 +95,6 @@ export default function TopBar() {
 
         <div className={styles.clockSection}>
           <span className={styles.clock}>{formattedTime}</span>
-          {!display.kidsMode && <span className={styles.clockHint}>{`${progress.percentage}% planu gotowe`}</span>}
         </div>
 
         {display.kidsMode && (
@@ -144,7 +137,11 @@ export default function TopBar() {
               percentage={progress.percentage}
               size={56}
               strokeWidth={4}
-              label={`Postęp dnia: ${progress.completed} z ${progress.total} zadań, ${progress.percentage}%`}
+              displayMode={progressDisplayMode}
+              completed={progress.completed}
+              total={progress.total}
+              onClick={toggleProgressDisplay}
+              label={`Postęp dnia: ${progress.completed} z ${progress.total} zadań, ${progress.percentage}%. Kliknij, aby przełączyć widok.`}
             />
           </div>
         )}

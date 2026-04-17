@@ -6,14 +6,17 @@
   align-items: center;
   padding: var(--space-3) var(--space-4);
   background-color: var(--color-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  transition: background-color var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: default;
+  transition: background-color var(--transition-base), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .card:hover {
   transform: translateY(-1px);
+  border-color: var(--color-border);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.08);
 }
 
 .card:active {
@@ -47,7 +50,6 @@
   text-align: left;
   background: none;
   border: none;
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -87,9 +89,34 @@
   -webkit-box-orient: vertical;
 }
 
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.category {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .time,
 .kidsHint {
   font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.meta .time {
+  font-size: var(--text-xs);
+}
+
+.meta .time::before {
+  content: '·';
+  margin-right: var(--space-2);
   color: var(--color-text-muted);
 }
 
@@ -99,14 +126,50 @@
   font-family: var(--font-heading);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  color: var(--color-accent);
-  background-color: var(--color-accent-light);
+  color: var(--color-success);
+  background-color: var(--color-success-light);
   border-radius: var(--radius-full);
 }
 
 .card.completed .points {
   color: var(--color-success);
-  background-color: var(--color-success-light);
+  background-color: color-mix(in srgb, var(--color-success-light) 60%, var(--color-surface) 40%);
+}
+
+.editButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: var(--color-bg-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.editButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.card:hover .editButton {
+  opacity: 1;
+}
+
+.editButton:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.editButton:active {
+  transform: scale(0.95);
 }
 
 .kidsCard {
@@ -350,6 +413,21 @@
   .time,
   .points {
     font-size: 0.78rem;
+  }
+
+  .category {
+    font-size: 0.65rem;
+  }
+
+  .editButton {
+    width: 32px;
+    height: 32px;
+    opacity: 1;
+  }
+
+  .editButton svg {
+    width: 16px;
+    height: 16px;
   }
 
   .kidsCard {
