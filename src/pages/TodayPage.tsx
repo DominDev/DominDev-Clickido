@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
@@ -63,7 +63,6 @@ export default function TodayPage() {
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
   const navigate = useNavigate();
-  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
   const tasks = getTasksForSelectedDate();
   const progress = getProgressForSelectedDate();
@@ -159,16 +158,6 @@ export default function TodayPage() {
     ],
     [addTask]
   );
-
-  const handleOpenQuickTask = () => {
-    setQuickMenuOpen(false);
-    openModal('taskForm');
-  };
-
-  const handleOpenTaskBase = () => {
-    setQuickMenuOpen(false);
-    navigate('/tasks');
-  };
 
   const handleOpenPoints = () => {
     navigate('/points');
@@ -344,53 +333,6 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {!display.kidsMode && (
-        <div className={styles.floatingActions}>
-          {quickMenuOpen && (
-            <div className={styles.quickMenu} role="menu" aria-label="Szybkie akcje">
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={handleOpenQuickTask}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  ⚡
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Szybkie zadanie</strong>
-                  <span>Dodaj nowe zadanie od razu.</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.quickMenuAction}
-                onClick={handleOpenTaskBase}
-                role="menuitem"
-              >
-                <span className={styles.quickMenuEmoji} aria-hidden="true">
-                  🧩
-                </span>
-                <span className={styles.quickMenuText}>
-                  <strong>Baza zadań</strong>
-                  <span>Otwórz listę, szablony i edycję.</span>
-                </span>
-              </button>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className={`${styles.fab} ${quickMenuOpen ? styles.fabOpen : ''}`}
-            onClick={() => setQuickMenuOpen((current) => !current)}
-            aria-label="Otwórz szybkie akcje"
-            aria-expanded={quickMenuOpen}
-          >
-            <span aria-hidden="true">{quickMenuOpen ? '×' : '＋'}</span>
-          </button>
-        </div>
-      )}
     </section>
   );
 }
