@@ -186,23 +186,27 @@
   transform: rotate(45deg) scale(0.95);
 }
 
-/* Quick menu overlay */
+/* Quick menu overlay - covers content above nav bar */
 .quickMenuOverlay {
   position: fixed;
-  inset: 0;
-  z-index: calc(var(--z-fixed) + 10);
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: var(--space-3);
-  padding-bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-3) + var(--space-4));
-  background: rgb(0 0 0 / 0.2);
+  top: 0;
+  right: 0;
+  bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-3));
+  left: 0;
+  z-index: calc(var(--z-fixed) - 1);
+  background: rgb(0 0 0 / 0.25);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 
-/* Quick menu */
+/* Quick menu - positioned above nav bar, right-aligned
+   Gap between tiles and nav = var(--space-4)
+   Mobile default: nav bottom = safe-area + space-3 */
 .quickMenu {
+  position: fixed;
+  right: var(--space-3);
+  bottom: calc(var(--bottomnav-height) + var(--safe-area-bottom) + var(--space-3) + var(--space-4));
+  z-index: calc(var(--z-fixed) + 1);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -308,6 +312,16 @@
   .kidsMode .label {
     font-size: 0.8rem;
   }
+
+  /* Small mobile: nav bottom = safe-area + space-2, nav height = 68px */
+  .quickMenuOverlay {
+    bottom: calc(68px + var(--safe-area-bottom) + var(--space-2));
+  }
+
+  .quickMenu {
+    right: var(--space-2);
+    bottom: calc(68px + var(--safe-area-bottom) + var(--space-2) + var(--space-4));
+  }
 }
 
 @media (min-width: 768px) {
@@ -326,5 +340,16 @@
   .kidsNav {
     width: max-content;
     max-width: calc(100vw - 32px);
+  }
+
+  /* Desktop: nav bottom = bottomnav-desktop-bottom (safe-area + space-4) */
+  .quickMenuOverlay {
+    bottom: calc(var(--bottomnav-height) + var(--bottomnav-desktop-bottom));
+  }
+
+  .quickMenu {
+    /* Center-aligned nav: right edge = 50% - half of nav width */
+    right: calc(50% - (var(--bottomnav-desktop-width) / 2));
+    bottom: calc(var(--bottomnav-height) + var(--bottomnav-desktop-bottom) + var(--space-4));
   }
 }
