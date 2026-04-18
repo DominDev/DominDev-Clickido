@@ -71,7 +71,7 @@ export interface ScreensaverSettings {
   enabled: boolean;
   idleTimeoutMinutes: number; // 1-30
   dimOpacity: number; // 10-100
-  panelBrightness: number; // 20-100
+  panelBrightness: number; // 0-100
   showSeconds: boolean;
 }
 

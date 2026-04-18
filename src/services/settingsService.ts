@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     enabled: true,
     idleTimeoutMinutes: 5,
     dimOpacity: 30,
-    panelBrightness: 58,
+    panelBrightness: 100,
     showSeconds: false,
   },
   display: {

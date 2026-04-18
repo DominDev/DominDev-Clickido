@@ -1,7 +1,7 @@
 ﻿import { useRef, useState } from 'react';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { showErrorToast, showSuccessToast } from '@store/uiStore';
+import { showErrorToast, showSuccessToast, useUIStore } from '@store/uiStore';
 import { exportData, getStorageInfo, importData } from '@services/storageService';
 import styles from './SettingsPage.module.css';
 
@@ -83,6 +83,7 @@ export default function SettingsPage() {
     loadSettings,
   } = useSettingsStore();
   const { loadTasks, loadCompletions, loadClaimedRewards, loadRewards } = useTaskStore();
+  const activateScreensaver = useUIStore((state) => state.activateScreensaver);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
@@ -550,6 +551,11 @@ export default function SettingsPage() {
           <p className={styles.sliderHint}>
             Im niższa wartość, tym mocniej przygaszony będzie cały wygaszacz.
           </p>
+          <div className={styles.parentToolsActions}>
+            <button type="button" className={styles.utilityButton} onClick={activateScreensaver}>
+              Podgląd wygaszacza
+            </button>
+          </div>
         </div>
 
         <div className={styles.choiceRow}>
