@@ -1,42 +1,50 @@
-﻿import { useRef, useState } from 'react';
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showErrorToast, showSuccessToast, useUIStore } from '@store/uiStore';
-import { exportData, getStorageInfo, importData } from '@services/storageService';
+import { clearAll, exportData, getStorageInfo, importData } from '@services/storageService';
+import { ClearDataModal, ParentPinModal, PinModal } from '@components/ui';
 import styles from './SettingsPage.module.css';
 
 type ThemeMode = 'auto' | 'day' | 'night';
+type PinEditorMode = 'set' | 'change' | null;
 
-interface SelectCardProps {
+interface ThemeOptionCardProps {
   icon: string;
   title: string;
   description: string;
-  isSelected: boolean;
+  selected: boolean;
   onClick: () => void;
 }
 
-function SelectCard({ icon, title, description, isSelected, onClick }: SelectCardProps) {
+function ThemeOptionCard({
+  icon,
+  title,
+  description,
+  selected,
+  onClick,
+}: ThemeOptionCardProps) {
   return (
     <button
       type="button"
-      className={`${styles.selectCard} ${isSelected ? styles.selectedCard : ''}`}
+      className={`${styles.themeCard} ${selected ? styles.themeCardActive : ''}`}
       onClick={onClick}
       role="radio"
-      aria-checked={isSelected}
+      aria-checked={selected}
     >
-      <span className={styles.cardIcon} aria-hidden="true">
+      <span className={styles.themeCardIcon} aria-hidden="true">
         {icon}
       </span>
-      <span className={styles.cardText}>
+      <span className={styles.themeCardText}>
         <strong>{title}</strong>
         <span>{description}</span>
       </span>
-      {isSelected && <span className={styles.activePill}>Aktywne</span>}
+      {selected && <span className={styles.themeCardBadge}>Aktywny</span>}
     </button>
   );
 }
 
-interface ToggleCardProps {
+interface SwitchRowProps {
   icon: string;
   title: string;
   description: string;
@@ -44,26 +52,48 @@ interface ToggleCardProps {
   onToggle: () => void;
 }
 
-function ToggleCard({ icon, title, description, enabled, onToggle }: ToggleCardProps) {
+function SwitchRow({ icon, title, description, enabled, onToggle }: SwitchRowProps) {
   return (
     <button
       type="button"
-      className={`${styles.toggleCard} ${enabled ? styles.toggleEnabled : ''}`}
+      className={styles.switchRow}
       onClick={onToggle}
       role="switch"
       aria-checked={enabled}
     >
-      <span className={styles.cardIcon} aria-hidden="true">
+      <span className={styles.rowIcon} aria-hidden="true">
         {icon}
       </span>
-      <span className={styles.cardText}>
+      <span className={styles.rowText}>
         <strong>{title}</strong>
         <span>{description}</span>
       </span>
-      <span className={`${styles.switchBadge} ${enabled ? styles.switchOn : styles.switchOff}`}>
-        {enabled ? 'Włączone' : 'Wyłączone'}
+      <span className={`${styles.switchControl} ${enabled ? styles.switchControlOn : ''}`}>
+        <span className={styles.switchThumb} />
       </span>
     </button>
+  );
+}
+
+interface ActionRowProps {
+  icon: string;
+  title: string;
+  description: string;
+  children: ReactNode;
+}
+
+function ActionRow({ icon, title, description, children }: ActionRowProps) {
+  return (
+    <div className={styles.actionRow}>
+      <span className={styles.rowIcon} aria-hidden="true">
+        {icon}
+      </span>
+      <div className={styles.rowText}>
+        <strong>{title}</strong>
+        <span>{description}</span>
+      </div>
+      <div className={styles.rowActions}>{children}</div>
+    </div>
   );
 }
 
@@ -86,12 +116,9 @@ export default function SettingsPage() {
   const activateScreensaver = useUIStore((state) => state.activateScreensaver);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
-  const [pinEditorMode, setPinEditorMode] = useState<'set' | 'change' | null>(null);
-  const [pinDraft, setPinDraft] = useState('');
-  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinEditorMode, setPinEditorMode] = useState<PinEditorMode>(null);
   const [exitPinOpen, setExitPinOpen] = useState(false);
-  const [exitPinDraft, setExitPinDraft] = useState('');
-  const [exitPinError, setExitPinError] = useState<string | null>(null);
+  const [clearDataOpen, setClearDataOpen] = useState(false);
   const storageInfo = getStorageInfo();
 
   const currentThemeMode: ThemeMode =
@@ -99,6 +126,7 @@ export default function SettingsPage() {
 
   const storageUsedKb = Math.round(storageInfo.used / 1024);
   const storageAvailableKb = Math.max(0, Math.round(storageInfo.available / 1024));
+  const shouldShowKidsModeBanner = display.kidsMode && !display.kidsModePin;
 
   const handleThemeChange = (mode: ThemeMode) => {
     if (mode === 'auto') {
@@ -127,7 +155,7 @@ export default function SettingsPage() {
     fileInputRef.current?.click();
   };
 
-  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -163,9 +191,6 @@ export default function SettingsPage() {
 
   const handleToggleKidsMode = () => {
     if (!display.kidsMode) {
-      setExitPinOpen(false);
-      setExitPinDraft('');
-      setExitPinError(null);
       const result = toggleKidsMode();
 
       if (!result.success) {
@@ -183,8 +208,6 @@ export default function SettingsPage() {
 
     if (display.kidsModePin) {
       setExitPinOpen(true);
-      setExitPinDraft('');
-      setExitPinError(null);
       return;
     }
 
@@ -198,56 +221,57 @@ export default function SettingsPage() {
     showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
   };
 
-  const openPinEditor = (mode: 'set' | 'change') => {
-    setExitPinOpen(false);
-    setExitPinDraft('');
-    setExitPinError(null);
-    setPinDraft('');
-    setPinError(null);
-    setPinEditorMode(mode);
-  };
-
-  const closePinEditor = () => {
-    setPinDraft('');
-    setPinError(null);
-    setPinEditorMode(null);
-  };
-
-  const closeExitPinPanel = () => {
-    setExitPinOpen(false);
-    setExitPinDraft('');
-    setExitPinError(null);
-  };
-
-  const handleConfirmExitKidsMode = () => {
-    const result = toggleKidsMode(exitPinDraft.trim());
+  const handleConfirmExitKidsMode = (pin: string): boolean => {
+    const result = toggleKidsMode(pin.trim());
 
     if (!result.success) {
-      setExitPinError('Nieprawidłowy PIN rodzica.');
       showErrorToast('Nieprawidłowy PIN rodzica.');
-      return;
+      return false;
     }
 
-    closeExitPinPanel();
+    setExitPinOpen(false);
     showSuccessToast('Powrót do trybu dla dorosłych został odblokowany.');
+    return true;
   };
 
-  const handleSavePin = () => {
-    const saved = setKidsModePin(pinDraft.trim());
+  const handleSaveParentPin = (pin: string): { success: boolean; error?: string } => {
+    const saved = setKidsModePin(pin);
 
     if (!saved) {
-      setPinError('PIN musi mieć dokładnie 4 cyfry.');
-      return;
+      return {
+        success: false,
+        error: 'PIN musi mieć dokładnie 4 cyfry.',
+      };
     }
 
-    showSuccessToast(display.kidsModePin ? 'PIN rodzica został zmieniony.' : 'PIN rodzica został ustawiony.');
-    closePinEditor();
+    showSuccessToast(
+      pinEditorMode === 'change'
+        ? 'PIN rodzica został zmieniony.'
+        : 'PIN rodzica został ustawiony.'
+    );
+
+    return { success: true };
   };
 
   const handleClearPin = () => {
     clearKidsModePin();
-    closePinEditor();
     showSuccessToast('PIN rodzica został usunięty.');
+  };
+
+  const handleResetSettings = () => {
+    resetSettings();
+    showSuccessToast('Przywrócono domyślne ustawienia aplikacji.');
+  };
+
+  const handleClearAllData = () => {
+    const cleared = clearAll();
+
+    if (!cleared) {
+      showErrorToast('Nie udało się usunąć lokalnych danych aplikacji.');
+      return;
+    }
+
+    window.location.reload();
   };
 
   return (
@@ -256,108 +280,47 @@ export default function SettingsPage() {
         <p className={styles.eyebrow}>Sterowanie aplikacją</p>
         <h1 className={styles.title}>Ustawienia</h1>
         <p className={styles.subtitle}>
-          Ten ekran ma służyć do szybkich decyzji. Widać od razu, co jest aktywne, a mniej ważne
-          rzeczy są schowane niżej.
+          Najważniejsze decyzje są na górze. Rzadziej używane rzeczy schodzą niżej i nie
+          przeszkadzają w codziennym użyciu aplikacji.
         </p>
       </header>
 
-      <section className={styles.statusOverview} aria-label="Szybkie podsumowanie ustawień">
-        <article className={styles.statusCard}>
-          <span className={styles.statusLabel}>Wygląd</span>
-          <strong className={styles.statusValue}>
-            {currentThemeMode === 'auto'
-              ? 'Automatyczny'
-              : currentThemeMode === 'night'
-                ? 'Nocny'
-                : 'Jasny'}
-          </strong>
-          <span className={styles.statusHint}>
-            {isNightModeActive ? 'Teraz aplikacja jest ciemniejsza.' : 'Teraz aplikacja jest jasna.'}
-          </span>
-        </article>
-
-        <article className={styles.statusCard}>
-          <span className={styles.statusLabel}>Tryb pracy</span>
-          <strong className={styles.statusValue}>
-            {display.kidsMode ? 'Dziecko' : 'Rodzic'}
-          </strong>
-          <span className={styles.statusHint}>
-            {display.kidsMode
-              ? display.kidsModePin
-                ? 'Wyjście jest chronione PIN-em rodzica.'
-                : 'Wyjście z trybu dziecięcego nie wymaga PIN-u.'
-              : 'Widoczne są wszystkie narzędzia zarządzania.'}
-          </span>
-        </article>
-
-        <article className={styles.statusCard}>
-          <span className={styles.statusLabel}>Wygaszacz</span>
-          <strong className={styles.statusValue}>
-            {screensaver.enabled ? `${screensaver.idleTimeoutMinutes} min` : 'Wyłączony'}
-          </strong>
-          <span className={styles.statusHint}>
-            {screensaver.enabled
-              ? screensaver.showSeconds
-                ? 'Pokazuje sekundy i reaguje po bezczynności.'
-                : 'Spokojny tryb z prostym zegarem i statusem dnia.'
-              : 'Ekran pozostaje stale aktywny.'}
-          </span>
-        </article>
-      </section>
+      {shouldShowKidsModeBanner && (
+        <div className={styles.contextBanner} role="status" aria-live="polite">
+          <div className={styles.contextBannerCopy}>
+            <strong>Tryb dziecka jest aktywny bez zabezpieczenia PIN-em.</strong>
+            <span>Ustaw PIN rodzica, aby dziecko nie mogło samodzielnie wrócić do pełnego widoku.</span>
+          </div>
+          <button
+            type="button"
+            className={styles.utilityButton}
+            onClick={() => setPinEditorMode('set')}
+          >
+            Ustaw PIN
+          </button>
+        </div>
+      )}
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
-            <h2>Wygląd aplikacji</h2>
-            <p>Wybierz jeden z trzech prostych trybów wyglądu.</p>
+            <h2>Tryb aplikacji</h2>
+            <p>Najważniejsze ustawienia wpływające na codzienny sposób używania Clickido.</p>
           </div>
           <span className={styles.inlineBadge}>
-            {isNightModeActive ? 'Teraz aktywny wygląd nocny' : 'Teraz aktywny wygląd dzienny'}
+            {display.kidsMode ? 'Widok uproszczony aktywny' : 'Pełny widok zarządzania'}
           </span>
         </div>
 
-        <div className={styles.selectGrid} role="radiogroup" aria-label="Tryb wyglądu aplikacji">
-          <SelectCard
-            icon="🕒"
-            title="Automatycznie"
-            description={`Przełącza wygląd według godzin ${nightMode.startHour}:00-${nightMode.endHour}:00.`}
-            isSelected={currentThemeMode === 'auto'}
-            onClick={() => handleThemeChange('auto')}
-          />
-          <SelectCard
-            icon="☀️"
-            title="Jasny"
-            description="Czytelny wygląd na dzień i jasne pomieszczenia."
-            isSelected={currentThemeMode === 'day'}
-            onClick={() => handleThemeChange('day')}
-          />
-          <SelectCard
-            icon="🌙"
-            title="Nocny"
-            description="Spokojniejszy wygląd na wieczór i noc."
-            isSelected={currentThemeMode === 'night'}
-            onClick={() => handleThemeChange('night')}
-          />
-        </div>
-      </section>
-
-      <section className={styles.section}>
-        <div className={styles.sectionHeading}>
-          <div>
-            <h2>Tryb dziecięcy i prostota</h2>
-            <p>Najważniejsze rzeczy dla domu i dzieci w jednym miejscu.</p>
-          </div>
-          <span className={styles.inlineBadge}>
-            {display.kidsMode ? 'Tryb dziecięcy aktywny' : 'Tryb standardowy'}
-          </span>
-        </div>
-
-        <div className={styles.kidsSpotlight}>
-          <div className={styles.kidsSpotlightCopy}>
-            <strong>🧸 Tryb dziecięcy</strong>
-            <span>
-              Uproszczona nawigacja, większe kafle, mniej tekstu i łatwiejsze klikanie dla dzieci.
-            </span>
+        <div className={styles.featureCard}>
+          <div className={styles.featureCardCopy}>
+            <span className={styles.featureEyebrow}>Tryb dziecięcy</span>
+            <strong>{display.kidsMode ? 'Aplikacja działa teraz w trybie dziecka' : 'Aplikacja działa teraz w trybie rodzica'}</strong>
+            <p>
+              {display.kidsMode
+                ? 'Nawigacja jest uproszczona, elementy są większe, a dziecko widzi tylko najważniejsze ekrany.'
+                : 'Widoczne są wszystkie narzędzia zarządzania, ustawienia i bardziej rozbudowane opcje aplikacji.'}
+            </p>
           </div>
           <button
             type="button"
@@ -368,63 +331,21 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        <p className={styles.helpText}>
-          {display.kidsMode
-            ? display.kidsModePin
-              ? 'Aktywny PIN rodzica chroni wyjście z trybu dziecięcego także z górnego paska aplikacji i z tego ekranu.'
-              : 'Tryb dziecięcy jest aktywny, ale nie ma jeszcze ustawionego PIN-u rodzica.'
-            : 'Po włączeniu trybu dziecięcego nawigacja uprości się do najważniejszych ekranów.'}
-        </p>
-
-        {exitPinOpen && (
-          <div className={styles.pinEditor} role="group" aria-label="Wyjście z trybu dziecięcego">
-            <label className={styles.pinField}>
-              <span className={styles.pinLabel}>PIN rodzica</span>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="one-time-code"
-                maxLength={4}
-                className={styles.pinInput}
-                value={exitPinDraft}
-                onChange={(event) => {
-                  setExitPinDraft(event.target.value.replace(/\D/g, '').slice(0, 4));
-                  if (exitPinError) {
-                    setExitPinError(null);
-                  }
-                }}
-                placeholder="1234"
-              />
-            </label>
-
-            <div className={styles.pinActions}>
-              <button type="button" className={styles.primaryAction} onClick={handleConfirmExitKidsMode}>
-                Wyjdź z trybu dziecięcego
-              </button>
-              <button type="button" className={styles.utilityButton} onClick={closeExitPinPanel}>
-                Anuluj
-              </button>
-            </div>
-
-            <p className={styles.pinHint}>
-              Podaj PIN rodzica, aby wrócić do pełnego widoku zarządzania aplikacją.
-            </p>
-            {exitPinError && <p className={styles.pinError}>{exitPinError}</p>}
-          </div>
-        )}
-
-        <div className={styles.parentTools}>
-          <div className={styles.parentToolsCopy}>
-            <strong>🔐 Zabezpieczenie rodzica</strong>
-            <span>
-              {display.kidsModePin
-                ? 'PIN jest aktywny. Rodzic musi go podać, aby wyjść z trybu dziecięcego.'
-                : 'PIN nie jest ustawiony. Wyjście z trybu dziecięcego nie jest jeszcze chronione.'}
-            </span>
-          </div>
-          <div className={styles.parentToolsActions}>
-            <button type="button" className={styles.utilityButton} onClick={() => openPinEditor(display.kidsModePin ? 'change' : 'set')}>
+        <div className={styles.settingsList}>
+          <ActionRow
+            icon="🔐"
+            title="PIN rodzica"
+            description={
+              display.kidsModePin
+                ? 'PIN chroni wyjście z trybu dziecięcego w ustawieniach i w górnym pasku aplikacji.'
+                : 'PIN nie jest jeszcze ustawiony. Dziecko może wrócić do pełnego widoku bez dodatkowej blokady.'
+            }
+          >
+            <button
+              type="button"
+              className={styles.utilityButton}
+              onClick={() => setPinEditorMode(display.kidsModePin ? 'change' : 'set')}
+            >
               {display.kidsModePin ? 'Zmień PIN' : 'Ustaw PIN'}
             </button>
             {display.kidsModePin && (
@@ -432,68 +353,64 @@ export default function SettingsPage() {
                 Usuń PIN
               </button>
             )}
+          </ActionRow>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <h2>Wygląd i czytelność</h2>
+            <p>Ustawienia wpływające na to, jak aplikacja wygląda i ile informacji pokazuje na co dzień.</p>
           </div>
+          <span className={styles.inlineBadge}>
+            {isNightModeActive ? 'Teraz aktywny wygląd nocny' : 'Teraz aktywny wygląd dzienny'}
+          </span>
         </div>
 
-        {pinEditorMode && (
-          <div className={styles.pinEditor} role="group" aria-label="Edycja PIN-u rodzica">
-            <label className={styles.pinField}>
-              <span className={styles.pinLabel}>
-                {pinEditorMode === 'change' ? 'Nowy PIN rodzica' : 'PIN rodzica'}
-              </span>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="one-time-code"
-                maxLength={4}
-                className={styles.pinInput}
-                value={pinDraft}
-                onChange={(event) => {
-                  setPinDraft(event.target.value.replace(/\D/g, '').slice(0, 4));
-                  if (pinError) {
-                    setPinError(null);
-                  }
-                }}
-                placeholder="1234"
-              />
-            </label>
+        <div className={styles.themeGrid} role="radiogroup" aria-label="Tryb wyglądu aplikacji">
+          <ThemeOptionCard
+            icon="🕒"
+            title="Automatycznie"
+            description={`Zmienia motyw według godzin ${nightMode.startHour}:00-${nightMode.endHour}:00.`}
+            selected={currentThemeMode === 'auto'}
+            onClick={() => handleThemeChange('auto')}
+          />
+          <ThemeOptionCard
+            icon="☀️"
+            title="Jasny"
+            description="Czytelny motyw na dzień i jasne pomieszczenia."
+            selected={currentThemeMode === 'day'}
+            onClick={() => handleThemeChange('day')}
+          />
+          <ThemeOptionCard
+            icon="🌙"
+            title="Nocny"
+            description="Spokojniejszy motyw na wieczór i ciemniejsze wnętrza."
+            selected={currentThemeMode === 'night'}
+            onClick={() => handleThemeChange('night')}
+          />
+        </div>
 
-            <div className={styles.pinActions}>
-              <button type="button" className={styles.primaryAction} onClick={handleSavePin}>
-                Zapisz PIN
-              </button>
-              <button type="button" className={styles.utilityButton} onClick={closePinEditor}>
-                Anuluj
-              </button>
-            </div>
-
-            <p className={styles.pinHint}>
-              PIN powinien mieć dokładnie 4 cyfry. Służy tylko do wyjścia z trybu dziecięcego.
-            </p>
-            {pinError && <p className={styles.pinError}>{pinError}</p>}
-          </div>
-        )}
-
-        <div className={styles.toggleGrid} aria-label="Przełączniki widoku">
-          <ToggleCard
+        <div className={styles.settingsList} aria-label="Opcje widoku">
+          <SwitchRow
             icon="⏱️"
-            title="Szacowany czas"
-            description="Pokazuje ile mniej więcej trwa dane zadanie."
+            title="Pokazuj szacowany czas"
+            description="Na kartach zadań pojawia się przewidywany czas wykonania."
             enabled={display.showTimeEstimate}
             onToggle={() => updateDisplay({ showTimeEstimate: !display.showTimeEstimate })}
           />
-          <ToggleCard
+          <SwitchRow
             icon="⭐"
-            title="Punkty przy zadaniach"
-            description="Pokazuje punkty na kartach zadań i ekranie wyników."
+            title="Pokazuj punkty przy zadaniach"
+            description="Punkty są widoczne na kartach zadań i na ekranie punktów."
             enabled={display.showPoints}
             onToggle={() => updateDisplay({ showPoints: !display.showPoints })}
           />
-          <ToggleCard
+          <SwitchRow
             icon="💬"
-            title="Baner motywacyjny"
-            description="Dodaje prosty komunikat o postępie dnia."
+            title="Pokazuj baner motywacyjny"
+            description="Na widoku dnia pojawia się prosty komunikat o postępie."
             enabled={display.showMotivation}
             onToggle={() => updateDisplay({ showMotivation: !display.showMotivation })}
           />
@@ -503,121 +420,185 @@ export default function SettingsPage() {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
-            <h2>Wygaszacz i ekran</h2>
-            <p>Tu ustawiasz tylko to, co naprawdę przydaje się na tablecie domowym.</p>
+            <h2>Ekran spoczynkowy</h2>
+            <p>Ustawienia związane z wygaszaczem i zachowaniem tabletu podczas bezczynności.</p>
           </div>
           <span className={styles.inlineBadge}>
             {screensaver.enabled ? `Wygaszacz po ${screensaver.idleTimeoutMinutes} min` : 'Wygaszacz wyłączony'}
           </span>
         </div>
 
-        <div className={styles.toggleGrid} aria-label="Przełączniki wygaszacza">
-          <ToggleCard
+        <div className={styles.settingsList}>
+          <SwitchRow
             icon="🖥️"
-            title="Wygaszacz"
-            description="Uruchamia ekran spoczynkowy po bezczynności."
+            title="Włącz wygaszacz"
+            description="Uruchamia ekran spoczynkowy po bezczynności tabletu."
             enabled={screensaver.enabled}
             onToggle={() => updateScreensaver({ enabled: !screensaver.enabled })}
           />
-          <ToggleCard
-            icon="⏰"
-            title="Sekundy na zegarze"
-            description="Dokładniejszy zegar, ale bardziej ruchomy ekran."
-            enabled={screensaver.showSeconds}
-            onToggle={() => updateScreensaver({ showSeconds: !screensaver.showSeconds })}
-          />
         </div>
 
-        <div className={styles.sliderRow}>
-          <div className={styles.sliderHeader}>
-            <span className={styles.choiceLabel}>Przyciemnienie wygaszacza</span>
-            <span className={styles.sliderValue}>{screensaver.panelBrightness}%</span>
-          </div>
-          <input
-            className={styles.sliderInput}
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            value={screensaver.panelBrightness}
-            onChange={(event) => updateScreensaver({ panelBrightness: Number(event.target.value) })}
-            aria-label="Przyciemnienie wygaszacza"
-          />
-          <div className={styles.sliderMarks} aria-hidden="true">
-            <span>25%</span>
-            <span>50%</span>
-            <span>75%</span>
-          </div>
-          <p className={styles.sliderHint}>
-            Im niższa wartość, tym mocniej przygaszony będzie cały wygaszacz.
-          </p>
-          <div className={styles.parentToolsActions}>
-            <button type="button" className={styles.utilityButton} onClick={activateScreensaver}>
-              Podgląd wygaszacza
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.choiceRow}>
-          <span className={styles.choiceLabel}>Po ilu minutach ma się włączyć wygaszacz?</span>
-          <div className={styles.choiceButtons} role="radiogroup" aria-label="Czas bezczynności do włączenia wygaszacza">
-            {[1, 3, 5, 10, 15].map((minutes) => (
-              <button
-                key={minutes}
-                type="button"
-                role="radio"
-                aria-checked={screensaver.idleTimeoutMinutes === minutes}
-                className={`${styles.choiceButton} ${
-                  screensaver.idleTimeoutMinutes === minutes ? styles.choiceButtonActive : ''
-                }`}
-                onClick={() => updateScreensaver({ idleTimeoutMinutes: minutes })}
+        {screensaver.enabled ? (
+          <div className={styles.screensaverPanel}>
+            <div className={styles.choiceRow}>
+              <span className={styles.choiceLabel}>Po ilu minutach włączyć wygaszacz?</span>
+              <div
+                className={styles.choiceButtons}
+                role="radiogroup"
+                aria-label="Czas bezczynności do włączenia wygaszacza"
               >
-                {minutes} min
+                {[1, 3, 5, 10, 15].map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    role="radio"
+                    aria-checked={screensaver.idleTimeoutMinutes === minutes}
+                    className={`${styles.choiceButton} ${
+                      screensaver.idleTimeoutMinutes === minutes ? styles.choiceButtonActive : ''
+                    }`}
+                    onClick={() => updateScreensaver({ idleTimeoutMinutes: minutes })}
+                  >
+                    {minutes} min
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.sliderPanel}>
+              <div className={styles.sliderHeader}>
+                <span className={styles.choiceLabel}>Jasność ekranu w wygaszaczu</span>
+                <span className={styles.sliderValue}>{screensaver.panelBrightness}%</span>
+              </div>
+              <input
+                className={styles.sliderInput}
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={screensaver.panelBrightness}
+                onChange={(event) =>
+                  updateScreensaver({ panelBrightness: Number(event.target.value) })
+                }
+                aria-label="Jasność ekranu w wygaszaczu"
+              />
+              <div className={styles.sliderMarks} aria-hidden="true">
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+              </div>
+              <p className={styles.sliderHint}>
+                Niższa wartość daje spokojniejszy i mniej świecący ekran spoczynkowy.
+              </p>
+            </div>
+
+            <div className={styles.settingsList}>
+              <SwitchRow
+                icon="⏰"
+                title="Pokazuj sekundy na zegarze"
+                description="Zegar jest dokładniejszy, ale ekran wydaje się bardziej dynamiczny."
+                enabled={screensaver.showSeconds}
+                onToggle={() => updateScreensaver({ showSeconds: !screensaver.showSeconds })}
+              />
+            </div>
+
+            <div className={styles.previewRow}>
+              <div className={styles.previewCopy}>
+                <strong>Podgląd wygaszacza</strong>
+                <span>Sprawdź wygląd bez czekania na bezczynność.</span>
+              </div>
+              <button type="button" className={styles.utilityButton} onClick={activateScreensaver}>
+                Uruchom podgląd
               </button>
-            ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={styles.inlineInfo}>
+            <strong>Wygaszacz jest wyłączony.</strong>
+            <span>Włącz go, aby ustawić czas bezczynności, jasność i wygląd zegara.</span>
+          </div>
+        )}
       </section>
 
-      <details className={styles.advancedSection}>
-        <summary className={styles.advancedSummary}>
-          <span>
-            <strong>Dane i backup</strong>
-            <small>Rzadziej używane, techniczne ustawienia</small>
-          </span>
-          <span className={styles.inlineBadge}>zaawansowane</span>
-        </summary>
-
-        <section className={styles.section}>
+      <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
             <h2>Dane i backup</h2>
-            <p>Rzeczy techniczne są na końcu i nie przeszkadzają w codziennym użyciu.</p>
+            <p>Kopia danych, przywracanie aplikacji i rzadziej używane akcje administracyjne.</p>
           </div>
-          <span className={styles.inlineBadge}>localStorage</span>
+          <span className={styles.inlineBadge}>administracja</span>
         </div>
 
-        <dl className={styles.storageGrid}>
-          <div>
-            <dt>Zajęte miejsce</dt>
-            <dd>{storageUsedKb} KB</dd>
+        <div className={styles.dataPanel}>
+          <div className={styles.dataPanelHeader}>
+            <div className={styles.dataPanelCopy}>
+              <strong>Zarządzanie danymi aplikacji</strong>
+              <span>Eksportuj kopię bezpieczeństwa, przywróć zapisany stan albo zresetuj konfigurację.</span>
+            </div>
+            <dl className={styles.storageMeta} aria-label="Informacje o pamięci">
+              <div className={styles.storageStat}>
+                <dt>Zajęte miejsce</dt>
+                <dd>{storageUsedKb} KB</dd>
+              </div>
+              <div className={styles.storageStat}>
+                <dt>Wolne miejsce</dt>
+                <dd>{storageAvailableKb} KB</dd>
+              </div>
+            </dl>
           </div>
-          <div>
-            <dt>Wolne miejsce</dt>
-            <dd>{storageAvailableKb} KB</dd>
-          </div>
-        </dl>
 
-        <div className={styles.utilityActions}>
-          <button type="button" className={styles.utilityButton} onClick={handleExport}>
-            📤 Eksportuj backup
-          </button>
-          <button type="button" className={styles.utilityButton} onClick={handleOpenImport}>
-            📥 Importuj backup
-          </button>
-          <button type="button" className={styles.utilityButton} onClick={resetSettings}>
-            🔄 Resetuj ustawienia
-          </button>
+          <div className={styles.dataActions}>
+            <ActionRow
+              icon="📤"
+              title="Eksportuj backup"
+              description="Pobiera pełną kopię danych aplikacji do pliku JSON."
+            >
+              <button type="button" className={styles.utilityButton} onClick={handleExport}>
+                Eksportuj
+              </button>
+            </ActionRow>
+
+            <ActionRow
+              icon="📥"
+              title="Importuj backup"
+              description="Przywraca dane aplikacji z wcześniej zapisanego pliku JSON."
+            >
+              <button type="button" className={styles.utilityButton} onClick={handleOpenImport}>
+                Importuj
+              </button>
+            </ActionRow>
+          </div>
+
+          {importSummary && <p className={styles.helpText}>{importSummary}</p>}
+
+          <div className={styles.dataDivider} aria-hidden="true" />
+
+          <div className={styles.dangerRow}>
+            <div className={styles.dangerIcon} aria-hidden="true">
+              🗑️
+            </div>
+            <div className={styles.dangerCopy}>
+              <strong>Usuń wszystkie dane z urządzenia</strong>
+              <span>Kasuje zadania, historię, nagrody, ustawienia i onboarding zapisane lokalnie.</span>
+            </div>
+            <button type="button" className={styles.dangerButton} onClick={() => setClearDataOpen(true)}>
+              Usuń dane
+            </button>
+          </div>
+
+          <div className={styles.dataDivider} aria-hidden="true" />
+
+          <div className={styles.dangerRow}>
+            <div className={styles.dangerIcon} aria-hidden="true">
+              ↺
+            </div>
+            <div className={styles.dangerCopy}>
+              <strong>Reset ustawień</strong>
+              <span>Przywraca domyślną konfigurację wyglądu, wygaszacza i trybu aplikacji.</span>
+            </div>
+            <button type="button" className={styles.dangerButton} onClick={handleResetSettings}>
+              Resetuj ustawienia
+            </button>
+          </div>
         </div>
 
         <input
@@ -627,10 +608,31 @@ export default function SettingsPage() {
           className={styles.hiddenInput}
           onChange={handleImportFile}
         />
+      </section>
 
-        {importSummary && <p className={styles.helpText}>{importSummary}</p>}
-        </section>
-      </details>
+      <PinModal
+        isOpen={exitPinOpen}
+        onClose={() => setExitPinOpen(false)}
+        onSubmit={handleConfirmExitKidsMode}
+        title="Wyjdź z trybu dziecięcego"
+        description="Aby wrócić do pełnego widoku zarządzania aplikacją, wpisz PIN rodzica."
+        submitLabel="Wyjdź"
+      />
+
+      <ClearDataModal
+        isOpen={clearDataOpen}
+        onClose={() => setClearDataOpen(false)}
+        onConfirm={handleClearAllData}
+      />
+
+      <ParentPinModal
+        isOpen={pinEditorMode !== null}
+        title={pinEditorMode === 'change' ? 'Zmień PIN rodzica' : 'Ustaw PIN rodzica'}
+        description="PIN jest używany tylko do ochrony wyjścia z trybu dziecięcego."
+        submitLabel={pinEditorMode === 'change' ? 'Zapisz nowy PIN' : 'Ustaw PIN'}
+        onClose={() => setPinEditorMode(null)}
+        onSubmit={handleSaveParentPin}
+      />
     </section>
   );
 }
