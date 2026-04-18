@@ -2,9 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
-import { useUIStore } from '@store/uiStore';
-import { KidsStarIcon, PointsTile, PinModal, RewardModal } from '@components/ui';
-import { CategoryId, CustomReward, RewardAudience } from '@/types';
+import { showErrorToast, showSuccessToast, showUndoToast, useUIStore } from '@store/uiStore';
+import {
+  KidsStarIcon,
+  PointsTile,
+  PinModal,
+  RewardClaimModal,
+  RewardModal,
+} from '@components/ui';
+import { CategoryId, CustomReward, RewardAudience, RewardClaim } from '@/types';
 import { getCategoryLabel } from '@utils/categories';
 import { getLocalDateKey } from '@utils/date';
 import { formatPoints } from '@utils/formatting';
@@ -23,6 +29,15 @@ function formatShortDate(dateString: string) {
   return new Intl.DateTimeFormat('pl-PL', {
     day: 'numeric',
     month: 'short',
+  }).format(new Date(dateString));
+}
+
+function formatClaimTimestamp(dateString: string) {
+  return new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(new Date(dateString));
 }
 
@@ -64,6 +79,17 @@ function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood
   };
 }
 
+const AUDIENCE_META: Record<RewardAudience, { label: string; className: string }> = {
+  family: { label: 'Dla wszystkich', className: styles.metaBadgeFamily },
+  child: { label: 'Tylko dziecko', className: styles.metaBadgeChild },
+  adult: { label: 'Tylko dorosły', className: styles.metaBadgeAdult },
+};
+
+const CLAIM_SOURCE_LABEL: Record<RewardClaim['source'], string> = {
+  kids: 'Kids Mode',
+  parent: 'Panel rodzica',
+};
+
 export default function PointsPage() {
   const {
     completions,
@@ -71,11 +97,13 @@ export default function PointsPage() {
     selectedDate,
     getPointsForSelectedDate,
     getProgressForSelectedDate,
-    claimedRewards,
+    rewardClaims,
     claimReward,
+    revertRewardClaim,
     unclaimReward,
     getAvailablePoints,
     getTotalEarnedPoints,
+    getTotalSpentPoints,
     rewards,
     addReward,
     updateReward,
@@ -87,15 +115,16 @@ export default function PointsPage() {
   const pendingTasks = Math.max(progress.total - progress.completed, 0);
   const availablePoints = getAvailablePoints();
   const totalEarnedPoints = getTotalEarnedPoints();
+  const totalSpentPoints = getTotalSpentPoints();
 
   const { modal, closeModal } = useUIStore();
   const [invalidRewardId, setInvalidRewardId] = useState<string | null>(null);
   const [unclaimRewardId, setUnclaimRewardId] = useState<string | null>(null);
+  const [claimingRewardId, setClaimingRewardId] = useState<string | null>(null);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
   const [editingReward, setEditingReward] = useState<CustomReward | null>(null);
   const [initialAudience, setInitialAudience] = useState<RewardAudience>('family');
 
-  // Listen for rewardForm modal from BottomNav FAB
   useEffect(() => {
     if (modal.isOpen && modal.type === 'rewardForm') {
       setEditingReward(null);
@@ -106,27 +135,31 @@ export default function PointsPage() {
     }
   }, [modal.isOpen, modal.type, modal.data, closeModal]);
 
-  // Filter rewards by audience based on kidsMode
   const visibleRewards = useMemo(() => {
     if (display.kidsMode) {
-      // In kids mode, only show rewards for 'child' or 'family' audience
-      return rewards.filter((r) => r.audience === 'child' || r.audience === 'family');
+      return rewards.filter((reward) => reward.audience === 'child' || reward.audience === 'family');
     }
-    // In parent mode, show all rewards
+
     return rewards;
   }, [rewards, display.kidsMode]);
 
-  // Check if reward is claimed by ID
-  const isRewardClaimed = (rewardId: string) => claimedRewards.some((r) => r.rewardId === rewardId);
+  const activeRewardClaims = useMemo(
+    () => rewardClaims.filter((claim) => claim.status === 'active'),
+    [rewardClaims]
+  );
+
+  const claimedRewardIds = useMemo(
+    () => new Set(activeRewardClaims.map((claim) => claim.rewardId)),
+    [activeRewardClaims]
+  );
+
+  const isRewardClaimed = (rewardId: string) => claimedRewardIds.has(rewardId);
 
   const handleMilestoneClick = (unlocked: boolean, claimed: boolean, rewardId: string) => {
     if (claimed) {
-      // Clicked on claimed reward - try to unclaim
       if (!display.kidsModePin) {
-        // No PIN set - unclaim directly
         unclaimReward(rewardId);
       } else {
-        // PIN set - show modal
         setUnclaimRewardId(rewardId);
       }
       return;
@@ -135,9 +168,10 @@ export default function PointsPage() {
     if (!unlocked) {
       setInvalidRewardId(rewardId);
       setTimeout(() => setInvalidRewardId(null), 400);
-    } else {
-      claimReward(rewardId);
+      return;
     }
+
+    claimReward(rewardId, 'kids');
   };
 
   const handleUnclaimWithPin = (pin: string): boolean => {
@@ -148,6 +182,7 @@ export default function PointsPage() {
       }
       return true;
     }
+
     return false;
   };
 
@@ -157,12 +192,37 @@ export default function PointsPage() {
     } else {
       addReward(data);
     }
+
     setEditingReward(null);
   };
 
   const handleEditReward = (reward: CustomReward) => {
     setEditingReward(reward);
     setIsRewardModalOpen(true);
+  };
+
+  const handleConfirmParentClaim = () => {
+    if (!claimingRewardId) {
+      return;
+    }
+
+    const claim = claimReward(claimingRewardId, 'parent');
+
+    if (claim) {
+      showUndoToast(`Odebrano nagrodę „${claim.rewardTitle}”.`, () => {
+        revertRewardClaim(claim.id);
+      });
+    }
+
+    setClaimingRewardId(null);
+  };
+
+  const handleRevertClaim = (claim: RewardClaim) => {
+    const reverted = revertRewardClaim(claim.id);
+
+    if (reverted) {
+      showSuccessToast(`Przywrócono ${formatPoints(claim.pointsSpent)} do salda.`);
+    }
   };
 
   const kidsMood = useMemo(
@@ -253,13 +313,15 @@ export default function PointsPage() {
     const unlockedRewards = visibleRewards.filter(
       (reward) => availablePoints >= reward.target && !isRewardClaimed(reward.id)
     ).length;
-    const nextReward = [...visibleRewards]
-      .sort((a, b) => a.target - b.target)
-      .find((reward) => !isRewardClaimed(reward.id) && availablePoints < reward.target) ?? null;
+    const nextReward =
+      [...visibleRewards]
+        .sort((a, b) => a.target - b.target)
+        .find((reward) => !isRewardClaimed(reward.id) && availablePoints < reward.target) ?? null;
 
     return {
       totalPoints: totalEarnedPoints,
       availablePoints,
+      totalSpentPoints,
       activeDays,
       firstDay,
       weekPoints,
@@ -277,47 +339,39 @@ export default function PointsPage() {
       unlockedRewards,
       nextReward,
     };
-  }, [completions, selectedDate, tasks, availablePoints, totalEarnedPoints, claimedRewards, visibleRewards]);
+  }, [
+    completions,
+    selectedDate,
+    tasks,
+    availablePoints,
+    totalEarnedPoints,
+    totalSpentPoints,
+    visibleRewards,
+    claimedRewardIds,
+  ]);
 
-  const primaryNextStep = useMemo(() => {
-    if (display.kidsMode) {
-      if (stats.nextReward) {
-        return {
-          emoji: '🚀',
-          title: 'Najlepiej teraz wrócić do zadań',
-          description: `Do celu "${stats.nextReward.title}" brakuje jeszcze ${stats.nextReward.target - stats.availablePoints} punktów.`,
-          actionLabel: 'Wróć do dzisiaj',
-          to: '/today',
-        };
-      }
+  const parentRewardShelf = useMemo(() => {
+    return [...visibleRewards]
+      .filter((reward) => !isRewardClaimed(reward.id))
+      .sort((a, b) => {
+        const aUnlocked = availablePoints >= a.target;
+        const bUnlocked = availablePoints >= b.target;
 
-      return {
-        emoji: '🌟',
-        title: 'Wszystkie obecne nagrody są odblokowane',
-        description: 'Możesz dalej zbierać punkty albo poczekać, aż rodzic doda nowe zadania.',
-        actionLabel: 'Wróć do dzisiaj',
-        to: '/today',
-      };
-    }
+        if (aUnlocked !== bUnlocked) {
+          return aUnlocked ? -1 : 1;
+        }
 
-    if (stats.totalCompleted === 0) {
-      return {
-        emoji: '➕',
-        title: 'Najpierw przygotuj pierwsze zadania',
-        description: 'Bez zadań statystyki nie będą jeszcze nic mówiły. Najlepszy kolejny krok to zbudować bazę dnia.',
-        actionLabel: 'Otwórz bazę zadań',
-        to: '/tasks',
-      };
-    }
+        const aMissing = Math.max(0, a.target - availablePoints);
+        const bMissing = Math.max(0, b.target - availablePoints);
 
-    return {
-      emoji: '📋',
-      title: 'Po statystykach najlepiej wrócić do planu dnia',
-      description: 'Wyniki mają sens wtedy, gdy od razu przekładają się na kolejne wykonane zadania.',
-      actionLabel: 'Wróć do dnia',
-      to: '/today',
-    };
-  }, [display.kidsMode, stats.nextReward, stats.totalCompleted, stats.availablePoints]);
+        return aMissing - bMissing || a.target - b.target;
+      });
+  }, [visibleRewards, availablePoints, claimedRewardIds]);
+
+  const historyItems = useMemo(() => rewardClaims, [rewardClaims]);
+
+  const parentClaimingReward =
+    rewards.find((reward) => reward.id === claimingRewardId) ?? null;
 
   const hasStatsData = stats.totalCompleted > 0;
 
@@ -334,11 +388,17 @@ export default function PointsPage() {
                   <div className={styles.kidsMiniProgressTrack} aria-hidden="true">
                     <div
                       className={styles.kidsMiniProgressFill}
-                      style={{ width: `${Math.max(8, Math.round((stats.availablePoints / stats.nextReward.target) * 100))}%` }}
+                      style={{
+                        width: `${Math.max(
+                          8,
+                          Math.round((stats.availablePoints / stats.nextReward.target) * 100)
+                        )}%`,
+                      }}
                     />
                   </div>
                   <p className={styles.kidsMiniProgressLabel}>
-                    Do "{stats.nextReward.title}" brakuje {stats.nextReward.target - stats.availablePoints} gwiazdek
+                    Do "{stats.nextReward.title}" brakuje{' '}
+                    {stats.nextReward.target - stats.availablePoints} gwiazdek
                   </p>
                 </div>
               ) : (
@@ -368,64 +428,64 @@ export default function PointsPage() {
       ) : (
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Twoje postępy</p>
-            <h1 className={styles.title}>Punkty</h1>
+            <p className={styles.eyebrow}>Punkty i nagrody</p>
+            <h1 className={styles.title}>Saldo i odbiór nagród</h1>
             <p className={styles.subtitle}>
-              Jedno miejsce do szybkiego sprawdzenia wyniku, serii i tempa całego domu.
+              Jedno miejsce do kontroli dostępnych punktów, odebrań i historii nagród.
             </p>
           </div>
 
           <div className={styles.heroCard}>
-            <span className={styles.heroLabel}>Dzisiaj</span>
-            <strong className={styles.heroValue}>
-              {formatPoints(todayPoints)}
-            </strong>
+            <span className={styles.heroLabel}>Dostępne teraz</span>
+            <strong className={styles.heroValue}>{formatPoints(availablePoints)}</strong>
             <span className={styles.heroHint}>
-              Łącznie {formatPoints(stats.totalPoints)} · {stats.currentStreak} dni serii
+              Zebrane {formatPoints(totalEarnedPoints)} · wydane {formatPoints(totalSpentPoints)}
             </span>
           </div>
         </header>
       )}
 
       {!display.kidsMode && (
-        <section className={styles.focusCard} aria-label="Najważniejszy następny krok">
-          <span className={styles.focusEmoji} aria-hidden="true">
-            {primaryNextStep.emoji}
-          </span>
-          <div className={styles.focusContent}>
-            <strong>{primaryNextStep.title}</strong>
-            <span>{primaryNextStep.description}</span>
-          </div>
-          <Link className={styles.focusLink} to={primaryNextStep.to}>
-            {primaryNextStep.actionLabel}
-          </Link>
+        <section className={styles.cardsGrid} aria-label="Saldo punktów">
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Dzisiaj</span>
+            <strong className={styles.cardValue}>{formatPoints(todayPoints)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Zebrane łącznie</span>
+            <strong className={styles.cardValue}>{formatPoints(totalEarnedPoints)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Wydane</span>
+            <strong className={styles.cardValue}>{formatPoints(totalSpentPoints)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.cardLabel}>Dostępne</span>
+            <strong className={styles.cardValue}>{formatPoints(availablePoints)}</strong>
+          </article>
         </section>
       )}
 
-      {!hasStatsData && (
-        <section className={`${styles.emptyStatePanel} ${display.kidsMode ? styles.kidsEmptyState : ''}`} aria-label="Brak danych punktowych">
+      {display.kidsMode && !hasStatsData && (
+        <section
+          className={`${styles.emptyStatePanel} ${styles.kidsEmptyState}`}
+          aria-label="Brak danych punktowych"
+        >
           <div className={styles.emptyStateHeader}>
             <span className={styles.emptyStateEmoji} aria-hidden="true">
-              {display.kidsMode ? '🎁' : '📊'}
+              🎁
             </span>
             <div className={styles.emptyStateText}>
-              <h2>
-                {display.kidsMode
-                  ? 'Nagrody pojawią się tutaj!'
-                  : 'Statystyki pojawią się po pierwszych zadaniach'}
-              </h2>
+              <h2>Nagrody pojawią się tutaj!</h2>
               <p>
-                {display.kidsMode
-                  ? 'Kiedy zrobisz pierwsze zadania z listy „Dziś", zaczniesz zbierać gwiazdki na wspaniałe nagrody.'
-                  : 'Na razie ten ekran jest pusty, bo nie ma jeszcze wykonanych zadań. Wróć do dnia albo przygotuj pierwszą bazę zadań.'}
+                Kiedy zrobisz pierwsze zadania z listy „Dziś", zaczniesz zbierać gwiazdki na
+                wspaniałe nagrody.
               </p>
             </div>
           </div>
-          {display.kidsMode && (
-            <Link className={styles.emptyStateAction} to="/today">
-              Wróć do zadań
-            </Link>
-          )}
+          <Link className={styles.emptyStateAction} to="/today">
+            Wróć do zadań
+          </Link>
         </section>
       )}
 
@@ -441,92 +501,225 @@ export default function PointsPage() {
                 return a.target - b.target;
               })
               .map((reward) => {
-              const claimed = isRewardClaimed(reward.id);
-              const unlocked = stats.availablePoints >= reward.target && !claimed;
-              const missingPoints = Math.max(0, reward.target - stats.availablePoints);
-              const progressPercent = Math.min(
-                100,
-                Math.max(8, Math.round((stats.availablePoints / reward.target) * 100))
-              );
+                const claimed = isRewardClaimed(reward.id);
+                const unlocked = stats.availablePoints >= reward.target && !claimed;
+                const missingPoints = Math.max(0, reward.target - stats.availablePoints);
+                const progressPercent = Math.min(
+                  100,
+                  Math.max(8, Math.round((stats.availablePoints / reward.target) * 100))
+                );
 
-              return (
-                <article
-                  key={reward.id}
-                  data-claimed-stamp="ODEBRANE!"
-                  className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
-                    claimed ? styles.claimed : ''
-                  } ${!unlocked && !claimed && invalidRewardId === reward.id ? styles.invalidShake : ''}`}
-                  onClick={() => handleMilestoneClick(unlocked, claimed, reward.id)}
-                >
-                  <div className={styles.milestoneCardContent}>
-                    <div className={styles.milestoneEmojiWrap}>
-                      <span className={styles.milestoneEmoji} aria-hidden="true">
-                        {reward.emoji}
-                      </span>
-                    </div>
-                    <div className={styles.milestoneTextContent}>
-                      <strong>{reward.title}</strong>
-                      <span>{reward.hint ?? ''}</span>
-                    </div>
-                  </div>
-
-                  {!unlocked && !claimed && (
-                    <div className={styles.kidsMiniProgress} aria-hidden="true">
-                      <div className={styles.kidsMiniProgressTrack}>
-                        <div
-                          className={styles.kidsMiniProgressFill}
-                          style={{ width: `${progressPercent}%` }}
-                        />
+                return (
+                  <article
+                    key={reward.id}
+                    data-claimed-stamp="ODEBRANE!"
+                    className={`${styles.milestoneCard} ${unlocked ? styles.unlocked : ''} ${
+                      claimed ? styles.claimed : ''
+                    } ${!unlocked && !claimed && invalidRewardId === reward.id ? styles.invalidShake : ''}`}
+                    onClick={() => handleMilestoneClick(unlocked, claimed, reward.id)}
+                  >
+                    <div className={styles.milestoneCardContent}>
+                      <div className={styles.milestoneEmojiWrap}>
+                        <span className={styles.milestoneEmoji} aria-hidden="true">
+                          {reward.emoji}
+                        </span>
+                      </div>
+                      <div className={styles.milestoneTextContent}>
+                        <strong>{reward.title}</strong>
+                        <span>{reward.hint ?? ''}</span>
                       </div>
                     </div>
-                  )}
 
-                  <div className={styles.milestoneFooter}>
-                    <span className={styles.milestoneTarget}>
-                      <KidsStarIcon className={styles.smallStarIcon} /> {reward.target}
-                    </span>
-                    {!claimed && (
-                      unlocked ? (
-                        <span className={styles.rewardClaim}>Odbierz!</span>
-                      ) : (
-                        <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
-                      )
+                    {!unlocked && !claimed && (
+                      <div className={styles.kidsMiniProgress} aria-hidden="true">
+                        <div className={styles.kidsMiniProgressTrack}>
+                          <div
+                            className={styles.kidsMiniProgressFill}
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
                     )}
-                  </div>
-                </article>
-              );
-            })}
+
+                    <div className={styles.milestoneFooter}>
+                      <span className={styles.milestoneTarget}>
+                        <KidsStarIcon className={styles.smallStarIcon} /> {reward.target}
+                      </span>
+                      {!claimed &&
+                        (unlocked ? (
+                          <span className={styles.rewardClaim}>Odbierz!</span>
+                        ) : (
+                          <span className={styles.rewardMissing}>Brakuje {missingPoints}</span>
+                        ))}
+                    </div>
+                  </article>
+                );
+              })}
           </div>
         </section>
       )}
 
-      {!display.kidsMode && hasStatsData && (
-        <section className={styles.parentActionPanel} aria-label="Co dalej po statystykach">
+      {!display.kidsMode && (
+        <section className={styles.parentRewardsPanel} aria-label="Nagrody do odbioru">
           <div className={styles.panelHeader}>
-            <h2>Co dalej?</h2>
-            <span>Po sprawdzeniu wyników zwykle wykonuje się jedną z tych akcji.</span>
+            <h2>Do odebrania teraz</h2>
+            <span>
+              Najpierw widać nagrody dostępne od razu, potem cele najbliższe odblokowania.
+            </span>
           </div>
 
-          <div className={styles.parentActionGrid}>
-            <Link className={styles.parentActionCard} to="/today">
-              <span className={styles.parentActionEmoji} aria-hidden="true">
-                📋
-              </span>
-              <span className={styles.parentActionText}>
-                <strong>Wróć do dnia</strong>
-                <span>Sprawdź bieżący plan i odklikane zadania.</span>
-              </span>
-            </Link>
+          {parentRewardShelf.length > 0 ? (
+            <div className={styles.parentRewardsGrid}>
+              {parentRewardShelf.map((reward) => {
+                const unlocked = availablePoints >= reward.target;
+                const missingPoints = Math.max(0, reward.target - availablePoints);
+                const progressPercent = Math.min(
+                  100,
+                  Math.max(8, Math.round((availablePoints / reward.target) * 100))
+                );
 
-            <Link className={styles.parentActionCard} to="/tasks">
-              <span className={styles.parentActionEmoji} aria-hidden="true">
-                🧩
+                return (
+                  <article
+                    key={reward.id}
+                    className={`${styles.parentRewardCard} ${
+                      unlocked ? styles.parentRewardCardAvailable : ''
+                    }`}
+                  >
+                    <div className={styles.parentRewardHeader}>
+                      <span className={styles.parentRewardEmoji} aria-hidden="true">
+                        {reward.emoji}
+                      </span>
+                      <div className={styles.parentRewardText}>
+                        <strong>{reward.title}</strong>
+                        <span>{reward.hint ?? 'Nagroda gotowa do odebrania po uzbieraniu punktów.'}</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.parentRewardMeta}>
+                      <span
+                        className={`${styles.metaBadge} ${AUDIENCE_META[reward.audience].className}`}
+                      >
+                        {AUDIENCE_META[reward.audience].label}
+                      </span>
+                      <span className={styles.rewardCostBadge}>{formatPoints(reward.target)}</span>
+                    </div>
+
+                    <div className={styles.parentRewardProgress}>
+                      <div className={styles.parentRewardProgressTrack} aria-hidden="true">
+                        <div
+                          className={styles.parentRewardProgressFill}
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <span className={styles.parentRewardProgressLabel}>
+                        {unlocked
+                          ? 'Dostępna teraz'
+                          : `Brakuje jeszcze ${formatPoints(missingPoints)}`}
+                      </span>
+                    </div>
+
+                    <div className={styles.parentRewardActions}>
+                      <button
+                        type="button"
+                        className={`${styles.claimButton} ${
+                          !unlocked ? styles.claimButtonDisabled : ''
+                        }`}
+                        onClick={() => setClaimingRewardId(reward.id)}
+                        disabled={!unlocked}
+                      >
+                        Odbierz
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className={styles.parentRewardsEmpty}>
+              <strong>Brak aktywnych nagród do odbioru.</strong>
+              <span>
+                Wszystkie obecne nagrody są już oznaczone jako odebrane albo trzeba dodać nowe.
               </span>
-              <span className={styles.parentActionText}>
-                <strong>Ułóż bazę zadań</strong>
-                <span>Dodaj nowe obowiązki albo popraw obecną strukturę.</span>
-              </span>
-            </Link>
+            </div>
+          )}
+        </section>
+      )}
+
+      {!display.kidsMode && historyItems.length > 0 && (
+        <section className={styles.claimHistoryPanel} aria-label="Historia odbiorów">
+          <div className={styles.panelHeader}>
+            <h2>Historia odbiorów</h2>
+            <span>Widać tu każde odebranie nagrody oraz ewentualne cofnięcia.</span>
+          </div>
+
+          <div className={styles.claimHistoryList}>
+            {historyItems.map((claim) => (
+              <article
+                key={claim.id}
+                className={`${styles.claimHistoryItem} ${
+                  claim.status === 'reverted' ? styles.claimHistoryItemReverted : ''
+                }`}
+              >
+                <span className={styles.claimHistoryEmoji} aria-hidden="true">
+                  {claim.rewardEmoji}
+                </span>
+
+                <div className={styles.claimHistoryContent}>
+                  <div className={styles.claimHistoryTitleRow}>
+                    <strong>{claim.rewardTitle}</strong>
+                    <span
+                      className={`${styles.metaBadge} ${
+                        claim.status === 'active'
+                          ? styles.metaBadgeActive
+                          : styles.metaBadgeReverted
+                      }`}
+                    >
+                      {claim.status === 'active' ? 'Aktywna' : 'Cofnięta'}
+                    </span>
+                  </div>
+
+                  <div className={styles.claimHistoryMeta}>
+                    <span>{AUDIENCE_META[claim.rewardAudience].label}</span>
+                    <span>{CLAIM_SOURCE_LABEL[claim.source]}</span>
+                    <span>{formatClaimTimestamp(claim.claimedAt)}</span>
+                    <span>{formatPoints(claim.pointsSpent)}</span>
+                  </div>
+
+                  {claim.status === 'reverted' && claim.revertedAt && (
+                    <span className={styles.claimHistoryRevertedAt}>
+                      Cofnięto {formatClaimTimestamp(claim.revertedAt)}
+                    </span>
+                  )}
+                </div>
+
+                {claim.status === 'active' && (
+                  <button
+                    type="button"
+                    className={styles.historyRevertButton}
+                    onClick={() => handleRevertClaim(claim)}
+                  >
+                    Cofnij
+                  </button>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!display.kidsMode && !hasStatsData && (
+        <section className={styles.emptyStatePanel} aria-label="Brak danych punktowych">
+          <div className={styles.emptyStateHeader}>
+            <span className={styles.emptyStateEmoji} aria-hidden="true">
+              📊
+            </span>
+            <div className={styles.emptyStateText}>
+              <h2>Statystyki pojawią się po pierwszych zadaniach</h2>
+              <p>
+                Na razie saldo punktów jest puste. Możesz jednak już przygotować katalog nagród i
+                wrócić do dnia, żeby zacząć zbierać punkty.
+              </p>
+            </div>
           </div>
         </section>
       )}
@@ -534,8 +727,8 @@ export default function PointsPage() {
       {!display.kidsMode && (
         <section className={styles.rewardsManagementPanel} aria-label="Zarządzanie nagrodami">
           <div className={styles.panelHeader}>
-            <h2>Nagrody</h2>
-            <span>Nagrody, które dziecko może zdobyć za zebrane punkty.</span>
+            <h2>Katalog nagród</h2>
+            <span>Konfiguracja nagród widocznych w sklepie i panelu rodzica.</span>
           </div>
 
           <div className={styles.rewardsList}>
@@ -543,17 +736,22 @@ export default function PointsPage() {
               .sort((a, b) => a.target - b.target)
               .map((reward) => {
                 const claimed = isRewardClaimed(reward.id);
+
                 return (
-                  <div key={reward.id} className={`${styles.rewardItem} ${claimed ? styles.rewardItemClaimed : ''}`}>
+                  <div
+                    key={reward.id}
+                    className={`${styles.rewardItem} ${claimed ? styles.rewardItemClaimed : ''}`}
+                  >
                     <span className={styles.rewardItemEmoji}>{reward.emoji}</span>
                     <div className={styles.rewardItemInfo}>
                       <strong>{reward.title}</strong>
                       <span>
-                        {reward.target} pkt
-                        {reward.audience === 'adult' && ' · Tylko dorośli'}
+                        {formatPoints(reward.target)}
+                        {reward.audience === 'adult' && ' · Tylko dorosły'}
                         {reward.audience === 'child' && ' · Tylko dziecko'}
+                        {reward.audience === 'family' && ' · Dla wszystkich'}
                         {reward.hint ? ` · ${reward.hint}` : ''}
-                        {claimed && ' · Odebrana'}
+                        {claimed && ' · Aktualnie odebrana'}
                       </span>
                     </div>
                     <div className={styles.rewardItemActions}>
@@ -571,7 +769,7 @@ export default function PointsPage() {
                         onClick={() => {
                           const result = deleteReward(reward.id);
                           if (!result.success && result.reason) {
-                            alert(result.reason);
+                            showErrorToast(result.reason);
                           }
                         }}
                         aria-label={`Usuń nagrodę ${reward.title}`}
@@ -584,28 +782,6 @@ export default function PointsPage() {
                 );
               })}
           </div>
-
-        </section>
-      )}
-
-      {hasStatsData && !display.kidsMode && (
-        <section className={styles.cardsGrid} aria-label="Podsumowanie punktów">
-          <article className={styles.statCard}>
-            <span className={styles.cardLabel}>Łącznie</span>
-            <strong className={styles.cardValue}>{formatPoints(stats.totalPoints)}</strong>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.cardLabel}>Ten tydzień</span>
-            <strong className={styles.cardValue}>{formatPoints(stats.weekPoints)}</strong>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.cardLabel}>Zrobione zadania</span>
-            <strong className={styles.cardValue}>{stats.totalCompleted}</strong>
-          </article>
-          <article className={styles.statCard}>
-            <span className={styles.cardLabel}>Aktywne dni</span>
-            <strong className={styles.cardValue}>{stats.activeDays}</strong>
-          </article>
         </section>
       )}
 
@@ -674,6 +850,14 @@ export default function PointsPage() {
         submitLabel="Cofnij nagrodę"
       />
 
+      <RewardClaimModal
+        isOpen={parentClaimingReward !== null}
+        reward={parentClaimingReward}
+        availablePoints={availablePoints}
+        onClose={() => setClaimingRewardId(null)}
+        onConfirm={handleConfirmParentClaim}
+      />
+
       <RewardModal
         isOpen={isRewardModalOpen}
         onClose={() => {
@@ -684,7 +868,6 @@ export default function PointsPage() {
         reward={editingReward}
         initialAudience={initialAudience}
       />
-
     </section>
   );
 }
