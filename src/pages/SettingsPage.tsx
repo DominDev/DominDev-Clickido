@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showErrorToast, showSuccessToast } from '@store/uiStore';
@@ -525,6 +525,31 @@ export default function SettingsPage() {
             enabled={screensaver.showSeconds}
             onToggle={() => updateScreensaver({ showSeconds: !screensaver.showSeconds })}
           />
+        </div>
+
+        <div className={styles.sliderRow}>
+          <div className={styles.sliderHeader}>
+            <span className={styles.choiceLabel}>Przyciemnienie wygaszacza</span>
+            <span className={styles.sliderValue}>{screensaver.panelBrightness}%</span>
+          </div>
+          <input
+            className={styles.sliderInput}
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={screensaver.panelBrightness}
+            onChange={(event) => updateScreensaver({ panelBrightness: Number(event.target.value) })}
+            aria-label="Przyciemnienie wygaszacza"
+          />
+          <div className={styles.sliderMarks} aria-hidden="true">
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+          </div>
+          <p className={styles.sliderHint}>
+            Im niższa wartość, tym mocniej przygaszony będzie cały wygaszacz.
+          </p>
         </div>
 
         <div className={styles.choiceRow}>

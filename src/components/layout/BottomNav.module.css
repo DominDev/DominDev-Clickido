@@ -168,16 +168,17 @@
 /* Separator between nav items and FAB */
 .separator {
   width: 1px;
-  height: 24px;
+  height: 26px;
   align-self: center;
-  margin: 0 2px;
+  margin: 0 2px 0 0;
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in srgb, var(--color-border-light) 80%, transparent) 24%,
-    color-mix(in srgb, var(--color-border) 48%, transparent) 76%,
+    color-mix(in srgb, var(--color-border-light) 84%, transparent) 22%,
+    color-mix(in srgb, var(--color-border) 56%, transparent) 78%,
     transparent
   );
+  opacity: 0.96;
 }
 
 /* FAB button integrated into nav */
@@ -245,7 +246,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: calc(var(--bottomnav-mobile-bottom) + var(--bottomnav-quickmenu-lift));
+  bottom: 0;
   left: 0;
   z-index: calc(var(--z-fixed) - 1);
   background: rgb(0 0 0 / 0.25);
@@ -261,7 +262,8 @@
   right: var(--bottomnav-mobile-side);
   bottom: calc(
     var(--bottomnav-mobile-bottom) +
-    var(--bottomnav-quickmenu-lift) +
+    var(--bottomnav-mobile-outer-height) +
+    var(--bottomnav-quickmenu-gap) +
     var(--bottomnav-quickmenu-gap)
   );
   z-index: calc(var(--z-fixed) + 1);
@@ -372,16 +374,12 @@
     font-size: 0.82rem;
   }
 
-  /* Small mobile: nav bottom = safe-area + space-2, nav height = 68px */
-  .quickMenuOverlay {
-    bottom: calc(var(--bottomnav-mobile-bottom-compact) + var(--bottomnav-quickmenu-lift-compact));
-  }
-
   .quickMenu {
     right: var(--bottomnav-mobile-side-compact);
     bottom: calc(
       var(--bottomnav-mobile-bottom-compact) +
-      var(--bottomnav-quickmenu-lift-compact) +
+      var(--bottomnav-mobile-outer-height-compact) +
+      var(--bottomnav-quickmenu-gap) +
       var(--bottomnav-quickmenu-gap)
     );
   }
@@ -436,18 +434,15 @@
     max-width: calc(100vw - 32px);
   }
 
-  /* Desktop: nav bottom = bottomnav-desktop-bottom (safe-area + space-4) */
-  .quickMenuOverlay {
-    bottom: calc(var(--bottomnav-desktop-bottom) + var(--bottomnav-quickmenu-lift));
-  }
-
   .quickMenu {
     right: calc(
       50% - (var(--bottomnav-desktop-width) / 2)
     );
     bottom: calc(
       var(--bottomnav-desktop-bottom) +
-      var(--bottomnav-quickmenu-lift) +
+      var(--bottomnav-desktop-outer-height) +
+      var(--bottomnav-quickmenu-gap) +
+      var(--bottomnav-quickmenu-gap) +
       var(--bottomnav-quickmenu-gap)
     );
   }

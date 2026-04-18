@@ -9,16 +9,28 @@
   color: var(--color-text-primary);
   background: var(--theme-screensaver-bg);
   border: 0;
+  overflow: hidden;
+}
+
+.overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(0, 0, 0, var(--screensaver-global-dim, 0));
+  pointer-events: none;
 }
 
 .backdrop {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: rgba(0, 0, 0, var(--screensaver-dim, 0.3));
 }
 
 .panel {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
