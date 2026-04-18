@@ -82,7 +82,7 @@ export default function SettingsPage() {
     resetSettings,
     loadSettings,
   } = useSettingsStore();
-  const { loadTasks, loadCompletions, loadClaimedRewards, loadRewards } = useTaskStore();
+  const { loadTasks, loadCompletions, loadRewardClaims, loadRewards } = useTaskStore();
   const activateScreensaver = useUIStore((state) => state.activateScreensaver);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
@@ -147,7 +147,7 @@ export default function SettingsPage() {
       loadTasks();
       loadCompletions();
       loadRewards();
-      loadClaimedRewards();
+      loadRewardClaims();
       loadSettings();
 
       setImportSummary(`Zaimportowano dane z pliku: ${file.name}`);

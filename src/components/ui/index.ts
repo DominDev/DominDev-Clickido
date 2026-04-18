@@ -6,4 +6,5 @@ export { default as Button } from './Button';
 export { default as PointsTile } from './PointsTile';
 export { default as KidsStarIcon } from './KidsStarIcon';
 export { default as PinModal } from './PinModal';
+export { default as RewardClaimModal } from './RewardClaimModal';
 export { default as RewardModal } from './RewardModal';

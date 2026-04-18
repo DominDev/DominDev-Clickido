@@ -2,7 +2,7 @@
  * Completion Service - Track task completions and rewards
  */
 
-import { TaskCompletion, ClaimedReward } from '@/types';
+import { TaskCompletion, RewardClaim } from '@/types';
 import { getLocalDateKey } from '@/utils/date';
 import { getItem, setItem, STORAGE_KEYS } from './storageService';
 import { parseISO, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -15,11 +15,11 @@ export function getAllCompletions(): TaskCompletion[] {
 }
 
 /**
- * Get all claimed rewards
- * @deprecated Use rewardService.getClaimedRewards() instead
+ * Get all reward claims
+ * @deprecated Use rewardService.getRewardClaims() instead
  */
-export function getClaimedRewards(): ClaimedReward[] {
-  return getItem<ClaimedReward[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
+export function getRewardClaims(): RewardClaim[] {
+  return getItem<RewardClaim[]>(STORAGE_KEYS.CLAIMED_REWARDS, []);
 }
 
 /**
@@ -27,8 +27,10 @@ export function getClaimedRewards(): ClaimedReward[] {
  * @deprecated Use rewardService.getTotalSpentPoints() instead
  */
 export function getTotalSpentPoints(): number {
-  const claimed = getClaimedRewards();
-  return claimed.reduce((sum, r) => sum + r.pointsSpent, 0);
+  const claims = getRewardClaims();
+  return claims
+    .filter((claim) => claim.status === 'active')
+    .reduce((sum, claim) => sum + claim.pointsSpent, 0);
 }
 
 /**

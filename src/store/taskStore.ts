@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import { Task, TaskCompletion, ClaimedReward, CustomReward } from '@/types';
+import { Task, TaskCompletion, CustomReward, RewardClaim, RewardClaimSource } from '@/types';
 import * as taskService from '@/services/taskService';
 import * as completionService from '@/services/completionService';
 import * as rewardService from '@/services/rewardService';
@@ -14,7 +14,7 @@ interface TaskState {
   tasks: Task[];
   completions: TaskCompletion[];
   rewards: CustomReward[];
-  claimedRewards: ClaimedReward[];
+  rewardClaims: RewardClaim[];
   selectedDate: Date;
   isLoading: boolean;
 
@@ -22,9 +22,10 @@ interface TaskState {
   loadTasks: () => void;
   loadCompletions: () => void;
   loadRewards: () => void;
-  loadClaimedRewards: () => void;
-  claimReward: (rewardId: string) => void;
-  unclaimReward: (rewardId: string) => void;
+  loadRewardClaims: () => void;
+  claimReward: (rewardId: string, source?: RewardClaimSource) => RewardClaim | null;
+  revertRewardClaim: (claimId: string) => RewardClaim | null;
+  unclaimReward: (rewardId: string) => RewardClaim | null;
   setSelectedDate: (date: Date) => void;
 
   // Reward CRUD
@@ -59,7 +60,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   completions: [],
   rewards: [],
-  claimedRewards: [],
+  rewardClaims: [],
   selectedDate: new Date(),
   isLoading: false,
 
@@ -78,21 +79,33 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ rewards });
   },
 
-  loadClaimedRewards: () => {
-    const claimedRewards = rewardService.getClaimedRewards();
-    set({ claimedRewards });
+  loadRewardClaims: () => {
+    const rewardClaims = rewardService.getRewardClaims();
+    set({ rewardClaims });
   },
 
-  claimReward: (rewardId: string) => {
-    const claimed = rewardService.claimReward(rewardId);
-    if (claimed) {
-      get().loadClaimedRewards();
+  claimReward: (rewardId, source = 'parent') => {
+    const claim = rewardService.claimReward(rewardId, source);
+    if (claim) {
+      get().loadRewardClaims();
     }
+    return claim;
   },
 
   unclaimReward: (rewardId: string) => {
-    rewardService.unclaimReward(rewardId);
-    get().loadClaimedRewards();
+    const revertedClaim = rewardService.unclaimReward(rewardId);
+    if (revertedClaim) {
+      get().loadRewardClaims();
+    }
+    return revertedClaim;
+  },
+
+  revertRewardClaim: (claimId: string) => {
+    const revertedClaim = rewardService.revertRewardClaim(claimId);
+    if (revertedClaim) {
+      get().loadRewardClaims();
+    }
+    return revertedClaim;
   },
 
   addReward: (data) => {
@@ -248,8 +261,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
 
   getTotalSpentPoints: () => {
-    const { claimedRewards } = get();
-    return claimedRewards.reduce((sum, r) => sum + r.pointsSpent, 0);
+    const { rewardClaims } = get();
+    return rewardClaims
+      .filter((claim) => claim.status === 'active')
+      .reduce((sum, claim) => sum + claim.pointsSpent, 0);
   },
 
   getAvailablePoints: () => {

@@ -43,12 +43,21 @@ export interface CustomReward {
   createdAt: string;
 }
 
-export interface ClaimedReward {
+export type RewardClaimStatus = 'active' | 'reverted';
+
+export type RewardClaimSource = 'kids' | 'parent';
+
+export interface RewardClaim {
+  id: string;
   rewardId: string; // CustomReward.id
   rewardTitle: string; // snapshot of title at claim time
   rewardEmoji: string; // snapshot of emoji at claim time
+  rewardAudience: RewardAudience;
   claimedAt: string; // ISO datetime string
   pointsSpent: number; // points spent on this reward
+  source: RewardClaimSource;
+  status: RewardClaimStatus;
+  revertedAt?: string;
 }
 
 // Category definition

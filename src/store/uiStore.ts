@@ -6,7 +6,7 @@ import { create } from 'zustand';
 import { Toast, ModalState, Task } from '@/types';
 
 interface UndoBuffer {
-  type: 'delete_task' | 'uncomplete_task';
+  type: 'delete_task' | 'uncomplete_task' | 'custom';
   data: unknown;
   timestamp: number;
 }
@@ -177,7 +177,7 @@ export function showUndoToast(
     .forEach((toast) => removeToast(toast.id));
 
   setUndoBuffer({
-    type: 'delete_task',
+    type: 'custom',
     data: { message },
     timestamp: Date.now(),
   });
