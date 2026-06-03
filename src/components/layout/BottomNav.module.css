@@ -16,21 +16,7 @@
   box-shadow: 0 16px 34px rgb(17 24 39 / 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  z-index: var(--z-fixed);
-}
-
-.kidsNav {
-  width: max-content;
-  max-width: calc(100vw - (var(--space-3) * 2));
-  justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  margin: 0 auto;
-  background: var(--theme-bottomnav-kids-bg);
-  border-color: color-mix(in srgb, var(--color-border-light) 72%, var(--color-accent-light) 28%);
-  box-shadow:
-    0 12px 24px rgb(17 24 39 / 0.08),
-    inset 0 1px 0 rgb(255 255 255 / 0.55);
+  z-index: var(--z-sticky);
 }
 
 .navItem {
@@ -100,68 +86,62 @@
 }
 
 
-.kidsMode {
+.kidsNav {
+  width: max-content;
+  max-width: calc(100vw - (var(--space-3) * 2));
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  margin: 0 auto;
+  background: var(--theme-bottomnav-kids-bg);
+  border-color: color-mix(in srgb, var(--color-border-light) 72%, var(--color-accent-light) 28%);
+  box-shadow:
+    0 12px 24px rgb(17 24 39 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.55);
+  border-radius: var(--radius-full);
+}
+
+.navItem.kidsMode {
   flex: 0 0 auto;
   flex-direction: row;
-  gap: 10px;
-  min-height: 66px;
-  padding: 12px 18px;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  min-height: 56px;
+  font-size: var(--text-base);
+  border-radius: var(--radius-full);
+  background: transparent;
+  transition: all var(--transition-base);
   color: var(--color-text-muted);
-  border: 1px solid transparent;
-  border-radius: 18px;
-  transition:
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
 }
 
-.kidsMode .iconWrap {
-  width: 50px;
-  height: 50px;
+.navItem.kidsMode .iconWrap {
+  width: auto;
+  height: auto;
   background: transparent;
-  border-radius: 999px;
   box-shadow: none;
 }
 
-.kidsMode .icon {
-  font-size: 1.86rem;
+.navItem.kidsMode svg {
+  width: 24px;
+  height: 24px;
 }
 
-.kidsMode .label {
-  display: none;
-  font-size: 0.96rem;
-  font-weight: var(--font-semibold);
-  color: currentColor;
-  white-space: nowrap;
+.navItem.kidsMode.active {
+  background: var(--color-accent);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(255, 107, 53, 0.24);
 }
 
-.kidsMode:hover {
-  background-color: var(--color-bg-secondary);
+.navItem.kidsMode.active .iconWrap svg {
+  color: #fff;
 }
 
-.kidsMode:active {
-  background-color: var(--color-bg-tertiary);
-}
-
-.kidsMode.active {
-  color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent-light) 56%, var(--color-surface) 44%);
-  border: 1px solid color-mix(in srgb, var(--color-accent-light) 52%, var(--color-border-light) 48%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.58),
-    0 2px 5px rgb(45 41 38 / 0.06);
-}
-
-.kidsMode.active .iconWrap {
-  background: transparent;
-  transform: none;
-  box-shadow: none;
-}
-
-.kidsMode.active .label {
+.navItem.kidsMode .label {
   display: inline-flex;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
   color: currentColor;
 }
 
@@ -248,7 +228,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: calc(var(--z-fixed) - 1);
+  z-index: var(--z-modal-backdrop);
   background: rgb(0 0 0 / 0.25);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -266,7 +246,7 @@
     var(--bottomnav-quickmenu-gap) +
     var(--bottomnav-quickmenu-gap)
   );
-  z-index: calc(var(--z-fixed) + 1);
+  z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -354,24 +334,19 @@
     font-size: 0.72rem;
   }
 
-  .kidsMode {
-    gap: 4px;
-    min-height: 54px;
-    padding: 8px 13px;
+  .navItem.kidsMode {
+    gap: var(--space-2);
+    min-height: 50px;
+    padding: 8px 16px;
   }
 
-  .kidsMode .iconWrap {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
+  .navItem.kidsMode svg {
+    width: 20px;
+    height: 20px;
   }
 
-  .kidsMode .icon {
-    font-size: 1.46rem;
-  }
-
-  .kidsMode .label {
-    font-size: 0.82rem;
+  .navItem.kidsMode .label {
+    font-size: var(--text-sm);
   }
 
   .quickMenu {
@@ -394,27 +369,22 @@
 
 @media (min-width: 768px) {
   .kidsNav {
-    gap: 8px;
-    padding: 12px;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
   }
 
-  .kidsMode {
-    min-height: 72px;
-    padding: 13px 20px;
-    border-radius: 20px;
+  .navItem.kidsMode {
+    min-height: 64px;
+    padding: 14px 24px;
   }
 
-  .kidsMode .iconWrap {
-    width: 54px;
-    height: 54px;
+  .navItem.kidsMode svg {
+    width: 28px;
+    height: 28px;
   }
 
-  .kidsMode .icon {
-    font-size: 1.98rem;
-  }
-
-  .kidsMode .label {
-    font-size: 1rem;
+  .navItem.kidsMode .label {
+    font-size: var(--text-lg);
   }
 
   .nav {

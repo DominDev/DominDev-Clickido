@@ -217,3 +217,27 @@ export function getWeeklyCompletionCounts(weekStartDate: Date): number[] {
 
   return counts;
 }
+
+/**
+ * Calculate current completion streak (consecutive days with at least one completion)
+ */
+export function getCurrentStreak(): number {
+  const completions = getAllCompletions();
+  if (completions.length === 0) return 0;
+
+  const completionDates = new Set(completions.map((c) => c.date));
+  let streak = 0;
+  const checkDate = new Date();
+  
+  // If no completion today, check if there was one yesterday to continue streak
+  if (!completionDates.has(getLocalDateKey(checkDate))) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  while (completionDates.has(getLocalDateKey(checkDate))) {
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  return streak;
+}

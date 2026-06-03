@@ -21,9 +21,26 @@ const DEFAULT_NAV_ITEMS: NavItem[] = [
   { path: '/settings', label: 'Ustawienia', icon: '⚙️' },
 ];
 
-const KIDS_NAV_ITEMS: NavItem[] = [
-  { path: '/today', label: 'Dziś', icon: '🧸' },
-  { path: '/points', label: 'Nagrody', icon: '🏆' },
+const KIDS_NAV_ITEMS = [
+  {
+    path: '/today',
+    label: 'Dziś',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    ),
+  },
+  {
+    path: '/points',
+    label: 'Nagrody',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    ),
+  },
 ];
 
 export default function BottomNav() {
@@ -33,20 +50,7 @@ export default function BottomNav() {
   const location = useLocation();
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
-  const navItems = display.kidsMode ? KIDS_NAV_ITEMS : DEFAULT_NAV_ITEMS;
   const isPointsPage = location.pathname === '/points';
-
-  // Block page scrolling when quick menu is open
-  useEffect(() => {
-    if (quickMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [quickMenuOpen]);
 
   // Close quick menu when navigating to a different page
   useEffect(() => {
@@ -64,7 +68,6 @@ export default function BottomNav() {
   };
 
   const handleFabClick = () => {
-    // Toggle quick menu (both pages have menus now)
     setQuickMenuOpen((current) => !current);
   };
 
@@ -76,24 +79,35 @@ export default function BottomNav() {
   return (
     <>
       <nav className={`${styles.nav} ${display.kidsMode ? styles.kidsNav : ''}`} aria-label="Główna nawigacja">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `${styles.navItem} ${display.kidsMode ? styles.kidsMode : ''} ${
-                isActive ? styles.active : ''
-              }`
-            }
-          >
-            <span className={styles.iconWrap}>
-              <span className={styles.icon} aria-hidden="true">
-                {item.icon}
-              </span>
-            </span>
-            <span className={styles.label}>{item.label}</span>
-          </NavLink>
-        ))}
+        {display.kidsMode
+          ? KIDS_NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `${styles.navItem} ${styles.kidsMode} ${isActive ? styles.active : ''}`
+                }
+              >
+                <span className={styles.iconWrap}>{item.icon}</span>
+                <span className={styles.label}>{item.label}</span>
+              </NavLink>
+            ))
+          : DEFAULT_NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `${styles.navItem} ${isActive ? styles.active : ''}`
+                }
+              >
+                <span className={styles.iconWrap}>
+                  <span className={styles.icon} aria-hidden="true">
+                    {item.icon as string}
+                  </span>
+                </span>
+                <span className={styles.label}>{item.label}</span>
+              </NavLink>
+            ))}
 
         {!display.kidsMode && (
           <>

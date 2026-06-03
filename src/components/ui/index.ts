@@ -1,5 +1,8 @@
 // UI components barrel export
 export { default as ProgressRing } from './ProgressRing';
+export { default as FocusBanner } from './FocusBanner';
+export { default as KidsHero } from './KidsHero';
+export { default as KidsRewardStrip } from './KidsRewardStrip';
 export { default as Checkbox } from './Checkbox';
 export { default as ClearDataModal } from './ClearDataModal';
 export { default as Toast } from './Toast';

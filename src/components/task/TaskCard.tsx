@@ -2,7 +2,7 @@
  * TaskCard - Individual task card with checkbox
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Task } from '@/types';
 import { useSettingsStore } from '@store/settingsStore';
@@ -26,7 +26,7 @@ function randomFrom<T>(items: T[]) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
+const TaskCard = forwardRef<HTMLElement, TaskCardProps>(({ task, isCompleted, onEdit }, ref) => {
   const { completeTask, uncompleteTask } = useTaskStore();
   const { display } = useSettingsStore();
   const [celebration, setCelebration] = useState<{ emoji: string; text: string } | null>(null);
@@ -81,6 +81,7 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
   return (
     <>
       <motion.article
+        ref={ref}
         data-complete-stamp={display.kidsMode && isCompleted ? 'SUPER!' : undefined}
         className={`${styles.card} ${isCompleted ? styles.completed : ''} ${
           display.kidsMode ? styles.kidsCard : ''
@@ -195,4 +196,8 @@ export default function TaskCard({ task, isCompleted, onEdit }: TaskCardProps) {
       </AnimatePresence>
     </>
   );
-}
+});
+
+TaskCard.displayName = 'TaskCard';
+
+export default TaskCard;

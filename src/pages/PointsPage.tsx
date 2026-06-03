@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
@@ -153,7 +153,7 @@ export default function PointsPage() {
     [activeRewardClaims]
   );
 
-  const isRewardClaimed = (rewardId: string) => claimedRewardIds.has(rewardId);
+  const isRewardClaimed = useCallback((rewardId: string) => claimedRewardIds.has(rewardId), [claimedRewardIds]);
 
   const handleMilestoneClick = (unlocked: boolean, claimed: boolean, rewardId: string) => {
     if (claimed) {
@@ -347,7 +347,7 @@ export default function PointsPage() {
     totalEarnedPoints,
     totalSpentPoints,
     visibleRewards,
-    claimedRewardIds,
+    isRewardClaimed,
   ]);
 
   const parentRewardShelf = useMemo(() => {
@@ -366,7 +366,7 @@ export default function PointsPage() {
 
         return aMissing - bMissing || a.target - b.target;
       });
-  }, [visibleRewards, availablePoints, claimedRewardIds]);
+  }, [visibleRewards, availablePoints, isRewardClaimed]);
 
   const historyItems = useMemo(() => rewardClaims, [rewardClaims]);
 
@@ -596,11 +596,13 @@ export default function PointsPage() {
                     </div>
 
                     <div className={styles.parentRewardMeta}>
-                      <span
-                        className={`${styles.metaBadge} ${AUDIENCE_META[reward.audience].className}`}
-                      >
-                        {AUDIENCE_META[reward.audience].label}
-                      </span>
+                      {reward.audience && AUDIENCE_META[reward.audience] && (
+                        <span
+                          className={`${styles.metaBadge} ${AUDIENCE_META[reward.audience].className}`}
+                        >
+                          {AUDIENCE_META[reward.audience].label}
+                        </span>
+                      )}
                       <span className={styles.rewardCostBadge}>{formatPoints(reward.target)}</span>
                     </div>
 
@@ -679,7 +681,9 @@ export default function PointsPage() {
                   </div>
 
                   <div className={styles.claimHistoryMeta}>
-                    <span>{AUDIENCE_META[claim.rewardAudience].label}</span>
+                    {claim.rewardAudience && AUDIENCE_META[claim.rewardAudience] && (
+                      <span>{AUDIENCE_META[claim.rewardAudience].label}</span>
+                    )}
                     <span>{CLAIM_SOURCE_LABEL[claim.source]}</span>
                     <span>{formatClaimTimestamp(claim.claimedAt)}</span>
                     <span>{formatPoints(claim.pointsSpent)}</span>

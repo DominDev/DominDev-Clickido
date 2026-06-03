@@ -10,11 +10,12 @@
   justify-content: space-between;
   gap: var(--space-4);
   min-height: var(--topbar-height);
-  padding: calc(var(--safe-area-top) + var(--space-3)) var(--space-4) var(--space-3);
+  padding: var(--safe-area-top) var(--space-4) 0;
   background: var(--theme-topbar-bg);
   border-bottom: 1px solid var(--color-border-light);
   box-shadow: 0 10px 24px rgb(17 24 39 / 0.08);
-  z-index: var(--z-fixed);
+  z-index: var(--z-toast);
+  transition: min-height var(--transition-base), background-color var(--transition-base);
 }
 
 .leading,
@@ -356,4 +357,39 @@
   .parentPinCancel {
     width: 100%;
   }
+}
+
+.parentGreeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greetingTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.greetingSubtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.clockWrapper {
+  margin-right: var(--space-3);
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.parentClock {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
 }
