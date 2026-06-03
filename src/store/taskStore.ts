@@ -54,6 +54,7 @@ interface TaskState {
   getTotalEarnedPoints: () => number;
   getTotalSpentPoints: () => number;
   getAvailablePoints: () => number;
+  getCurrentStreak: () => number;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -269,5 +270,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   getAvailablePoints: () => {
     return get().getTotalEarnedPoints() - get().getTotalSpentPoints();
+  },
+
+  getCurrentStreak: () => {
+    return completionService.getCurrentStreak();
   },
 }));

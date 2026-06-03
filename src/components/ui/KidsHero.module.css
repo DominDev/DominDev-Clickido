@@ -1,0 +1,238 @@
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border-radius: 32px;
+  background: linear-gradient(160deg, #FFE7C4 0%, #FFCAA0 100%);
+  border: 1px solid rgba(244, 124, 72, 0.18);
+  box-shadow: 0 18px 36px rgba(244, 124, 72, 0.18);
+  overflow: hidden;
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.done {
+  background: linear-gradient(160deg, #C7EBC9 0%, #8FD89A 100%);
+  border-color: rgba(76, 175, 80, 0.2);
+  box-shadow: 0 18px 36px rgba(76, 175, 80, 0.18);
+}
+
+.excited {
+  background: linear-gradient(160deg, #FFE7C4 0%, #FFB36F 100%);
+}
+
+.happy {
+  background: linear-gradient(160deg, #FFF1D6 0%, #FFCAA0 100%);
+}
+
+.start {
+  background: linear-gradient(160deg, #F9F7F2 0%, #FFE7C4 100%);
+}
+
+.pointsBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  color: #B26400;
+  font-family: var(--font-heading);
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
+  box-shadow: 0 4px 10px rgba(45, 41, 38, 0.06);
+  z-index: 1;
+}
+
+.starIcon {
+  width: 16px;
+  height: 16px;
+  color: #f5b301;
+}
+
+.companion {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto var(--space-4);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0%, #ffd6b3 60%, #ffb88d 100%);
+  box-shadow:
+    inset -8px -10px 0 rgba(204, 118, 72, 0.2),
+    0 8px 22px rgba(204, 118, 72, 0.25);
+  display: grid;
+  place-items: center;
+  animation: var(--anim-kids-bob);
+  position: relative;
+}
+
+.mood-done {
+  background: radial-gradient(circle at 35% 30%, #fff 0%, #b6e6bf 60%, #88d394 100%);
+  box-shadow:
+    inset -8px -10px 0 rgba(76, 175, 80, 0.2),
+    0 8px 22px rgba(76, 175, 80, 0.25);
+}
+
+.face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.eyes {
+  display: flex;
+  gap: 22px;
+}
+
+.eyes span {
+  width: 14px;
+  height: 18px;
+  border-radius: 8px;
+  background: #2D2926;
+}
+
+.mouth {
+  width: 36px;
+  height: 18px;
+  border-bottom: 5px solid #2D2926;
+  border-radius: 0 0 999px 999px;
+}
+
+.mouth[data-mood="excited"] {
+  width: 30px;
+  height: 24px;
+  border: 5px solid #2D2926;
+  border-top: 0;
+  background: #C0392B;
+}
+
+.mouth[data-mood="done"] {
+  width: 40px;
+  height: 22px;
+  border-bottom: 6px solid #2D2926;
+  border-radius: 0 0 999px 999px;
+}
+
+.cheek {
+  position: absolute;
+  bottom: 0;
+  width: 14px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(229, 92, 73, 0.55);
+}
+
+.cheekL {
+  left: -2px;
+  bottom: 4px;
+}
+
+.cheekR {
+  right: -2px;
+  bottom: 4px;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(45, 41, 38, 0.2);
+  animation: var(--anim-twinkle);
+}
+
+.s1 {
+  top: -10px;
+  left: -8px;
+}
+
+.s2 {
+  top: 4px;
+  right: -10px;
+  animation-delay: 0.4s;
+}
+
+.bubble {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-full);
+  font-family: var(--font-heading);
+  font-weight: var(--font-bold);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  box-shadow: 0 6px 14px rgba(45, 41, 38, 0.1);
+  margin-bottom: var(--space-4);
+}
+
+.segments {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.segment {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: rgba(45, 41, 38, 0.18);
+  transition: transform var(--transition-spring), color var(--transition-base);
+}
+
+.segment svg {
+  width: 22px;
+  height: 22px;
+}
+
+.lit {
+  color: #f5b301;
+  filter: drop-shadow(0 2px 4px rgba(245, 179, 1, 0.4));
+  transform: scale(1.1);
+}
+
+@media (max-width: 420px) {
+  .hero {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    border-radius: 26px;
+  }
+
+  .companion {
+    width: 110px;
+    height: 110px;
+  }
+
+  .eyes {
+    gap: 16px;
+  }
+
+  .eyes span {
+    width: 10px;
+    height: 14px;
+  }
+
+  .mouth {
+    width: 28px;
+    height: 14px;
+  }
+
+  .bubble {
+    font-size: var(--text-lg);
+    padding: 6px 16px;
+  }
+
+  .segment {
+    width: 20px;
+    height: 20px;
+  }
+
+  .segment svg {
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -3,52 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { isToday } from 'date-fns';
 import { DayStrip } from '@components/layout';
 import { TaskList } from '@components/task';
-import { PointsTile } from '@components/ui';
+import { FocusBanner, KidsHero, KidsRewardStrip } from '@components/ui';
 import { calculatePoints } from '@services/taskService';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showSuccessToast, useUIStore } from '@store/uiStore';
-import { getMotivationalMessage } from '@utils/formatting';
 import { TASK_TEMPLATES } from '@utils/categories';
 import styles from './TodayPage.module.css';
-
-type KidsMood = {
-  mood: 'start' | 'happy' | 'excited' | 'done';
-  title: string;
-  subtitle: string;
-};
-
-function getKidsMood(progressPercentage: number, pendingTasks: number): KidsMood {
-  if (pendingTasks === 0) {
-    return {
-      mood: 'done',
-      title: 'Brawo!',
-      subtitle: 'Na dziś wszystko gotowe.',
-    };
-  }
-
-  if (progressPercentage >= 80) {
-    return {
-      mood: 'excited',
-      title: 'Już prawie!',
-      subtitle: 'Zostało tylko trochę.',
-    };
-  }
-
-  if (progressPercentage >= 40) {
-    return {
-      mood: 'happy',
-      title: 'Idzie świetnie',
-      subtitle: 'Jeszcze kilka kafelków.',
-    };
-  }
-
-  return {
-    mood: 'start',
-    title: 'Zaczynamy',
-    subtitle: 'Dotknij duży kafelek.',
-  };
-}
 
 export default function TodayPage() {
   const {
@@ -58,7 +19,6 @@ export default function TodayPage() {
     getTasksForSelectedDate,
     selectedDate,
     setSelectedDate,
-    completions,
   } = useTaskStore();
   const { display } = useSettingsStore();
   const { openModal } = useUIStore();
@@ -67,22 +27,16 @@ export default function TodayPage() {
   const tasks = getTasksForSelectedDate();
   const progress = getProgressForSelectedDate();
   const points = getPointsForSelectedDate();
-  const pendingTasks = Math.max(progress.total - progress.completed, 0);
+  const availablePoints = useTaskStore((state) => state.getAvailablePoints());
+  const streak = useTaskStore((state) => state.getCurrentStreak());
+  const activeReward = useTaskStore((state) => state.rewards.find(r => r.audience !== 'adult'));
   const selectedDayIsToday = isToday(selectedDate);
-
-  const totalPoints = useMemo(() => completions.reduce((sum, c) => sum + c.points, 0), [completions]);
-  const totalCompleted = completions.length;
 
   useEffect(() => {
     if (display.kidsMode && !selectedDayIsToday) {
       setSelectedDate(new Date());
     }
   }, [display.kidsMode, selectedDayIsToday, setSelectedDate]);
-
-  const kidsMood = useMemo(
-    () => getKidsMood(progress.percentage, pendingTasks),
-    [progress.percentage, pendingTasks]
-  );
 
   const emptySuggestions = useMemo(
     () => [
@@ -159,10 +113,6 @@ export default function TodayPage() {
     [addTask]
   );
 
-  const handleOpenPoints = () => {
-    navigate('/points');
-  };
-
   return (
     <section className={`${styles.page} ${display.kidsMode ? styles.kidsPage : ''}`}>
       {!display.kidsMode && <DayStrip />}
@@ -170,99 +120,29 @@ export default function TodayPage() {
       <div className={styles.content}>
         {display.kidsMode ? (
           <>
-            <div className={styles.kidsTopRow}>
-              <div className={styles.headerCard}>
-                <div className={styles.titleBlock}>
-                  <p className={styles.eyebrow}>Plan na dziś</p>
-                  <h1 className={styles.kidsTitle}>{kidsMood.title}</h1>
-                  {pendingTasks > 0 ? (
-                    <div className={styles.kidsMiniProgress}>
-                      <div className={styles.kidsMiniProgressTrack} aria-hidden="true">
-                        <div
-                          className={styles.kidsMiniProgressFill}
-                          style={{ width: `${Math.max(progress.percentage, 8)}%` }}
-                        />
-                      </div>
-                      <p className={styles.kidsMiniProgressLabel}>
-                        {progress.completed}/{progress.total} gotowe
-                      </p>
-                    </div>
-                  ) : (
-                    <p className={styles.kidsSubtitle}>Zobacz swoje nagrody.</p>
-                  )}
-                </div>
+            <KidsHero
+              done={progress.completed}
+              total={progress.total}
+              points={points}
+            />
 
-                <div
-                  className={`${styles.kidsCompanion} ${styles[`kidsCompanion${kidsMood.mood[0].toUpperCase()}${kidsMood.mood.slice(1)}`]}`}
-                  aria-hidden="true"
-                >
-                  <span className={styles.kidsCompanionFace}>
-                    <span className={styles.kidsCompanionEyes}>
-                      <span />
-                      <span />
-                    </span>
-                    <span className={styles.kidsCompanionMouth} />
-                  </span>
-                </div>
-              </div>
-
-              <PointsTile
-                label="Punkty dziś"
-                value={display.showPoints ? points : progress.completed}
-                subLabel="Zebrane łącznie"
-                subValue={display.showPoints ? totalPoints : totalCompleted}
-                onClickAction={handleOpenPoints}
+            {activeReward && (
+              <KidsRewardStrip
+                title={activeReward.title}
+                emoji={activeReward.emoji}
+                currentPoints={availablePoints}
+                targetPoints={activeReward.target}
               />
-            </div>
-
+            )}
           </>
         ) : (
           <>
-            {display.showMotivation && (
-              <div className={styles.motivationCard} data-complete={progress.percentage === 100}>
-                <span className={styles.motivationEmoji} aria-hidden="true">
-                  {progress.percentage === 100 ? '🎉' : progress.percentage >= 50 ? '🔥' : '💪'}
-                </span>
-                <div className={styles.motivationContent}>
-                  <strong>{getMotivationalMessage(progress.percentage)}</strong>
-                  <span>
-                    {progress.percentage === 100
-                      ? 'Gratulacje! Wszystkie zadania na dziś wykonane.'
-                      : `${progress.completed} z ${progress.total} ukończone`}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className={styles.progressPanel}>
-              <div className={styles.progressPanelHeader}>
-                <strong>Postęp dnia</strong>
-                <span>{progress.percentage}%</span>
-              </div>
-
-              <div className={styles.progressTrack} aria-hidden="true">
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${progress.percentage}%` }}
-                  data-complete={progress.percentage === 100}
-                />
-              </div>
-
-              <div className={styles.quickStats}>
-                <div className={styles.quickStatCard} data-highlight="pending">
-                  <span className={styles.quickStatLabel}>Do zrobienia</span>
-                  <strong className={styles.quickStatValue}>{pendingTasks}</strong>
-                </div>
-                <div className={styles.quickStatCard} data-highlight="points">
-                  <span className={styles.quickStatLabel}>Punkty dziś</span>
-                  <strong className={styles.quickStatValue}>{points}</strong>
-                </div>
-                <div className={styles.quickStatCard}>
-                  <span className={styles.quickStatLabel}>Zaplanowane</span>
-                  <strong className={styles.quickStatValue}>{tasks.length}</strong>
-                </div>
-              </div>
-            </div>
+            <FocusBanner
+              done={progress.completed}
+              total={progress.total}
+              points={points}
+              streak={streak}
+            />
 
             {tasks.length === 0 && selectedDayIsToday && (
               <div className={styles.firstStartCard}>

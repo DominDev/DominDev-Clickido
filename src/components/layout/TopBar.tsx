@@ -2,12 +2,12 @@
  * TopBar - Header with date, clock, and progress ring
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { isToday } from 'date-fns';
 import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { showInfoToast, showSuccessToast } from '@store/uiStore';
-import { capitalize, formatDateFull, formatTime } from '@utils/formatting';
+import { capitalize, formatTime } from '@utils/formatting';
 import ProgressRing from '../ui/ProgressRing';
 import { PinModal } from '../ui';
 import styles from './TopBar.module.css';
@@ -16,11 +16,11 @@ export default function TopBar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [parentPinOpen, setParentPinOpen] = useState(false);
   const [progressDisplayMode, setProgressDisplayMode] = useState<'percentage' | 'fraction'>('percentage');
-  const { selectedDate, getProgressForSelectedDate, setSelectedDate } = useTaskStore();
+  const { selectedDate, getProgressForSelectedDate, setSelectedDate, getCurrentStreak } = useTaskStore();
   const { screensaver, display, toggleKidsMode } = useSettingsStore();
 
   const progress = getProgressForSelectedDate();
-  const formattedDate = capitalize(formatDateFull(selectedDate));
+  const streak = getCurrentStreak();
   const formattedTime = formatTime(currentTime, screensaver.showSeconds);
   const selectedDayIsToday = isToday(selectedDate);
   const kidsDayTitle = capitalize(
@@ -69,16 +69,28 @@ export default function TopBar() {
     setProgressDisplayMode((current) => (current === 'percentage' ? 'fraction' : 'percentage'));
   };
 
+  const greeting = useMemo(() => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Dzień dobry!';
+    if (hour < 18) return 'Cześć!';
+    return 'Dobry wieczór!';
+  }, [currentTime]);
+
   return (
     <header className={`${styles.topbar} ${display.kidsMode ? styles.kidsMode : ''}`}>
       <div className={styles.leading}>
-        <div className={styles.dateSection}>
-          {display.kidsMode ? (
+        {display.kidsMode ? (
+          <div className={styles.kidsHeader}>
             <span className={styles.kidsTitle}>{`🧸 ${kidsDayTitle}`}</span>
-          ) : (
-            <span className={styles.date}>{formattedDate}</span>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className={styles.parentGreeting}>
+            <span className={styles.greetingTitle}>{greeting}</span>
+            <span className={styles.greetingSubtitle}>
+              {progress.completed}/{progress.total} dziś · 🔥 {streak} dni
+            </span>
+          </div>
+        )}
       </div>
 
       <div className={styles.trailing}>
@@ -93,9 +105,11 @@ export default function TopBar() {
           </button>
         )}
 
-        <div className={styles.clockSection}>
-          <span className={styles.clock}>{formattedTime}</span>
-        </div>
+        {display.kidsMode ? (
+          <div className={styles.clockSection}>
+            <span className={styles.clock}>{formattedTime}</span>
+          </div>
+        ) : null}
 
         {display.kidsMode && (
           <>
@@ -133,9 +147,12 @@ export default function TopBar() {
 
         {!display.kidsMode && (
           <div className={styles.progressSection}>
+            <div className={styles.clockWrapper}>
+              <span className={styles.parentClock}>{formattedTime}</span>
+            </div>
             <ProgressRing
               percentage={progress.percentage}
-              size={56}
+              size={52}
               strokeWidth={4}
               displayMode={progressDisplayMode}
               completed={progress.completed}

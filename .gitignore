@@ -92,3 +92,6 @@ _project_snapshots/
 
 # === Scripts (dev helpers) ===
 _scripts/
+
+# === Local Obsidian AI memory junction ===
+.obsidian-memory/

@@ -8,6 +8,7 @@ import { useSettingsStore } from '@store/settingsStore';
 import { useTaskStore } from '@store/taskStore';
 import { useUIStore } from '@store/uiStore';
 import TaskCard from './TaskCard';
+import KidsTaskTile from './KidsTaskTile';
 import styles from './TaskList.module.css';
 
 interface EmptyAction {
@@ -56,6 +57,8 @@ export default function TaskList({
     if (aCompleted === bCompleted) return 0;
     return aCompleted ? 1 : -1;
   });
+
+  const firstPendingId = sortedTasks.find((t) => !isTaskCompleted(t.id))?.id;
 
   if (tasks.length === 0) {
     return (
@@ -137,14 +140,23 @@ export default function TaskList({
       }}
     >
       <AnimatePresence mode="popLayout">
-        {sortedTasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            isCompleted={isTaskCompleted(task.id)}
-            onEdit={handleEditTask}
-          />
-        ))}
+        {sortedTasks.map((task) =>
+          display.kidsMode ? (
+            <KidsTaskTile
+              key={task.id}
+              task={task}
+              isCompleted={isTaskCompleted(task.id)}
+              isNext={task.id === firstPendingId}
+            />
+          ) : (
+            <TaskCard
+              key={task.id}
+              task={task}
+              isCompleted={isTaskCompleted(task.id)}
+              onEdit={handleEditTask}
+            />
+          )
+        )}
       </AnimatePresence>
     </motion.div>
   );
